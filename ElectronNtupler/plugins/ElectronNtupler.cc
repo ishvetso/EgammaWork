@@ -45,10 +45,16 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "DataFormats/Common/interface/ValueMap.h"
+#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
 
 #include "TTree.h"
 #include "Math/VectorUtil.h"
 
+
+namespace reco {
+  typedef edm::Ptr<reco::GsfElectron> GsfElectronPtr;
+}
 //
 // class declaration
 //
@@ -89,7 +95,7 @@ private:
   // ----------member data ---------------------------
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
   edm::EDGetTokenT<edm::View<PileupSummaryInfo> > pileupToken_;
-  edm::EDGetTokenT<edm::View<pat::Electron>> electronToken_;
+  edm::EDGetTokenT<edm::View<reco::Candidate>> electronToken_;
   edm::EDGetTokenT<edm::View<reco::GenParticle> > prunedGenToken_;
   edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
   edm::EDGetTokenT<double> rhoToken_;
@@ -100,9 +106,9 @@ private:
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_Photons_;
   
   //PUPPI
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_ChargedHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NeutralHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_Photons_;
+  //edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_ChargedHadrons_;
+  //edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NeutralHadrons_;
+  //edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_Photons_;
   
   TTree *electronTree_;
   
@@ -120,29 +126,36 @@ private:
   Float_t hOverE_;
   // Float_t sigmaIetaIeta_;
   Float_t full5x5_sigmaIetaIeta_;
-  Float_t isoChargedHadrons_;
-  Float_t isoNeutralHadrons_;
-  Float_t isoPhotons_;
-  Float_t isoChargedFromPU_;
   Float_t relIsoWithEA_;
   Float_t relIsoWithDBeta_;
   Float_t ooEmooP_;
   Float_t d0_;
   Float_t dz_;
   Int_t   expectedMissingInnerHits_;
-  Int_t   passConversionVeto_;     
-  Int_t   isTrueElectron_;
+  
+  // I comment this because it is not accessible in AOD
+  //Int_t   passConversionVeto_;     
+  //Int_t   isTrueElectron_;
+  
+  Float_t isoChargedHadrons_;
+  Float_t isoNeutralHadrons_;
+  Float_t isoPhotons_;
+  Float_t isoChargedFromPU_;
+  
+  Float_t relisoChargedHadrons_;
+  Float_t relisoNeutralHadrons_;
+  Float_t relisoPhotons_;
   
   //CITK
   Float_t sumChargedHadronPt_CITK;
   Float_t sumNeutralHadronPt_CITK;
   Float_t sumPhotonPt_CITK;
   
-  //PUPPI
-  Float_t sumChargedHadronPt_PUPPI;
-  Float_t sumNeutralHadronPt_PUPPI;
-  Float_t sumPhotonPt_PUPPI;
-  // Int_t   isTrueElectronAlternative_; 
+  Float_t relisoChargedHadronPt_CITK;
+  Float_t relisoNeutralHadronPt_CITK;
+  Float_t relisoPhotonPt_CITK;
+  
+  bool isEB;
 };
 
 //
@@ -169,7 +182,7 @@ namespace EffectiveAreas {
 ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   pileupToken_(consumes<edm::View<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("pileup"))),
-  electronToken_(consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("electrons"))),
+  electronToken_(consumes<edm::View<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("electrons"))),
   prunedGenToken_(consumes<edm::View<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>("pruned"))),
   packedGenToken_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packed"))),
   rhoToken_(consumes<double> (iConfig.getParameter<edm::InputTag>("rho"))),
@@ -177,12 +190,8 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   //CITK
   ValueMaps_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_src" ) ) ),
   ValueMaps_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_src" ) ) ),
-  ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) ),
-  
-  //PUPPI
-  ValueMaps_PUPPI_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_ChargedHadrons_src" ) ) ),
-  ValueMaps_PUPPI_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NeutralHadrons_src" ) ) ),
-  ValueMaps_PUPPI_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_Photons_src" ) ) )
+  ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) )
+
 {
 
   edm::Service<TFileService> fs;
@@ -200,9 +209,7 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_->Branch("hOverE",  &hOverE_, "hOverE/F");
   // electronTree_->Branch("sigmaIetaIeta",         &sigmaIetaIeta_, "sigmaIetaIeta/F");
   electronTree_->Branch("full5x5_sigmaIetaIeta", &full5x5_sigmaIetaIeta_, "full5x5_sigmaIetaIeta/F");
-  electronTree_->Branch("isoChargedHadrons"      , &isoChargedHadrons_ , "isoChargedHadrons/F");
-  electronTree_->Branch("isoNeutralHadrons"      , &isoNeutralHadrons_, "isoNeutralHadrons/F");
-  electronTree_->Branch("isoPhotons"             , &isoPhotons_, "isoPhotons/F");
+ 
   electronTree_->Branch("isoChargedFromPU"       , &isoChargedFromPU_);
   electronTree_->Branch("relIsoWithEA"           , &relIsoWithEA_, "relIsoWithEA/F");
   electronTree_->Branch("relIsoWithDBeta"      , &relIsoWithDBeta_, "relIsoWithDBeta/F");
@@ -210,21 +217,28 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_->Branch("d0"     , &d0_,      "d0/F");
   electronTree_->Branch("dz"     , &dz_,      "dz/F");
   electronTree_->Branch("expectedMissingInnerHits", &expectedMissingInnerHits_, "expectedMissingInnerHits/I");
-  electronTree_->Branch("passConversionVeto", &passConversionVeto_, "passConversionVeto/I");
-  electronTree_->Branch("isTrueElectron"    , &isTrueElectron_,     "isTrueElectron/I");
+  //electronTree_->Branch("passConversionVeto", &passConversionVeto_, "passConversionVeto/I");
+  //electronTree_->Branch("isTrueElectron"    , &isTrueElectron_,     "isTrueElectron/I");
+ 
+  electronTree_->Branch("isoChargedHadrons"      , &isoChargedHadrons_ , "isoChargedHadrons/F");
+  electronTree_->Branch("isoNeutralHadrons"      , &isoNeutralHadrons_, "isoNeutralHadrons/F");
+  electronTree_->Branch("isoPhotons"             , &isoPhotons_, "isoPhotons/F");
+  
+  electronTree_->Branch("relisoChargedHadrons"      , &relisoChargedHadrons_ , "relisoChargedHadrons/F");
+  electronTree_->Branch("relisoNeutralHadrons"      , &relisoNeutralHadrons_, "relisoNeutralHadrons/F");
+  electronTree_->Branch("relisoPhotons"             , &relisoPhotons_, "relisoPhotons/F");
   
   //CITK
   electronTree_ -> Branch("sumChargedHadronPt_CITK", &sumChargedHadronPt_CITK, "sumChargedHadronPt_CITK/F");
   electronTree_ -> Branch("sumNeutralHadronPt_CITK", &sumNeutralHadronPt_CITK, "sumNeutralHadronPt_CITK/F");
   electronTree_ -> Branch("sumPhotonPt_CITK", &sumPhotonPt_CITK, "sumPhotonPt_CITK/F");
   
-  //PUPPI
-  electronTree_ -> Branch("sumChargedHadronPt_PUPPI", &sumChargedHadronPt_PUPPI, "sumChargedHadronPt_PUPPI/F");
-  electronTree_ -> Branch("sumNeutralHadronPt_PUPPI", &sumNeutralHadronPt_PUPPI, "sumNeutralHadronPt_PUPPI/F");
-  electronTree_ -> Branch("sumPhotonPt_PUPPI", &sumPhotonPt_PUPPI, "sumPhotonPt_PUPPI/F");
+  electronTree_ -> Branch("relisoChargedHadronPt_CITK", &relisoChargedHadronPt_CITK, "relisoChargedHadronPt_CITK/F");
+  electronTree_ -> Branch("relisoNeutralHadronPt_CITK", &relisoNeutralHadronPt_CITK, "relisoNeutralHadronPt_CITK/F");
+  electronTree_ -> Branch("relisoPhotonPt_CITK", &relisoPhotonPt_CITK, "relisoPhotonPt_CITK/F");
   
-  
- 
+  electronTree_ -> Branch("isEB", &isEB, "isEB/B");
+
 }
 
 
@@ -250,8 +264,10 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   using namespace reco;
   
   // Pruned particles are the one containing "important" stuff
-  Handle<edm::View<reco::GenParticle> > prunedGenParticles;
-  iEvent.getByToken(prunedGenToken_,prunedGenParticles);
+ 
+  //  Currently I comment it because of test on AOD
+  // Handle<edm::View<reco::GenParticle> > prunedGenParticles;
+ // iEvent.getByToken(prunedGenToken_,prunedGenParticles);
   
   // Packed particles are all the status 1, so usable to remake jets
   // The navigation from status 1 to pruned is possible (the other direction should be made by hand)
@@ -301,24 +317,19 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   rho_ = *rhoH;
   
   // Get electron collection
-  Handle<edm::View<pat::Electron> > electrons;
+  Handle<edm::View<reco::Candidate> > electrons;
   iEvent.getByToken(electronToken_, electrons);
+  
+
   
   //CITK
   Handle <edm::ValueMap <float> > ValueMaps_ChargedHadrons, ValueMaps_NeutralHadrons, ValueMaps_Photons;
-  //PUPPI
-  Handle <edm::ValueMap <float> > ValueMaps_PUPPI_ChargedHadrons, ValueMaps_PUPPI_NeutralHadrons, ValueMaps_PUPPI_Photons;
   
   //CITK
   iEvent.getByToken( ValueMaps_ChargedHadrons_ , ValueMaps_ChargedHadrons);
   iEvent.getByToken( ValueMaps_NeutralHadrons_ , ValueMaps_NeutralHadrons);
   iEvent.getByToken( ValueMaps_Photons_ , ValueMaps_Photons);
-  
-  //PUPPI
-  iEvent.getByToken( ValueMaps_PUPPI_ChargedHadrons_ , ValueMaps_PUPPI_ChargedHadrons);
-  iEvent.getByToken( ValueMaps_PUPPI_NeutralHadrons_ , ValueMaps_PUPPI_NeutralHadrons);
-  iEvent.getByToken( ValueMaps_PUPPI_Photons_ , ValueMaps_PUPPI_Photons);
-  
+
   
   //
   // Loop over electrons
@@ -326,40 +337,47 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   // printf("DEBUG: new event\n"); 
   for (unsigned int iElectron = 0; iElectron < electrons -> size(); iElectron++) {
     
+    
+    auto elePtr = electrons -> ptrAt(iElectron);
+    reco::GsfElectronPtr eleGsfPtr(elePtr);
     // Kinematics
-    pt_ = (electrons -> at(iElectron)).pt();
+    pt_ = eleGsfPtr -> pt();
     // Keep only electrons above 10 GeV.
     // NOTE: miniAOD does not store some of the info for electrons <5 GeV at all!
     if( pt_ < 10 ) 
       continue;
     
-    etaSC_ = (electrons -> at(iElectron)).superCluster()->eta();
+    etaSC_ = eleGsfPtr -> superCluster()->eta();
     
     // ID and matching
-    dEtaIn_ = (electrons -> at(iElectron)).deltaEtaSuperClusterTrackAtVtx();
-    dPhiIn_ = (electrons -> at(iElectron)).deltaPhiSuperClusterTrackAtVtx();
-    hOverE_ = (electrons -> at(iElectron)).hcalOverEcal();
+    dEtaIn_ = eleGsfPtr -> deltaEtaSuperClusterTrackAtVtx();
+    dPhiIn_ = eleGsfPtr -> deltaPhiSuperClusterTrackAtVtx();
+    hOverE_ = eleGsfPtr -> hcalOverEcal();
     // sigmaIetaIeta_ = el.sigmaIetaIeta();
-    full5x5_sigmaIetaIeta_ = (electrons -> at(iElectron)).full5x5_sigmaIetaIeta();
+    full5x5_sigmaIetaIeta_ = eleGsfPtr -> full5x5_sigmaIetaIeta();
     // |1/E-1/p| = |1/E - EoverPinner/E| is computed below
     // The if protects against ecalEnergy == inf or zero (always
     // the case for electrons below 5 GeV in miniAOD)
-    if( (electrons -> at(iElectron)).ecalEnergy() == 0 ){
+    if( eleGsfPtr -> ecalEnergy() == 0 ){
       printf("Electron energy is zero!\n");
       ooEmooP_ = 1e30;
-    }else if( !std::isfinite((electrons -> at(iElectron)).ecalEnergy())){
+    }else if( !std::isfinite(eleGsfPtr -> ecalEnergy())){
       printf("Electron energy is not finite!\n");
       ooEmooP_ = 1e30;
     }else{
-      ooEmooP_ = fabs(1.0/(electrons -> at(iElectron)).ecalEnergy() - (electrons -> at(iElectron)).eSuperClusterOverP()/(electrons -> at(iElectron)).ecalEnergy() );
+      ooEmooP_ = fabs(1.0/eleGsfPtr -> ecalEnergy() - eleGsfPtr -> eSuperClusterOverP()/eleGsfPtr -> ecalEnergy() );
     }
     
     // Isolation
-    GsfElectron::PflowIsolationVariables pfIso = (electrons -> at(iElectron)).pfIsolationVariables();
+    GsfElectron::PflowIsolationVariables pfIso = eleGsfPtr -> pfIsolationVariables();
     isoChargedHadrons_ = pfIso.sumChargedHadronPt ;
     isoNeutralHadrons_ = pfIso.sumNeutralHadronEt ;
     isoPhotons_        = pfIso.sumPhotonEt ;
     isoChargedFromPU_  = pfIso.sumPUPt ;
+    
+    relisoChargedHadrons_ = pfIso.sumChargedHadronPt/pt_;
+    relisoNeutralHadrons_ = pfIso.sumNeutralHadronEt/pt_;
+    relisoPhotons_        = pfIso.sumPhotonEt/pt_;
     // Compute isolation with effective area correction for PU
     // Find eta bin first. If eta>2.5, the last eta bin is used.
     int etaBin = 0; 
@@ -374,22 +392,25 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     relIsoWithDBeta_ = absiso/pt_;
     
     // Impact parameter
-    d0_ = (-1) * (electrons -> at(iElectron)).gsfTrack()->dxy(firstGoodVertex->position() );
-    dz_ = (electrons -> at(iElectron)).gsfTrack()->dz( firstGoodVertex->position() );
+    d0_ = (-1) * eleGsfPtr -> gsfTrack()->dxy(firstGoodVertex->position() );
+    dz_ = eleGsfPtr -> gsfTrack()->dz( firstGoodVertex->position() );
     
     // Conversion rejection
     // pre-72X method below is commented out
     //expectedMissingInnerHits_ = el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits();
     // since 72X, the access of missing hits is this:
-    expectedMissingInnerHits_ = (electrons -> at(iElectron)).gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
-    passConversionVeto_ = (electrons -> at(iElectron)).passConversionVeto();
+    expectedMissingInnerHits_ = eleGsfPtr -> gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
+    // I comment this because it is not accessible in AOD
+    //passConversionVeto_ = elePatPtr -> passConversionVeto();
     
     // Match to generator level truth
     
     // 
     // Explicit loop over gen candidates method
     //
-    isTrueElectron_ = matchToTruth( (electrons -> at(iElectron)), prunedGenParticles); 
+   // isTrueElectron_ = matchToTruth( eleGsfPtr, prunedGenParticles);
+    
+     // I comment this because it is not accessible in AOD
     // isTrueElectronAlternative_ = matchToTruthAlternative( el );
     
     // For debug purposes, one can use this utility that prints 
@@ -397,14 +418,17 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     //   printAllZeroMothers( el.genParticle() );
     
     
-    sumChargedHadronPt_CITK =  (*ValueMaps_ChargedHadrons)[electrons -> ptrAt(iElectron)];
-    sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[electrons -> ptrAt(iElectron)];
-    sumPhotonPt_CITK        =  (*ValueMaps_Photons)[electrons -> ptrAt(iElectron)];
+    sumChargedHadronPt_CITK =  (*ValueMaps_ChargedHadrons)[elePtr];
+    sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[elePtr];
+    sumPhotonPt_CITK        =  (*ValueMaps_Photons)[elePtr];
     
-    sumChargedHadronPt_PUPPI =  (*ValueMaps_PUPPI_ChargedHadrons)[electrons -> ptrAt(iElectron)];
-    sumNeutralHadronPt_PUPPI =  (*ValueMaps_PUPPI_NeutralHadrons)[electrons -> ptrAt(iElectron)];
-    sumPhotonPt_PUPPI        =  (*ValueMaps_PUPPI_Photons)[electrons -> ptrAt(iElectron)];
-        
+    relisoChargedHadronPt_CITK = sumChargedHadronPt_CITK/pt_;
+    relisoNeutralHadronPt_CITK = sumNeutralHadronPt_CITK/pt_;
+    relisoPhotonPt_CITK = sumPhotonPt_CITK/pt_;
+    
+    const reco::CaloClusterPtr& seed = eleGsfPtr -> superCluster()->seed();
+    isEB = ( seed->seed().subdetId() == EcalBarrel );
+         
     // Save this electron's info
     electronTree_->Fill();
   }

@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process( "ElectronIsolation" )
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(100)
 )
 
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
@@ -10,11 +10,11 @@ process.options.allowUnscheduled = cms.untracked.bool(False)
 
 from RecoEgamma.EgammaIsolationAlgos.egmGedGsfElectronPFIsolation_cfi import *
 
-from CommonTools.ParticleFlow.pfNoPileUpIso_cff import *
-from CommonTools.ParticleFlow.pfParticleSelection_cff import *
+process.load("CommonTools.ParticleFlow.pfNoPileUpIso_cff")
+process.load("CommonTools.ParticleFlow.pfParticleSelection_cff")
 
-pfNoPileUpCandidates = pfAllChargedHadrons.clone()
-pfNoPileUpCandidates.pdgId.extend(pfAllNeutralHadronsAndPhotons.pdgId)
+process.pfNoPileUpCandidates = process.pfAllChargedHadrons.clone()
+process.pfNoPileUpCandidates.pdgId.extend(process.pfAllNeutralHadronsAndPhotons.pdgId)
 
 process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
 					    srcToIsolate = cms.InputTag("gedGsfElectrons"),
@@ -44,8 +44,8 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 packed = cms.InputTag("packedGenParticles"),
 				 pruned = cms.InputTag("prunedGenParticles"),
 				 pileup = cms.InputTag("addPileupInfo"),
-				 vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
-				 electrons = cms.InputTag("slimmedElectrons"),
+				 vertices = cms.InputTag("offlinePrimaryVertices"),
+				 electrons = cms.InputTag("gedGsfElectrons"),
 				 rho = cms.InputTag("fixedGridRhoFastjetAll"),
 				 #CITK
 				 ValueMaps_ChargedHadrons_src = cms.InputTag("ElectronIsolation", "gamma-DR030-BarVeto000-EndVeto008"),
@@ -53,26 +53,30 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 ValueMaps_Photons_src = cms.InputTag("ElectronIsolation", "gamma-DR030-BarVeto000-EndVeto008"),
 								
 				)
+process.particleFlowTmpPtrs = cms.EDProducer("PFCandidateFwdPtrProducer",
+src = cms.InputTag('particleFlow')
+)
 
-process.electrons = cms.Path(process.ElectronIsolation )
+
+process.electrons = cms.Path(process.particleFlowTmpPtrs + process.pfParticleSelectionSequence + process.pfNoPileUpCandidates + process.ElectronIsolation + process.ntupler)
 
 #process.maxEvents.input = 1000
 process.source = cms.Source("PoolSource",
     secondaryFileNames = cms.untracked.vstring(),
-    fileNames = cms.untracked.vstring('')
+    fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/i/ishvetso/EgammaWork/test_samples/ttbar_AOD.root')
     
 )
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 10000
+process.MessageLogger.cerr.FwkReport.reportEvery = 10
 
-'''process.out = cms.OutputModule("PoolOutputModule",
+process.out = cms.OutputModule("PoolOutputModule",
  fileName = cms.untracked.string('patTuple.root'),
   outputCommands = cms.untracked.vstring('keep *')
 )
 
 process.outpath = cms.EndPath(process.out)
-'''
+
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree.root")
                                   )
