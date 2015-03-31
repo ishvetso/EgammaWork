@@ -40,7 +40,7 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 electrons = cms.InputTag("slimmedElectrons"),
 				 rho = cms.InputTag("fixedGridRhoFastjetAll"),
 				 #CITK
-				 ValueMaps_ChargedHadrons_src = cms.InputTag("ElectronIsolation", "gamma-DR030-BarVeto000-EndVeto008"),
+				 ValueMaps_ChargedHadrons_src = cms.InputTag("ElectronIsolation", "h+-DR030-BarVeto000-EndVeto001"),
 				 ValueMaps_NeutralHadrons_src = cms.InputTag("ElectronIsolation", "h0-DR030-BarVeto000-EndVeto000"),
 				 ValueMaps_Photons_src = cms.InputTag("ElectronIsolation", "gamma-DR030-BarVeto000-EndVeto008"),
 								
