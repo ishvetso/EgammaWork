@@ -64,6 +64,7 @@ void Sample::SetFileNames(string filename_)
 }
 
 
+// draw a number of variables on the same canvas (to compare distributions)
 void draw(vector<Var> Vars, Sample sample, string attribute)
 {
   gStyle->SetCanvasColor(kWhite);
@@ -85,7 +86,6 @@ void draw(vector<Var> Vars, Sample sample, string attribute)
     TH1F *hist_tmp = new TH1F((Vars.at(iVar).VarName + "_tmp").c_str(), (Vars.at(iVar).VarName + "_tmp").c_str(), Vars.at(iVar).Range.NBins, Vars.at(iVar).Range.low, Vars.at(iVar).Range.high);
   //  hist_tmp->SetDirectory(0);// histogram would be deleted otherwise when file is closed
     ((TTree*)file.Get("ntupler/ElectronTree")) -> Project((Vars.at(iVar).VarName + "_tmp").c_str(), (Vars.at(iVar).VarName).c_str());
-    cout << hist_tmp -> GetMean() << endl;
     hists.push_back(hist_tmp);
  }
   
@@ -110,6 +110,54 @@ void draw(vector<Var> Vars, Sample sample, string attribute)
   hists.clear();
   delete c1;
 } 
+
+//draw the difference between 2 variables (1 dim )
+void draw_difference(string var1_, string var2_, Sample sample, int Nbins, double xmin, double xmax, string attribute)
+{
+  gStyle->SetCanvasColor(kWhite);
+//gStyle->SetTitleFillColor(kWhite);
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+//gPad->SetGrid();
+  
+  TH1F *hist = new TH1F((var1_ + " - " + var2_).c_str(), (var1_ + " - " + var2_).c_str(), Nbins, xmin, xmax);
+  TFile file((sample.filename).c_str(), "READ");
+  TLegend *leg = new TLegend(0.18,0.8,0.5,0.9);
+  leg -> SetFillColor(kWhite);  
+  TTree * tree = (TTree * )file.Get("ntupler/ElectronTree");
+  
+  float var1, var2;
+  
+  tree -> SetBranchAddress(var1_.c_str(), &var1);
+  tree -> SetBranchAddress(var2_.c_str(), &var2);
+  
+  for (unsigned int iEntry = 0; iEntry < tree -> GetEntries(); iEntry ++  )
+  {
+    tree -> GetEntry(iEntry);
+    hist -> Fill(var1 - var2);
+  }
+  
+ // 
+ TCanvas *c1= new TCanvas("c1","canvas",1200,800);
+  
+ c1 -> cd();
+
+ hist -> SetLineColor(kBlue);
+ hist -> GetXaxis() -> SetTitle("GeV");
+ hist -> SetLineWidth(3.0);
+ leg->AddEntry(hist, (var1_  + " - " + var2_).c_str(),"l");
+ hist -> Draw("HISTE1SAME");
+ leg -> SetHeader((sample.Processname).c_str());
+
+
+ leg -> Draw("SAME");   
+ CMS_lumi( c1, 4, 0 );
+ c1 -> SaveAs(("CITK_validation/" + attribute + "_" + sample.Processname + ".png").c_str());
+  
+ delete c1;
+ delete hist;
+} 
+
 
 void compare_hist()
 {
@@ -189,7 +237,14 @@ void compare_hist()
   
   
   setTDRStyle();
-    
+  draw_difference("isoChargedHadrons","sumChargedHadronPt_CITK", DY, 10., -0.02, 0.02, "ChargedHadrons");  
+  draw_difference("isoNeutralHadrons","sumNeutralHadronPt_CITK", DY, 10., -0.02, 0.02, "NeutralHadrons");
+  draw_difference("isoPhotons","sumPhotonPt_CITK", DY, 10., -0.02, 0.02, "Photons");
+  
+  draw_difference("isoChargedHadrons","sumChargedHadronPt_CITK", ttbar, 10., -0.02, 0.02, "ChargedHadrons");  
+  draw_difference("isoNeutralHadrons","sumNeutralHadronPt_CITK", ttbar, 10., -0.02, 0.02, "NeutralHadrons");
+  draw_difference("isoPhotons","sumPhotonPt_CITK", ttbar, 10., -0.02, 0.02, "Photons");
+  
  // draw(rel_variablesCH, DY, "relIso_ChargedHadrons");
  // draw(rel_variablesNH, DY, "relIso_NeutralHadrons", "");
   //draw(rel_variablesGamma, DY, "relIso_Photons", "");
@@ -198,12 +253,12 @@ void compare_hist()
   //draw(rel_variablesNH, ttbar, "relIso_NeutralHadrons", "");
   //draw(rel_variablesGamma, ttbar, "relIso_Photons", "");
   
-  draw(variablesCH, DY, "ChargedHadrons");
+  /*draw(variablesCH, DY, "ChargedHadrons");
   draw(variablesNH, DY, "NeutralHadrons");
   draw(variablesGamma, DY, "Photons");
   
   draw(variablesCH, ttbar, "ChargedHadrons");
   draw(variablesNH, ttbar, "NeutralHadrons");
-  draw(variablesGamma, ttbar, "Photons");
+  draw(variablesGamma, ttbar, "Photons");*/
    
 }
