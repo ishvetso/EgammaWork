@@ -2,6 +2,7 @@
 #include <TTree.h>
 #include <TTreeFormula.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <THStack.h>
 #include <TStyle.h>
 #include <TCanvas.h>
@@ -112,8 +113,10 @@ void draw(vector<Var> Vars, Sample sample, string attribute)
 } 
 
 //draw the difference between 2 variables (1 dim )
-void draw_difference(string var1_, string var2_, Sample sample, int Nbins, double xmin, double xmax, string attribute)
+void draw_difference(string var1_, string var2_, Sample sample, int Nbins, double xmin, double xmax, string attribute, string outDirectory)
 {
+   system(("mkdir -p " + outDirectory).c_str());
+  
   gStyle->SetCanvasColor(kWhite);
 //gStyle->SetTitleFillColor(kWhite);
   gStyle->SetOptStat(0);
@@ -152,10 +155,57 @@ void draw_difference(string var1_, string var2_, Sample sample, int Nbins, doubl
 
  leg -> Draw("SAME");   
  CMS_lumi( c1, 4, 0 );
- c1 -> SaveAs(("CITK_validation/" + attribute + "_" + sample.Processname + ".png").c_str());
+ c1 -> SaveAs((outDirectory + "/"  + attribute + "_" + sample.Processname + ".png").c_str());
   
  delete c1;
  delete hist;
+} 
+
+//draw difference versus some variable (2 dim)
+void draw_difference2D(string var1_, string var2_, string var3_, Sample sample, int NXbins, double xmin, double xmax,int NYBins, double ymin, double ymax, string attribute, string outDirectory)
+{
+   system(("mkdir -p " + outDirectory).c_str());
+  
+  gStyle->SetCanvasColor(kWhite);
+//gStyle->SetTitleFillColor(kWhite);
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+//gPad->SetGrid();
+  
+  TH2F *hist = new TH2F((var1_ + " - " + var2_ + "_" + var3_).c_str(), (var1_ + " - " + var2_).c_str(), NXbins, xmin, xmax, NYBins, ymin, ymax);
+  TFile file((sample.filename).c_str(), "READ");
+  TLegend *leg = new TLegend(0.18,0.8,0.5,0.9);
+  leg -> SetFillColor(kWhite);  
+  TTree * tree = (TTree * )file.Get("ntupler/ElectronTree");
+  
+  float var1, var2, var3;
+  
+  tree -> SetBranchAddress(var1_.c_str(), &var1);
+  tree -> SetBranchAddress(var2_.c_str(), &var2);
+  tree -> SetBranchAddress(var3_.c_str(), &var3);
+  
+  for (unsigned int iEntry = 0; iEntry < tree -> GetEntries(); iEntry ++  )
+  {
+    tree -> GetEntry(iEntry);
+    hist -> Fill(var1 - var2, var3);
+  }
+  
+ // 
+ TCanvas *c1= new TCanvas("c1","canvas",1200,800);
+  
+ c1 -> cd();
+
+// hist -> SetLineColor(kBlue);
+ hist -> GetXaxis() -> SetTitle("GeV");
+ hist -> GetYaxis() -> SetTitle(var3_.c_str());
+ gStyle->SetPalette(1);
+ hist -> Draw("COLZ");
+
+ CMS_lumi( c1, 4, 0 );
+ c1 -> SaveAs((outDirectory + "/"  + attribute + "_" + var3_ + "_" + sample.Processname + ".png").c_str());
+  
+ delete c1;
+ //delete hist;
 } 
 
 
@@ -237,14 +287,20 @@ void compare_hist()
   
   
   setTDRStyle();
-  draw_difference("isoChargedHadrons","sumChargedHadronPt_CITK", DY, 10., -0.02, 0.02, "ChargedHadrons");  
-  draw_difference("isoNeutralHadrons","sumNeutralHadronPt_CITK", DY, 10., -0.02, 0.02, "NeutralHadrons");
-  draw_difference("isoPhotons","sumPhotonPt_CITK", DY, 10., -0.02, 0.02, "Photons");
+  //draw_difference("isoChargedHadrons","sumChargedHadronPt_CITK", DY, 11, -0.02, 0.02, "ChargedHadrons", "CITK_diff");  
+  //draw_difference("isoNeutralHadrons","sumNeutralHadronPt_CITK", DY, 11, -0.02, 0.02, "NeutralHadrons", "CITK_diff");
+  //draw_difference("isoPhotons","sumPhotonPt_CITK", DY, 11, -0.02, 0.02, "Photons", "CITK_diff");
   
-  draw_difference("isoChargedHadrons","sumChargedHadronPt_CITK", ttbar, 10., -0.02, 0.02, "ChargedHadrons");  
-  draw_difference("isoNeutralHadrons","sumNeutralHadronPt_CITK", ttbar, 10., -0.02, 0.02, "NeutralHadrons");
-  draw_difference("isoPhotons","sumPhotonPt_CITK", ttbar, 10., -0.02, 0.02, "Photons");
+ // draw_difference("isoChargedHadrons","sumChargedHadronPt_CITK", ttbar, 11, -0.02, 0.02, "ChargedHadrons", "CITK_diff");  
+  //draw_difference("isoNeutralHadrons","sumNeutralHadronPt_CITK", ttbar, 11, -0.02, 0.02, "NeutralHadrons", "CITK_diff");
+  //draw_difference("isoPhotons","sumPhotonPt_CITK", ttbar, 11, -0.02, 0.02, "Photons", "CITK_diff");
+  draw_difference2D("isoPhotons","sumPhotonPt_CITK","pt", ttbar, 11, -0.02, 0.02,20, 20., 300., "Photons", "CITK_diff_2D");
+  draw_difference2D("isoPhotons","sumPhotonPt_CITK","etaSC", ttbar, 11, -0.02, 0.02,20, -3., 3., "Photons", "CITK_diff_2D");
   
+  
+  draw_difference2D("isoChargedHadrons","sumChargedHadronPt_CITK","pt", ttbar, 11, -0.02, 0.02,20, 20., 300., "ChargedHadrons", "CITK_diff_2D");
+  draw_difference2D("isoChargedHadrons","sumChargedHadronPt_CITK","etaSC", ttbar, 11, -0.02, 0.02,20, -3., 3., "ChargedHadrons", "CITK_diff_2D");
+
  // draw(rel_variablesCH, DY, "relIso_ChargedHadrons");
  // draw(rel_variablesNH, DY, "relIso_NeutralHadrons", "");
   //draw(rel_variablesGamma, DY, "relIso_Photons", "");
