@@ -6,11 +6,17 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 process.load("CommonTools.PileupAlgos.Puppi_cff")
+process.load("EgammaWork.MyPdgIDPackedCandidateSelector.pfNoLeptons_cfi")
+
 process.puppi.candName = cms.InputTag('packedPFCandidates')
 process.puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
 
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
+
+process.puppiNoLeptons = process.puppi.clone()
+process.puppiNoLeptons.candName = cms.InputTag('pfNoLeptons')
+print process.puppiNoLeptons.vertexName
 
 process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
 					    srcToIsolate = cms.InputTag("slimmedElectrons"),
@@ -61,6 +67,33 @@ process.ElectronIsolationOnPUPPI = cms.EDProducer("CITKPFIsolationSumProducer",
 									miniAODVertexCodes = cms.vuint32(2,3) )
 								      )
 					)
+
+process.ElectronIsolationOnPUPPINoLeptons = cms.EDProducer("CITKPFIsolationSumProducer",
+					    srcToIsolate = cms.InputTag("slimmedElectrons"),
+					    srcForIsolationCone = cms.InputTag('puppiNoLeptons'),
+					    isolationConeDefinitions = cms.VPSet(
+									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
+									coneSize = cms.double(0.3),
+									VetoConeSizeEndcaps = cms.double(0.015),
+									VetoConeSizeBarrel = cms.double(0.0),
+									isolateAgainst = cms.string('h+'),
+									miniAODVertexCodes = cms.vuint32(2,3) ),
+									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
+									coneSize = cms.double(0.3),
+									VetoConeSizeEndcaps = cms.double(0.0),
+									VetoConeSizeBarrel = cms.double(0.0),
+									isolateAgainst = cms.string('h0'),
+									miniAODVertexCodes = cms.vuint32(2,3) ),
+									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
+									coneSize = cms.double(0.3),
+									VetoConeSizeEndcaps = cms.double(0.08),
+									VetoConeSizeBarrel = cms.double(0.0),
+									isolateAgainst = cms.string('gamma'),
+									miniAODVertexCodes = cms.vuint32(2,3) )
+								      )
+					)									
+									
+									
 									
 process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 packed = cms.InputTag("packedGenParticles"),
@@ -77,10 +110,14 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 ValueMaps_PUPPI_ChargedHadrons_src = cms.InputTag("ElectronIsolationOnPUPPI", "h+-DR030-BarVeto000-EndVeto001"),
 				 ValueMaps_PUPPI_NeutralHadrons_src = cms.InputTag("ElectronIsolationOnPUPPI", "h0-DR030-BarVeto000-EndVeto000"),
 				 ValueMaps_PUPPI_Photons_src = cms.InputTag("ElectronIsolationOnPUPPI", "gamma-DR030-BarVeto000-EndVeto008"),
+				  #PUPPINoLeptons
+				 ValueMaps_PUPPI_NoLeptons_ChargedHadrons_src = cms.InputTag("ElectronIsolationOnPUPPINoLeptons", "h+-DR030-BarVeto000-EndVeto001"),
+				 ValueMaps_PUPPI_NoLeptons_NeutralHadrons_src = cms.InputTag("ElectronIsolationOnPUPPINoLeptons", "h0-DR030-BarVeto000-EndVeto000"),
+				 ValueMaps_PUPPI_NoLeptons_Photons_src = cms.InputTag("ElectronIsolationOnPUPPINoLeptons", "gamma-DR030-BarVeto000-EndVeto008"),
 								
 				)
 
-process.electrons = cms.Path(process.puppi + process.ElectronIsolationOnPUPPI + process.ElectronIsolation  + process.ntupler)
+process.electrons = cms.Path(process.pfNoLeptons +  process.puppi + process.puppiNoLeptons + process.ElectronIsolation + process.ElectronIsolationOnPUPPI + process.ElectronIsolationOnPUPPINoLeptons + process.ntupler)
 
 #process.maxEvents.input = 1000
 process.source = cms.Source("PoolSource",
