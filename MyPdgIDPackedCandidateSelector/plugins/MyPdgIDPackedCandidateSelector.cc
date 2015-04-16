@@ -118,7 +118,7 @@ MyPdgIDPackedCandidateSelector::produce(edm::Event& iEvent, const edm::EventSetu
    {
     for (unsigned iPDG = 0; iPDG < pdgIDs.size(); iPDG ++)
     {
-      if ((candidates -> at(iCand)).pdgId() == pdgIDs.at(iPDG)) OutCollection -> push_back(candidates -> at(iCand));
+      if ((candidates -> at(iCand)).pdgId() != pdgIDs.at(iPDG)) OutCollection -> push_back(candidates -> at(iCand));
      }  
    }
    iEvent.put(OutCollection);

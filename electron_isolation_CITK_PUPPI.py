@@ -16,7 +16,6 @@ process.options.allowUnscheduled = cms.untracked.bool(False)
 
 process.puppiNoLeptons = process.puppi.clone()
 process.puppiNoLeptons.candName = cms.InputTag('pfNoLeptons')
-print process.puppiNoLeptons.vertexName
 
 process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
 					    srcToIsolate = cms.InputTag("slimmedElectrons"),
@@ -129,13 +128,14 @@ process.source = cms.Source("PoolSource",
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
+'''
 process.out = cms.OutputModule("PoolOutputModule",
  fileName = cms.untracked.string('patTuple.root'),
   outputCommands = cms.untracked.vstring('keep *')
 )
 
 process.outpath = cms.EndPath(process.out)
-
+'''
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree.root")
                                   )
