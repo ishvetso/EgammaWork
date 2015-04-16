@@ -110,6 +110,11 @@ private:
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NeutralHadrons_;
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_Photons_;
   
+  //PUPPI no leptons
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_ChargedHadrons_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_NeutralHadrons_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_Photons_;
+  
   TTree *electronTree_;
   
   // Vars for pile-up
@@ -156,7 +161,12 @@ private:
   Float_t sumNeutralHadronPt_PUPPI;
   Float_t sumPhotonPt_PUPPI;
   
-  Float_t reliso_PUPPI;
+  //PUPPINoLeptons
+  Float_t sumChargedHadronPt_PUPPI_NoLeptons;
+  Float_t sumNeutralHadronPt_PUPPI_NoLeptons;
+  Float_t sumPhotonPt_PUPPI_NoLeptons;
+  
+  Float_t reliso_PUPPI, reliso_PUPPI_NoLeptons;
   
   Float_t relisoChargedHadronPt_CITK;
   Float_t relisoNeutralHadronPt_CITK;
@@ -198,10 +208,14 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   ValueMaps_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_src" ) ) ),
   ValueMaps_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_src" ) ) ),
   ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) ),
-  //CITK
+  //PUPPI
   ValueMaps_PUPPI_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_ChargedHadrons_src" ) ) ),
   ValueMaps_PUPPI_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NeutralHadrons_src" ) ) ),
-  ValueMaps_PUPPI_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_Photons_src" ) ) )
+  ValueMaps_PUPPI_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_Photons_src" ) ) ),
+  //PUPPINoLeptons
+  ValueMaps_PUPPI_NoLeptons_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_ChargedHadrons_src" ) ) ),
+  ValueMaps_PUPPI_NoLeptons_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_NeutralHadrons_src" ) ) ),
+  ValueMaps_PUPPI_NoLeptons_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_Photons_src" ) ) )
 
 {
 
@@ -250,6 +264,13 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_ -> Branch("sumPhotonPt_PUPPI", &sumPhotonPt_PUPPI, "sumPhotonPt_PUPPI/F");
   
   electronTree_ -> Branch("reliso_PUPPI", &reliso_PUPPI, "reliso_PUPPI/F");
+  
+    //PUPPI
+  electronTree_ -> Branch("sumChargedHadronPt_PUPPI_NoLeptons", &sumChargedHadronPt_PUPPI_NoLeptons, "sumChargedHadronPt_PUPPI_NoLeptons/F");
+  electronTree_ -> Branch("sumNeutralHadronPt_PUPPI_NoLeptons", &sumNeutralHadronPt_PUPPI_NoLeptons, "sumNeutralHadronPt_PUPPI_NoLeptons/F");
+  electronTree_ -> Branch("sumPhotonPt_PUPPI_NoLeptons", &sumPhotonPt_PUPPI_NoLeptons, "sumPhotonPt_PUPPI_NoLeptons/F");
+  
+  electronTree_ -> Branch("reliso_PUPPI_NoLeptons", &reliso_PUPPI_NoLeptons, "reliso_PUPPI_NoLeptons/F");
   
     
   electronTree_ -> Branch("relisoChargedHadronPt_CITK", &relisoChargedHadronPt_CITK, "relisoChargedHadronPt_CITK/F");
@@ -343,6 +364,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //CITK
   Handle <edm::ValueMap <float> > ValueMaps_ChargedHadrons, ValueMaps_NeutralHadrons, ValueMaps_Photons;
   Handle <edm::ValueMap <float> > ValueMaps_PUPPI_ChargedHadrons, ValueMaps_PUPPI_NeutralHadrons, ValueMaps_PUPPI_Photons;
+  Handle <edm::ValueMap <float> > ValueMaps_PUPPI_NoLeptons_ChargedHadrons, ValueMaps_PUPPI_NoLeptons_NeutralHadrons, ValueMaps_PUPPI_NoLeptons_Photons;
   
   //CITK
   iEvent.getByToken( ValueMaps_ChargedHadrons_ , ValueMaps_ChargedHadrons);
@@ -353,6 +375,12 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByToken( ValueMaps_PUPPI_ChargedHadrons_ , ValueMaps_PUPPI_ChargedHadrons);
   iEvent.getByToken( ValueMaps_PUPPI_NeutralHadrons_ , ValueMaps_PUPPI_NeutralHadrons);
   iEvent.getByToken( ValueMaps_PUPPI_Photons_ , ValueMaps_PUPPI_Photons);
+  
+  //PUPPI_NoLeptons 
+  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ , ValueMaps_PUPPI_NoLeptons_ChargedHadrons);
+  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ , ValueMaps_PUPPI_NoLeptons_NeutralHadrons);
+  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_Photons_ , ValueMaps_PUPPI_NoLeptons_Photons);
+
 
 
   
@@ -442,20 +470,27 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     // the decay history, using standard matching in this case:
     //   printAllZeroMothers( el.genParticle() );
     
-    
+    //CITK
     sumChargedHadronPt_CITK =  (*ValueMaps_ChargedHadrons)[elePtr];
     sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[elePtr];
     sumPhotonPt_CITK        =  (*ValueMaps_Photons)[elePtr];
     
+    //PUPPI
     sumChargedHadronPt_PUPPI =  (*ValueMaps_PUPPI_ChargedHadrons)[elePtr];
     sumNeutralHadronPt_PUPPI =  (*ValueMaps_PUPPI_NeutralHadrons)[elePtr];
     sumPhotonPt_PUPPI        =  (*ValueMaps_PUPPI_Photons)[elePtr];
+    
+    //PUPPINoLeptons
+    sumChargedHadronPt_PUPPI_NoLeptons =  (*ValueMaps_PUPPI_NoLeptons_ChargedHadrons)[elePtr];
+    sumNeutralHadronPt_PUPPI_NoLeptons =  (*ValueMaps_PUPPI_NoLeptons_NeutralHadrons)[elePtr];
+    sumPhotonPt_PUPPI_NoLeptons        =  (*ValueMaps_PUPPI_NoLeptons_Photons)[elePtr];
     
     relisoChargedHadronPt_CITK = sumChargedHadronPt_CITK/pt_;
     relisoNeutralHadronPt_CITK = sumNeutralHadronPt_CITK/pt_;
     relisoPhotonPt_CITK = sumPhotonPt_CITK/pt_;
     
     reliso_PUPPI = (sumChargedHadronPt_PUPPI + sumNeutralHadronPt_PUPPI + sumPhotonPt_PUPPI)/pt_;
+    reliso_PUPPI_NoLeptons = (sumChargedHadronPt_PUPPI_NoLeptons + sumNeutralHadronPt_PUPPI_NoLeptons + sumPhotonPt_PUPPI_NoLeptons)/pt_;
     
     const reco::CaloClusterPtr& seed = eleGsfPtr -> superCluster()->seed();
     isEB = ( seed->seed().subdetId() == EcalBarrel );
