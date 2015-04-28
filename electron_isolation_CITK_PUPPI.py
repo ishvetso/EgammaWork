@@ -6,7 +6,7 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 process.load("CommonTools.PileupAlgos.Puppi_cff")
-process.load("EgammaWork.MyPdgIDPackedCandidateSelector.pfNoLeptons_cfi")
+process.load("EgammaWork.ElectronNtupler.pfNoLeptons_cfi")
 
 process.puppi.candName = cms.InputTag('packedPFCandidates')
 process.puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
