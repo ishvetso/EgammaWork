@@ -138,6 +138,8 @@ private:
   Float_t dz_;
   Int_t   expectedMissingInnerHits_;
   
+  Int_t classification;
+  
   // I comment this because it is not accessible in AOD
   //Int_t   passConversionVeto_;     
   Int_t   isTrueElectron_;
@@ -242,6 +244,9 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_->Branch("d0"     , &d0_,      "d0/F");
   electronTree_->Branch("dz"     , &dz_,      "dz/F");
   electronTree_->Branch("expectedMissingInnerHits", &expectedMissingInnerHits_, "expectedMissingInnerHits/I");
+  
+  electronTree_->Branch("classification"    , &classification,     "classification/I");
+  
   //electronTree_->Branch("passConversionVeto", &passConversionVeto_, "passConversionVeto/I");
   electronTree_->Branch("isTrueElectron"    , &isTrueElectron_,     "isTrueElectron/I");
  
@@ -395,6 +400,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     reco::GsfElectronPtr eleGsfPtr(elePtr);
     // Kinematics
     pt_ = eleGsfPtr -> pt();
+    
     // Keep only electrons above 10 GeV.
     // NOTE: miniAOD does not store some of the info for electrons <5 GeV at all!
     if( pt_ < 10 ) 
@@ -456,6 +462,8 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     // I comment this because it is not accessible in AOD
     //passConversionVeto_ = elePatPtr -> passConversionVeto();
     
+     classification = eleGsfPtr -> classification();
+    std::cout << eleGsfPtr -> classification() << std::endl;
     // Match to generator level truth
     
     // 
