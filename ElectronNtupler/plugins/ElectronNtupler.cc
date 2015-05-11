@@ -463,7 +463,6 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     //passConversionVeto_ = elePatPtr -> passConversionVeto();
     
      classification = eleGsfPtr -> classification();
-    std::cout << eleGsfPtr -> classification() << std::endl;
     // Match to generator level truth
     
     // 
