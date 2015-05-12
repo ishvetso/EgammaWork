@@ -6,10 +6,10 @@ void compare_iso()
 
   
   DY.SetParameters("Drell-Yan");
-  DY.SetFileNames("/afs/cern.ch/work/i/ishvetso/EgammaWork/ElectronIsolationPUPPI_updated28April2014/CMSSW_7_3_3/src/EgammaWork/ElectronNtupler/test/crab_projects/crab_Electron-Isolation_CITK_validation_DY_miniAOD_PUPPI_with_NoLeptons_update28April2015/results/DY.root");
+  DY.SetFileNames("/afs/cern.ch/work/i/ishvetso/EgammaWork/my_puppi_test/CMSSW_7_3_3/src/EgammaWork/ElectronNtupler/test/crab_projects/crab_Electron-Isolation_CITK_validation_DY_miniAOD_PUPPI_with_NoLeptons_update11May2015/results/DY.root");
   
   ttbar.SetParameters("ttbar");
-  ttbar.SetFileNames("/afs/cern.ch/work/i/ishvetso/EgammaWork/ElectronIsolationPUPPI_updated21April2014/CMSSW_7_3_3/src/EgammaWork/ElectronNtupler/test/crab_projects/crab_Electron-Isolation_CITK_validation_ttbar_miniAOD_PUPPI_with_NoLeptons_update23April2015/results/ttbar.root");
+  ttbar.SetFileNames("/afs/cern.ch/work/i/ishvetso/EgammaWork/my_puppi_test/CMSSW_7_3_3/src/EgammaWork/ElectronNtupler/test/crab_projects/crab_Electron-Isolation_CITK_validation_ttbar_miniAOD_PUPPI_with_NoLeptons_update11May2015/results/ttbar.root");
     
   vector <Var> Vars_CH, Vars_NH, Vars_Gamma;
   Var var;
@@ -64,17 +64,20 @@ void compare_iso()
 
   
   setTDRStyle();
-  //draw(Vars_CH, ttbar, "ch", "barrel",  "isEB == 1", "sums_comparison");
-  draw(Vars_CH, DY, "ch", "endcap",  "isEB != 1", "iso_comparison");
-  draw(Vars_CH, DY, "ch", "barrel",  "isEB == 1", "iso_comparison");
+  draw(Vars_CH, ttbar, "ch", "barrel",  "isEB == 1", "iso_matching");
+  draw(Vars_CH, ttbar, "ch", "endcap",  "isEB != 1", "iso_matching");
+  draw(Vars_CH, DY, "ch", "endcap",  "isEB != 1", "iso_matching");
+  draw(Vars_CH, DY, "ch", "barrel",  "isEB == 1", "iso_matching");
   
-  //draw(Vars_NH, ttbar, "nh", "barrel",  "isEB == 1", "sums_comparison");
-  draw(Vars_NH, DY, "nh", "endcap",  "isEB != 1", "iso_comparison");
-  draw(Vars_NH, DY, "nh", "barrel",  "isEB == 1", "iso_comparison");
+  draw(Vars_NH, ttbar, "nh", "barrel",  "isEB == 1", "iso_matching");
+  draw(Vars_NH, ttbar, "nh", "endcap",  "isEB != 1", "iso_matching");
+  draw(Vars_NH, DY, "nh", "endcap",  "isEB != 1", "iso_matching");
+  draw(Vars_NH, DY, "nh", "barrel",  "isEB == 1", "iso_matching");
   
-  //draw(Vars_Gamma, ttbar, "gamma", "barrel",  "isEB == 1", "sums_comparison");
-  draw(Vars_Gamma, DY, "gamma", "endcap",  "isEB != 1", "iso_comparison");
-  draw(Vars_Gamma, DY, "gamma", "barrel",  "isEB == 1", "iso_comparison");
+  draw(Vars_Gamma  , ttbar, "gamma", "barrel",  "isEB == 1", "iso_matching");
+  draw(Vars_Gamma, ttbar, "gamma", "endcap",  "isEB != 1", "iso_matching");
+  draw(Vars_Gamma, DY, "gamma", "endcap",  "isEB != 1", "iso_matching");
+  draw(Vars_Gamma, DY, "gamma", "barrel",  "isEB == 1", "iso_matching");
  
  
   
