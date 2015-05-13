@@ -3,8 +3,8 @@ It also includes PUPPI-based electron isolation.
 
 In order to run only electron isolation with CITK, you should following (CMSSW verstion is the one I used):
 
- cmsrel CMSSW_7_3_3__
- cd CMSSW_7_3_3/src__
+ cmsrel CMSSW_7_3_3 <br />
+ cd CMSSW_7_3_3/src <br />
  
  cmsenv
  
