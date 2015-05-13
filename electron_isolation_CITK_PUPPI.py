@@ -57,7 +57,7 @@ process.ElectronIsolationOnPUPPI = cms.EDProducer("CITKPFIsolationSumProducer",
 									VetoConeSizeEndcaps = cms.double(0.0),
 									VetoConeSizeBarrel = cms.double(0.0),
 									isolateAgainst = cms.string('h0'),
-									miniAODVertexCodes = cms.vuint32(2,3) ),
+									miniAODVertexCodes = cms.vuint32(1,2,3) ),
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
 									VetoConeSizeEndcaps = cms.double(0.08),
@@ -82,7 +82,7 @@ process.ElectronIsolationOnPUPPINoLeptons = cms.EDProducer("CITKPFIsolationSumPr
 									VetoConeSizeEndcaps = cms.double(0.0),
 									VetoConeSizeBarrel = cms.double(0.0),
 									isolateAgainst = cms.string('h0'),
-									miniAODVertexCodes = cms.vuint32(2,3) ),
+									miniAODVertexCodes = cms.vuint32(1,2,3) ),
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
 									VetoConeSizeEndcaps = cms.double(0.08),
@@ -95,7 +95,6 @@ process.ElectronIsolationOnPUPPINoLeptons = cms.EDProducer("CITKPFIsolationSumPr
 									
 									
 process.ntupler = cms.EDAnalyzer('ElectronNtupler',
-				 packed = cms.InputTag("packedGenParticles"),
 				 pruned = cms.InputTag("prunedGenParticles"),
 				 pileup = cms.InputTag("addPileupInfo"),
 				 vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -120,7 +119,7 @@ process.electrons = cms.Path(process.pfNoLeptons +  process.puppi + process.pupp
 
 
 process.source = cms.Source("PoolSource",
-       fileNames = cms.untracked.vstring('')
+       fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/i/ishvetso/EgammaWork/ElectronIsolationPUPPI_updated28April2014/test_samples/ttbar.root')
     
 )
 

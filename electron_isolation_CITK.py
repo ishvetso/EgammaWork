@@ -32,8 +32,7 @@ process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
 									miniAODVertexCodes = cms.vuint32(2,3) )
 								      )
 					)
-process.ntupler = cms.EDAnalyzer('ElectronNtupler',
-				 packed = cms.InputTag("packedGenParticles"),
+process.ntupler = cms.EDAnalyzer('ElectronNtupler_CITK',
 				 pruned = cms.InputTag("prunedGenParticles"),
 				 pileup = cms.InputTag("addPileupInfo"),
 				 vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),

@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    ElectronWork/ElectronNtupler
-// Class:      ElectronNtupler
+// Package:    ElectronWork/ElectronNtupler_CITK
+// Class:      ElectronNtupler_CITK
 // 
-/**\class ElectronNtupler ElectronNtupler.cc ElectronWork/ElectronNtupler/plugins/ElectronNtupler.cc
+/**\class ElectronNtupler_CITK ElectronNtupler_CITK.cc ElectronWork/ElectronNtupler_CITK/plugins/ElectronNtupler_CITK.cc
 
  Description: [one line class summary]
 
@@ -59,10 +59,10 @@ namespace reco {
 // class declaration
 //
 
-class ElectronNtupler : public edm::EDAnalyzer {
+class ElectronNtupler_CITK : public edm::EDAnalyzer {
 public:
-  explicit ElectronNtupler(const edm::ParameterSet&);
-  ~ElectronNtupler();
+  explicit ElectronNtupler_CITK(const edm::ParameterSet&);
+  ~ElectronNtupler_CITK();
   
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   
@@ -104,16 +104,6 @@ private:
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_ChargedHadrons_;
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_NeutralHadrons_;
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_Photons_;
-  
-  //PUPPI
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_ChargedHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NeutralHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_Photons_;
-  
-  //PUPPI no leptons
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_ChargedHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_NeutralHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_Photons_;
   
   TTree *electronTree_;
   
@@ -198,7 +188,7 @@ namespace EffectiveAreas {
 //
 // constructors and destructor
 //
-ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
+ElectronNtupler_CITK::ElectronNtupler_CITK(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   pileupToken_(consumes<edm::View<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("pileup"))),
   electronToken_(consumes<edm::View<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("electrons"))),
@@ -208,15 +198,7 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   //CITK
   ValueMaps_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_src" ) ) ),
   ValueMaps_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_src" ) ) ),
-  ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) ),
-  //PUPPI
-  ValueMaps_PUPPI_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_ChargedHadrons_src" ) ) ),
-  ValueMaps_PUPPI_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NeutralHadrons_src" ) ) ),
-  ValueMaps_PUPPI_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_Photons_src" ) ) ),
-  //PUPPINoLeptons
-  ValueMaps_PUPPI_NoLeptons_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_ChargedHadrons_src" ) ) ),
-  ValueMaps_PUPPI_NoLeptons_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_NeutralHadrons_src" ) ) ),
-  ValueMaps_PUPPI_NoLeptons_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_Photons_src" ) ) )
+  ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) )
 
 {
 
@@ -261,21 +243,6 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_ -> Branch("sumChargedHadronPt_CITK", &sumChargedHadronPt_CITK, "sumChargedHadronPt_CITK/F");
   electronTree_ -> Branch("sumNeutralHadronPt_CITK", &sumNeutralHadronPt_CITK, "sumNeutralHadronPt_CITK/F");
   electronTree_ -> Branch("sumPhotonPt_CITK", &sumPhotonPt_CITK, "sumPhotonPt_CITK/F");
-
-  //PUPPI
-  electronTree_ -> Branch("sumChargedHadronPt_PUPPI", &sumChargedHadronPt_PUPPI, "sumChargedHadronPt_PUPPI/F");
-  electronTree_ -> Branch("sumNeutralHadronPt_PUPPI", &sumNeutralHadronPt_PUPPI, "sumNeutralHadronPt_PUPPI/F");
-  electronTree_ -> Branch("sumPhotonPt_PUPPI", &sumPhotonPt_PUPPI, "sumPhotonPt_PUPPI/F");
-  
-  electronTree_ -> Branch("reliso_PUPPI", &reliso_PUPPI, "reliso_PUPPI/F");
-  
-    //PUPPI
-  electronTree_ -> Branch("sumChargedHadronPt_PUPPI_NoLeptons", &sumChargedHadronPt_PUPPI_NoLeptons, "sumChargedHadronPt_PUPPI_NoLeptons/F");
-  electronTree_ -> Branch("sumNeutralHadronPt_PUPPI_NoLeptons", &sumNeutralHadronPt_PUPPI_NoLeptons, "sumNeutralHadronPt_PUPPI_NoLeptons/F");
-  electronTree_ -> Branch("sumPhotonPt_PUPPI_NoLeptons", &sumPhotonPt_PUPPI_NoLeptons, "sumPhotonPt_PUPPI_NoLeptons/F");
-  
-  electronTree_ -> Branch("reliso_PUPPI_NoLeptons", &reliso_PUPPI_NoLeptons, "reliso_PUPPI_NoLeptons/F");
-  
     
   electronTree_ -> Branch("relisoChargedHadronPt_CITK", &relisoChargedHadronPt_CITK, "relisoChargedHadronPt_CITK/F");
   electronTree_ -> Branch("relisoNeutralHadronPt_CITK", &relisoNeutralHadronPt_CITK, "relisoNeutralHadronPt_CITK/F");
@@ -286,7 +253,7 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
 }
 
 
-ElectronNtupler::~ElectronNtupler()
+ElectronNtupler_CITK::~ElectronNtupler_CITK()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -301,7 +268,7 @@ ElectronNtupler::~ElectronNtupler()
 
 // ------------ method called for each event  ------------
 void
-ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+ElectronNtupler_CITK::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace std;
   using namespace edm;
@@ -311,6 +278,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
  
   Handle<edm::View<reco::GenParticle> > prunedGenParticles;
   iEvent.getByToken(prunedGenToken_,prunedGenParticles);
+
 
   // Get Pileup info
   Handle<edm::View<PileupSummaryInfo> > pileupHandle;
@@ -357,9 +325,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   // Get electron collection
   Handle<edm::View<reco::Candidate> > electrons;
   iEvent.getByToken(electronToken_, electrons);
-  
-
-  
+    
   //CITK
   Handle <edm::ValueMap <float> > ValueMaps_ChargedHadrons, ValueMaps_NeutralHadrons, ValueMaps_Photons;
   Handle <edm::ValueMap <float> > ValueMaps_PUPPI_ChargedHadrons, ValueMaps_PUPPI_NeutralHadrons, ValueMaps_PUPPI_Photons;
@@ -369,20 +335,8 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByToken( ValueMaps_ChargedHadrons_ , ValueMaps_ChargedHadrons);
   iEvent.getByToken( ValueMaps_NeutralHadrons_ , ValueMaps_NeutralHadrons);
   iEvent.getByToken( ValueMaps_Photons_ , ValueMaps_Photons);
-  
-  //PUPPI 
-  iEvent.getByToken( ValueMaps_PUPPI_ChargedHadrons_ , ValueMaps_PUPPI_ChargedHadrons);
-  iEvent.getByToken( ValueMaps_PUPPI_NeutralHadrons_ , ValueMaps_PUPPI_NeutralHadrons);
-  iEvent.getByToken( ValueMaps_PUPPI_Photons_ , ValueMaps_PUPPI_Photons);
-  
-  //PUPPI_NoLeptons 
-  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ , ValueMaps_PUPPI_NoLeptons_ChargedHadrons);
-  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ , ValueMaps_PUPPI_NoLeptons_NeutralHadrons);
-  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_Photons_ , ValueMaps_PUPPI_NoLeptons_Photons);
 
 
-
-  
   //
   // Loop over electrons
   //
@@ -475,23 +429,11 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     sumChargedHadronPt_CITK =  (*ValueMaps_ChargedHadrons)[elePtr];
     sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[elePtr];
     sumPhotonPt_CITK        =  (*ValueMaps_Photons)[elePtr];
-    
-    //PUPPI
-    sumChargedHadronPt_PUPPI =  (*ValueMaps_PUPPI_ChargedHadrons)[elePtr];
-    sumNeutralHadronPt_PUPPI =  (*ValueMaps_PUPPI_NeutralHadrons)[elePtr];
-    sumPhotonPt_PUPPI        =  (*ValueMaps_PUPPI_Photons)[elePtr];
-    
-    //PUPPINoLeptons
-    sumChargedHadronPt_PUPPI_NoLeptons =  (*ValueMaps_PUPPI_NoLeptons_ChargedHadrons)[elePtr];
-    sumNeutralHadronPt_PUPPI_NoLeptons =  (*ValueMaps_PUPPI_NoLeptons_NeutralHadrons)[elePtr];
-    sumPhotonPt_PUPPI_NoLeptons        =  (*ValueMaps_PUPPI_NoLeptons_Photons)[elePtr];
-    
+  
     relisoChargedHadronPt_CITK = sumChargedHadronPt_CITK/pt_;
     relisoNeutralHadronPt_CITK = sumNeutralHadronPt_CITK/pt_;
     relisoPhotonPt_CITK = sumPhotonPt_CITK/pt_;
     
-    reliso_PUPPI = (sumChargedHadronPt_PUPPI + sumNeutralHadronPt_PUPPI + sumPhotonPt_PUPPI)/pt_;
-    reliso_PUPPI_NoLeptons = (sumChargedHadronPt_PUPPI_NoLeptons + sumNeutralHadronPt_PUPPI_NoLeptons + sumPhotonPt_PUPPI_NoLeptons)/pt_;
     
     const reco::CaloClusterPtr& seed = eleGsfPtr -> superCluster()->seed();
     isEB = ( seed->seed().subdetId() == EcalBarrel );
@@ -505,20 +447,20 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-ElectronNtupler::beginJob()
+ElectronNtupler_CITK::beginJob()
 {
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-ElectronNtupler::endJob() 
+ElectronNtupler_CITK::endJob() 
 {
 }
 
 // ------------ method called when starting to processes a run  ------------
 /*
 void 
-ElectronNtupler::beginRun(edm::Run const&, edm::EventSetup const&)
+ElectronNtupler_CITK::beginRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -526,7 +468,7 @@ ElectronNtupler::beginRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when ending the processing of a run  ------------
 /*
 void 
-ElectronNtupler::endRun(edm::Run const&, edm::EventSetup const&)
+ElectronNtupler_CITK::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -534,7 +476,7 @@ ElectronNtupler::endRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
 void 
-ElectronNtupler::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+ElectronNtupler_CITK::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
@@ -542,14 +484,14 @@ ElectronNtupler::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSet
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
 void 
-ElectronNtupler::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+ElectronNtupler_CITK::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-ElectronNtupler::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+ElectronNtupler_CITK::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -557,11 +499,11 @@ ElectronNtupler::fillDescriptions(edm::ConfigurationDescriptions& descriptions) 
   descriptions.addDefault(desc);
 }
 
-bool ElectronNtupler::checkAncestor(const reco::Candidate *gen, int ancestorPid){
+bool ElectronNtupler_CITK::checkAncestor(const reco::Candidate *gen, int ancestorPid){
 
   // General sanity check
   if( gen == 0 ){
-    printf("ElectronNtupler::checkAncestor: ERROR null particle is passed in, ignore it.\n");
+    printf("ElectronNtupler_CITK::checkAncestor: ERROR null particle is passed in, ignore it.\n");
     return false;
   }
 
@@ -580,7 +522,7 @@ bool ElectronNtupler::checkAncestor(const reco::Candidate *gen, int ancestorPid)
 
 // The function that uses algorith from Josh Bendavid with 
 // an explicit loop over gen particles. 
-int ElectronNtupler::matchToTruth(const pat::Electron &el, 
+int ElectronNtupler_CITK::matchToTruth(const pat::Electron &el, 
 				  const edm::Handle<edm::View<reco::GenParticle>> &prunedGenParticles){
 
   // 
@@ -616,7 +558,7 @@ int ElectronNtupler::matchToTruth(const pat::Electron &el,
   if( ancestorPID == -999 && ancestorStatus == -999 ){
     // No non-electron parent??? This should never happen.
     // Complain.
-    printf("ElectronNtupler: ERROR! Electron does not apper to have a non-electron parent\n");
+    printf("ElectronNtupler_CITK: ERROR! Electron does not apper to have a non-electron parent\n");
     return UNMATCHED;
   }
   
@@ -630,11 +572,11 @@ int ElectronNtupler::matchToTruth(const pat::Electron &el,
   return TRUE_PROMPT_ELECTRON;
 }
 
-void ElectronNtupler::findFirstNonElectronMother(const reco::Candidate *particle,
+void ElectronNtupler_CITK::findFirstNonElectronMother(const reco::Candidate *particle,
 						 int &ancestorPID, int &ancestorStatus){
 
   if( particle == 0 ){
-    printf("ElectronNtupler: ERROR! null candidate pointer, this should never happen\n");
+    printf("ElectronNtupler_CITK: ERROR! null candidate pointer, this should never happen\n");
     return;
   }
 
@@ -651,7 +593,7 @@ void ElectronNtupler::findFirstNonElectronMother(const reco::Candidate *particle
 }
 
 // The function that uses the standard genParticle() matching for electrons.
-int ElectronNtupler::matchToTruthAlternative(const pat::Electron &el){
+int ElectronNtupler_CITK::matchToTruthAlternative(const pat::Electron &el){
 
      //
      // genParticle method
@@ -697,14 +639,14 @@ int ElectronNtupler::matchToTruthAlternative(const pat::Electron &el){
      return result;
 }
 
-void ElectronNtupler::printAllZeroMothers(const reco::Candidate *particle){
+void ElectronNtupler_CITK::printAllZeroMothers(const reco::Candidate *particle){
   
   if( particle == 0 ){
-    printf("ElectronNtupler::printAllZeroMothers: reached the top of the decay tree\n");
+    printf("ElectronNtupler_CITK::printAllZeroMothers: reached the top of the decay tree\n");
     return;
   }
   
-  printf("ElectronNtupler::printAllZeroMothers: ancestor ID= %d, status= %d\n",
+  printf("ElectronNtupler_CITK::printAllZeroMothers: ancestor ID= %d, status= %d\n",
 	 particle->pdgId(), particle->status() );
 
   printAllZeroMothers( particle->mother(0) );
@@ -713,4 +655,4 @@ void ElectronNtupler::printAllZeroMothers(const reco::Candidate *particle){
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(ElectronNtupler);
+DEFINE_FWK_MODULE(ElectronNtupler_CITK);

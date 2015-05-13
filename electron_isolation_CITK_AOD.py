@@ -40,9 +40,8 @@ process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
 									miniAODVertexCodes = cms.vuint32(2,3) )
 								      )
 					)
-process.ntupler = cms.EDAnalyzer('ElectronNtupler',
-				 packed = cms.InputTag("packedGenParticles"),
-				 pruned = cms.InputTag("prunedGenParticles"),
+process.ntupler = cms.EDAnalyzer('ElectronNtupler_CITK',
+				 pruned = cms.InputTag("genParticles"),
 				 pileup = cms.InputTag("addPileupInfo"),
 				 vertices = cms.InputTag("offlinePrimaryVertices"),
 				 electrons = cms.InputTag("gedGsfElectrons"),
@@ -60,10 +59,9 @@ src = cms.InputTag('particleFlow')
 
 process.electrons = cms.Path(process.particleFlowTmpPtrs + process.pfParticleSelectionSequence + process.pfNoPileUpCandidates + process.ElectronIsolation + process.ntupler)
 
-#process.maxEvents.input = 1000
 process.source = cms.Source("PoolSource",
     secondaryFileNames = cms.untracked.vstring(),
-    fileNames = cms.untracked.vstring('')
+    fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/i/ishvetso/EgammaWork/test_samples/ttbar_AOD.root')
     
 )
 
