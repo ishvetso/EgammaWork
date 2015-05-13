@@ -1,7 +1,7 @@
 This repository contains a setup for running electron isolation with CITK (Common Isolation Toolkit) [CITK twiki]. 
 It also includes PUPPI-based electron isolation. 
 
-In order to run only electron isolation with CITK (pfIsolationVariables are also there), you should following (CMSSW verstion is the one I used):
+In order to run only electron isolation with CITK (pfIsolationVariables are also there), you should do following (CMSSW verstion is the one I used):
 
 cmsrel CMSSW_7_3_3 <br />
 cd CMSSW_7_3_3/src <br />
