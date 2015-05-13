@@ -1,4 +1,4 @@
-This repository contains a setup for running electron isolation with CITK (Common Isolation Toolkit) [CITK twiki]. 
+This repository contains a setup for running electron isolation with CITK (Common Isolation Toolkit) [CITK]. 
 It also includes PUPPI-based electron isolation. 
 
 In order to run only electron isolation with CITK, you should following (CMSSW verstion is the one I used):
