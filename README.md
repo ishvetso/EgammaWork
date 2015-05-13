@@ -22,6 +22,6 @@ git clone git@github.com:ishvetso/EgammaWork.git
 scram b -j10
 cmsRun EgammaWork/electron_isolation_CITK_PUPPI.py (miniAOD)
 
-[CITK]:
+[1]:
 https://twiki.cern.ch/twiki/bin/viewauth/CMS/CommonIDAndIsolationFW
 [2]:https://twiki.cern.ch/twiki/bin/viewauth/CMS/PUPPI#Validation_framework_in_CMSSW_73
