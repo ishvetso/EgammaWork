@@ -98,6 +98,11 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoPhotonIsolationToken_; 
+  
+    //CITK
+  edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_CITK; 
+  edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_CITK; 
+  edm::EDGetTokenT<edm::ValueMap<float> > phoPhotonIsolationToken_CITK; 
  
   TTree *photonTree_;
   Float_t rho_;      // the rho variable
@@ -118,6 +123,14 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   std::vector<Float_t> isoChargedHadrons_;
   std::vector<Float_t> isoNeutralHadrons_;
   std::vector<Float_t> isoPhotons_;
+  
+  std::vector<Float_t> isoChargedHadrons_CITK_;
+  std::vector<Float_t> isoNeutralHadrons_CITK_;
+  std::vector<Float_t> isoPhotons_CITK_;
+  
+  std::vector<Float_t> isoChargedHadrons_pf_;
+  std::vector<Float_t> isoNeutralHadrons_pf_;
+  std::vector<Float_t> isoPhotons_pf_;
 
   std::vector<Float_t> isoChargedHadronsWithEA_;
   std::vector<Float_t> isoNeutralHadronsWithEA_;
@@ -155,6 +168,15 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
 				  (iConfig.getParameter<edm::InputTag>("phoNeutralHadronIsolation"))),
   phoPhotonIsolationToken_(consumes <edm::ValueMap<float> >
 			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation"))),
+			   
+  // Isolations from CITK
+  phoChargedIsolationToken_CITK(consumes <edm::ValueMap<float> >
+			    (iConfig.getParameter<edm::InputTag>("phoChargedIsolation_CITK"))),
+  phoNeutralHadronIsolationToken_CITK(consumes <edm::ValueMap<float> >
+				  (iConfig.getParameter<edm::InputTag>("phoNeutralHadronIsolation_CITK"))),
+  phoPhotonIsolationToken_CITK(consumes <edm::ValueMap<float> >
+			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation_CITK"))),	
+			   
   // Objects containing effective area constants
   effAreaChHadrons_( (iConfig.getParameter<edm::FileInPath>("effAreaChHadFile")).fullPath() ),
   effAreaNeuHadrons_( (iConfig.getParameter<edm::FileInPath>("effAreaNeuHadFile")).fullPath() ),
@@ -202,6 +224,16 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("isoChargedHadrons"      , &isoChargedHadrons_);
   photonTree_->Branch("isoNeutralHadrons"      , &isoNeutralHadrons_);
   photonTree_->Branch("isoPhotons"             , &isoPhotons_);
+
+  //CITK
+  photonTree_->Branch("isoChargedHadrons_CITK"      , &isoChargedHadrons_CITK_);
+  photonTree_->Branch("isoNeutralHadrons_CITK"      , &isoNeutralHadrons_CITK_);
+  photonTree_->Branch("isoPhotons_CITK"             , &isoPhotons_CITK_);
+  
+  //pfIsolation variables
+  photonTree_->Branch("isoChargedHadrons_pf"      , &isoChargedHadrons_pf_);
+  photonTree_->Branch("isoNeutralHadrons_pf"      , &isoNeutralHadrons_pf_);
+  photonTree_->Branch("isoPhotons_pf"             , &isoPhotons_pf_);
 
   photonTree_->Branch("isoChargedHadronsWithEA"      , &isoChargedHadronsWithEA_);
   photonTree_->Branch("isoNeutralHadronsWithEA"      , &isoNeutralHadronsWithEA_);
@@ -269,7 +301,15 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   iEvent.getByToken(phoNeutralHadronIsolationToken_, phoNeutralHadronIsolationMap);
   edm::Handle<edm::ValueMap<float> > phoPhotonIsolationMap;
   iEvent.getByToken(phoPhotonIsolationToken_, phoPhotonIsolationMap);
-
+  
+  // Get the isolation maps for CITK
+  edm::Handle<edm::ValueMap<float> > phoChargedIsolationMap_CITK;
+  iEvent.getByToken(phoChargedIsolationToken_CITK, phoChargedIsolationMap_CITK);
+  edm::Handle<edm::ValueMap<float> > phoNeutralHadronIsolationMap_CITK;
+  iEvent.getByToken(phoNeutralHadronIsolationToken_CITK, phoNeutralHadronIsolationMap_CITK);
+  edm::Handle<edm::ValueMap<float> > phoPhotonIsolationMap_CITK;
+  iEvent.getByToken(phoPhotonIsolationToken_CITK, phoPhotonIsolationMap_CITK);
+    
   // Clear vectors
   nPhotons_ = 0;
   pt_.clear();
@@ -283,6 +323,14 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   isoChargedHadrons_.clear();
   isoNeutralHadrons_.clear();
   isoPhotons_.clear();
+  //
+  isoChargedHadrons_CITK_.clear();
+  isoNeutralHadrons_CITK_.clear();
+  isoPhotons_CITK_.clear();
+  //
+  isoChargedHadrons_pf_.clear();
+  isoNeutralHadrons_pf_.clear();
+  isoPhotons_pf_.clear();
   //
   isoChargedHadronsWithEA_.clear();
   isoNeutralHadronsWithEA_.clear();
@@ -319,9 +367,20 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     float chIso =  (*phoChargedIsolationMap)[pho];
     float nhIso =  (*phoNeutralHadronIsolationMap)[pho];
     float phIso = (*phoPhotonIsolationMap)[pho];
+    
+    //CITK
+    float chIso_CITK =  (*phoChargedIsolationMap_CITK)[pho];
+    float nhIso_CITK =  (*phoNeutralHadronIsolationMap_CITK)[pho];
+    float phIso_CITK = (*phoPhotonIsolationMap_CITK)[pho];
+    
     isoChargedHadrons_ .push_back( chIso );
     isoNeutralHadrons_ .push_back( nhIso );
     isoPhotons_        .push_back( phIso );
+    
+    //CITK
+    isoChargedHadrons_CITK_.push_back( chIso_CITK );
+    isoNeutralHadrons_CITK_.push_back( nhIso_CITK );
+    isoPhotons_CITK_       .push_back( phIso_CITK );
 
     float abseta = fabs( pho->superCluster()->eta());
     isoChargedHadronsWithEA_ .push_back( std::max( (float)0.0, chIso 
@@ -330,7 +389,16 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 						   - rho_*effAreaNeuHadrons_.getEffectiveArea(abseta)));
     isoPhotonsWithEA_ .push_back( std::max( (float)0.0, phIso 
 					    - rho_*effAreaPhotons_.getEffectiveArea(abseta)));
+    
+     //pfIsolation variables
+    float chIso_pf = pho -> chargedHadronIso() ;
+    float nhIso_pf = pho -> neutralHadronIso();
+    float phIso_pf = pho -> photonIso();
 
+    isoChargedHadrons_pf_.push_back( chIso_pf );
+    isoNeutralHadrons_pf_.push_back( nhIso_pf );
+    isoPhotons_pf_       .push_back( phIso_pf );
+    
     // Save MC truth match
     isTrue_.push_back( matchToTruth(*pho, genParticles) );
 
