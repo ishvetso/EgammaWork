@@ -17,7 +17,7 @@ In order to run only <b>electron isolation</b> with CITK <b>including PUPPI-base
   cd CMSSW_7_3_3/src <br />
   cmsenv <br />
   git clone -b ElectronBranch git@github.com:ishvetso/EgammaWork.git <br />
-2. do what is stated on the [PUPPI twiki] 
+2. do what is stated on the [PUPPI twiki] <br/>
 3. Then: 
   scram b -j10  <br />
   cmsRun EgammaWork/electron_isolation_CITK_PUPPI.py (miniAOD) <br />
