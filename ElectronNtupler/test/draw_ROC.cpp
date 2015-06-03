@@ -87,8 +87,8 @@ void draw_ROC()
   gr4 -> SetLineWidth(2.);
   
   gr1 -> SetLineColor(kBlue);
-  gr2 -> SetLineColor(kRed);
-  gr3 -> SetLineColor(kGreen);
+  gr2 -> SetLineColor(kGreen);
+  gr3 -> SetLineColor(kRed);
   gr4 -> SetLineColor(kOrange);
   
   setTDRStyle();   

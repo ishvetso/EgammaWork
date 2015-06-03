@@ -72,12 +72,13 @@ void draw(vector<Var> Vars, Sample sample, string fileNamePrefix, string addComm
 //gStyle->SetTitleFillColor(kWhite);
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
-//gPad->SetGrid();
+  gStyle->SetLegendBorderSize(0); 
   
   vector <TH1F*> hists;
   TFile file((sample.filename).c_str(), "READ");
-  TLegend *leg = new TLegend(0.7,0.93,0.9,0.8);
+  TLegend *leg = new TLegend(0.65,0.55,1.0,0.85);
   leg -> SetFillColor(kWhite);  
+  leg -> SetFillStyle(0);  
   vector <float> Buf;
     
   Buf.resize(Vars.size());
@@ -104,7 +105,7 @@ void draw(vector<Var> Vars, Sample sample, string fileNamePrefix, string addComm
   for (unsigned iVar = 0; iVar < Vars.size(); iVar ++)
   {	   
     hists.at(iVar) -> SetLineColor(Vars.at(iVar).color);
-    hists.at(iVar) -> GetXaxis() -> SetTitle("GeV");
+    hists.at(iVar) -> GetXaxis() -> SetTitle("");
     hists.at(iVar) -> GetYaxis() -> SetRangeUser(0., 1.2*hist_max);
     hists.at(iVar) -> SetLineWidth(3.0);
     leg->AddEntry(hists.at(iVar), (Vars.at(iVar).VarName).c_str(),"l");
@@ -113,7 +114,7 @@ void draw(vector<Var> Vars, Sample sample, string fileNamePrefix, string addComm
   }
   
   leg -> Draw("SAME");   
-  CMS_lumi( c1, 4, 0 );
+  CMS_lumi( c1, 4, 33 );
   
   system(("mkdir -p " + OutDir ).c_str());
   c1 -> SaveAs(( OutDir + "/" + fileNamePrefix + "_" + sample.Processname + "_" + addCommentOnLegend  +  ".png").c_str());

@@ -19,28 +19,28 @@ void compare_relIso()
   var.color = kBlue;
   var.SetRange(0., 4., 30);
   relIsoVars_ttbar.push_back(var);
-  var.SetRange(0., 1.5, 30);
+  var.SetRange(0., 0.5, 30);
   relIsoVars_DY.push_back(var);
   
   var.VarName = "relIsoWithDBeta";
   var.color = kGreen;
   var.SetRange(0., 4., 30);
   relIsoVars_ttbar.push_back(var);
-  var.SetRange(0., 1.5, 30);
+  var.SetRange(0., 0.5, 30);
   relIsoVars_DY.push_back(var);
   
   var.VarName = "reliso_PUPPI";
   var.color = kRed;
   var.SetRange(0., 4., 30);
   relIsoVars_ttbar.push_back(var);
-  var.SetRange(0., 1.5, 30);
+  var.SetRange(0., 0.5, 30);
   relIsoVars_DY.push_back(var);
   
   var.VarName = "reliso_PUPPI_NoLeptons";
   var.color = kOrange;
   var.SetRange(0., 4., 30);
   relIsoVars_ttbar.push_back(var);
-  var.SetRange(0., 1.5, 30);
+  var.SetRange(0., 0.5, 30);
   relIsoVars_DY.push_back(var);
   
   
