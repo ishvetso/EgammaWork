@@ -13,21 +13,40 @@ void draw_difference()
   
   setTDRStyle();
    
-  /*draw_difference2D("isoPhotons","sumPhotonPt_CITK","pt", ttbar, 11, -100.0005, 100.0005,20, 20., 300., "Photons", "CITK_diff_2D");
-  draw_difference2D("isoPhotons","sumPhotonPt_CITK","etaSC", ttbar, 11, -100.0005, 100.0005,20, -3., 3., "Photons", "CITK_diff_2D");
+  draw_difference2D("isoPhotons","sumPhotonPt_CITK","pt", ttbar, 11, -100.002, 100.002,20, 20., 300., "Photons", "CITK_diff_2D");
+  draw_difference2D("isoPhotons","sumPhotonPt_CITK","etaSC", ttbar, 11, -100.002, 100.002,20, -3., 3., "Photons", "CITK_diff_2D");
   
-  draw_difference2D("isoChargedHadrons","sumChargedHadronPt_CITK","pt", ttbar, 11, -100.0005, 100.0005,20, 20., 300., "ChargedHadrons", "CITK_diff_2D");
-  draw_difference2D("isoChargedHadrons","sumChargedHadronPt_CITK","etaSC", ttbar, 11, -100.0005, 100.0005,20, -3., 3., "ChargedHadrons", "CITK_diff_2D");
+  draw_difference2D("isoChargedHadrons","sumChargedHadronPt_CITK","pt", ttbar, 11, -100.002, 100.002,20, 20., 300., "ChargedHadrons", "CITK_diff_2D");
+  draw_difference2D("isoChargedHadrons","sumChargedHadronPt_CITK","etaSC", ttbar, 11, -100.002, 100.002,20, -3., 3., "ChargedHadrons", "CITK_diff_2D");
   
-  draw_difference2D("isoNeutralHadrons","sumNeutralHadronPt_CITK","pt", ttbar, 11, -100.0005, 100.0005,20, 20., 300., "NeutralHadrons", "CITK_diff_2D");
-  draw_difference2D("isoNeutralHadrons","sumNeutralHadronPt_CITK","etaSC", ttbar, 11, -100.0005, 100.0005,20, -3., 3., "NeutralHadrons", "CITK_diff_2D");*/
+  draw_difference2D("isoNeutralHadrons","sumNeutralHadronPt_CITK","pt", ttbar, 11, -100.002, 100.002,20, 20., 300., "NeutralHadrons", "CITK_diff_2D");
+  draw_difference2D("isoNeutralHadrons","sumNeutralHadronPt_CITK","etaSC", ttbar, 11, -100.002, 100.002,20, -3., 3., "NeutralHadrons", "CITK_diff_2D");
   
-  draw_difference("isoPhotons","sumPhotonPt_CITK", DY, 11, -0.0005, 0.0005, "Photons", "CITK_diff");
-  //draw_difference("isoPhotons","sumPhotonPt_CITK", ttbar, 11, -0.002, 0.002, "Photons", "CITK_diff");
+  draw_difference("isoPhotons","sumPhotonPt_CITK", DY, 11, -0.02, 0.02, "Photons", "CITK_diff_miniAOD_1dim");
+  draw_difference("isoChargedHadrons","sumChargedHadronPt_CITK", DY, 11, -0.02, 0.02, "ChargedHadrons", "CITK_diff_miniAOD_1dim");
+  draw_difference("isoNeutralHadrons","sumNeutralHadronPt_CITK", DY, 11, -0.02, 0.02, "NeutralHadrons", "CITK_diff_miniAOD_1dim");
+ 
   
-  //draw_difference("isoChargedHadrons","sumChargedHadronPt_CITK", ttbar, 11, -100.0005, 100.0005, "ChargedHadrons", "CITK_diff");
-  //draw_difference("isoChargedHadrons","sumChargedHadronPt_CITK", ttbar, 11, -100.0005, 100.0005,"ChargedHadrons", "CITK_diff");
+  draw_difference("isoPhotons","sumPhotonPt_CITK", ttbar, 11, -0.02, 0.02, "Photons", "CITK_diff_miniAOD_1dim");
+  draw_difference("isoChargedHadrons","sumChargedHadronPt_CITK", ttbar, 11, -0.02, 0.02, "ChargedHadrons", "CITK_diff_miniAOD_1dim");
+  draw_difference("isoNeutralHadrons","sumNeutralHadronPt_CITK", ttbar, 11, -0.02, 0.02, "NeutralHadrons", "CITK_diff_miniAOD_1dim");
   
-  //draw_difference("isoNeutralHadrons","sumNeutralHadronPt_CITK", ttbar, 11, -0.0005, 0.0005, "NeutralHadrons", "CITK_diff");
-  //draw_difference("isoNeutralHadrons","sumNeutralHadronPt_CITK",  ttbar, 11, -0.0005, 0.0005, "NeutralHadrons", "CITK_diff");
+  draw_difference2D("isoChargedHadrons","sumChargedHadronPt_CITK","pt", DY, 11, -250.0, 250.0,20, 20., 300., "ChargedHadrons", "CITK_diff_2D_AOD");
+  draw_difference2D("isoChargedHadrons","sumChargedHadronPt_CITK","etaSC", DY, 11, -250.0, 250.0,20, -3., 3., "ChargedHadrons", "CITK_diff_2D_AOD");
+  
+  draw_difference2D("isoNeutralHadrons","sumNeutralHadronPt_CITK","pt", DY, 11, -250.0, 250.0,20, 20., 300., "NeutralHadrons", "CITK_diff_2D_AOD");
+  draw_difference2D("isoNeutralHadrons","sumNeutralHadronPt_CITK","etaSC", DY, 11, -250.0, 250.0,20, -3., 3., "NeutralHadrons", "CITK_diff_2D_AOD");
+  
+  draw_difference2D("isoPhotons","sumPhotonPt_CITK","pt", DY, 11, -250.0, 250.0,20, 20., 300., "Photons", "CITK_diff_2D_AOD");
+  draw_difference2D("isoPhotons","sumPhotonPt_CITK","etaSC", DY, 11, -250.0, 250.0,20, -3., 3., "Photons", "CITK_diff_2D_AOD");
+  
+  draw_difference2D("isoChargedHadrons","sumChargedHadronPt_CITK","pt", ttbar, 11, -250.0, 250.0,20, 20., 300., "ChargedHadrons", "CITK_diff_2D_AOD");
+  draw_difference2D("isoChargedHadrons","sumChargedHadronPt_CITK","etaSC", ttbar, 11, -250.0, 250.0,20, -3., 3., "ChargedHadrons", "CITK_diff_2D_AOD");
+  
+  draw_difference2D("isoNeutralHadrons","sumNeutralHadronPt_CITK","pt", ttbar, 11, -250.0, 250.0,20, 20., 300., "NeutralHadrons", "CITK_diff_2D_AOD");
+  draw_difference2D("isoNeutralHadrons","sumNeutralHadronPt_CITK","etaSC", ttbar, 11, -250.0, 250.0,20, -3., 3., "NeutralHadrons", "CITK_diff_2D_AOD");
+  
+  draw_difference2D("isoPhotons","sumPhotonPt_CITK","pt", ttbar, 11, -250.0, 250.0,20, 20., 300., "Photons", "CITK_diff_2D_AOD");
+  draw_difference2D("isoPhotons","sumPhotonPt_CITK","etaSC", ttbar, 11, -250.0, 250.0,20, -3., 3., "Photons", "CITK_diff_2D_AOD");
+ 
 }

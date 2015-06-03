@@ -159,15 +159,18 @@ void draw_difference(string var1_, string var2_, Sample sample, int Nbins, doubl
 
  hist -> SetLineColor(kBlue);
  hist -> GetXaxis() -> SetTitle("GeV");
+ hist -> GetYaxis() -> SetRangeUser(0., 1.2* (hist -> GetMaximum() ));
  hist -> SetLineWidth(3.0);
- leg->AddEntry((TObject*)0, (sample.Processname).c_str(), "");
  leg->AddEntry(hist, (var1_  + " - " + var2_).c_str(),"l");
+ leg->AddEntry((TObject*)0, (attribute).c_str(), "");
+ leg->AddEntry((TObject*)0, (sample.Processname ).c_str(), "");
+ 
  hist -> Draw("HISTE1SAME");
 // leg -> SetHeader();
 
 
  leg -> Draw("SAME");   
- CMS_lumi( c1, 4, 0 );
+ CMS_lumi( c1, 4, 33 );
  c1 -> SaveAs((outDirectory + "/"  + attribute + "_" + sample.Processname + ".png").c_str());
   
  delete c1;
@@ -185,22 +188,26 @@ void draw_difference2D(string var1_, string var2_, string var3_, Sample sample, 
   gStyle->SetOptTitle(0);
 //gPad->SetGrid();
   
-  TH2F *hist = new TH2F((var1_ + " - " + var2_ + "_" + var3_).c_str(), (var1_ + " - " + var2_).c_str(), NXbins, xmin, xmax, NYBins, ymin, ymax);
+  TH2F *hist_barrel = new TH2F((var1_ + " - " + var2_ + "_" + var3_ + "_barrel").c_str(), (var1_ + " - " + var2_ + "_barrel").c_str(), NXbins, xmin, xmax, NYBins, ymin, ymax);
+  TH2F *hist_endcap = new TH2F((var1_ + " - " + var2_ + "_" + var3_ + "_endcap").c_str(), (var1_ + " - " + var2_ + "_endcap").c_str(), NXbins, xmin, xmax, NYBins, ymin, ymax);
   TFile file((sample.filename).c_str(), "READ");
   TLegend *leg = new TLegend(0.18,0.8,0.5,0.9);
   leg -> SetFillColor(kWhite);  
   TTree * tree = (TTree * )file.Get("ntupler/ElectronTree");
   
   float var1, var2, var3;
+  Char_t isEB;
   
   tree -> SetBranchAddress(var1_.c_str(), &var1);
   tree -> SetBranchAddress(var2_.c_str(), &var2);
   tree -> SetBranchAddress(var3_.c_str(), &var3);
+  tree -> SetBranchAddress("isEB", &isEB);
   
   for (unsigned int iEntry = 0; iEntry < tree -> GetEntries(); iEntry ++  )
   {
     tree -> GetEntry(iEntry);
-    hist -> Fill(var1 - var2, var3);
+    if (isEB)hist_barrel  -> Fill(var1 - var2, var3);
+    if (!isEB)hist_endcap  -> Fill(var1 - var2, var3);
   }
   
  // 
@@ -209,14 +216,21 @@ void draw_difference2D(string var1_, string var2_, string var3_, Sample sample, 
  c1 -> cd();
 
 // hist -> SetLineColor(kBlue);
- hist -> GetXaxis() -> SetTitle("GeV");
- hist -> GetYaxis() -> SetTitle(var3_.c_str());
+ hist_barrel -> GetXaxis() -> SetTitle("difference (GeV)");
+ hist_barrel -> GetYaxis() -> SetTitle(var3_.c_str());
+ hist_endcap -> GetXaxis() -> SetTitle("difference (GeV)");
+ hist_endcap -> GetYaxis() -> SetTitle(var3_.c_str());
  gStyle->SetPalette(1);
- hist -> Draw("COLZ");
-
- CMS_lumi( c1, 4, 0 );
- c1 -> SaveAs((outDirectory + "/"  + attribute + "_" + var3_ + "_" + sample.Processname + ".png").c_str());
+ hist_barrel -> Draw("COLZ");
+ CMS_lumi( c1, 4, 33 );
+ c1 -> SaveAs((outDirectory + "/"  + attribute + "_" + var3_ + "_" + sample.Processname + "_barrel.png").c_str());
+ 
+ c1 -> Clear();
+ hist_endcap -> Draw("COLZ");
+ CMS_lumi( c1, 4, 33 );
+ c1 -> SaveAs((outDirectory + "/"  + attribute + "_" + var3_ + "_" + sample.Processname + "_endcap.png").c_str());
   
  delete c1;
- delete hist;
+ delete hist_barrel;
+ delete hist_endcap;
 } 
