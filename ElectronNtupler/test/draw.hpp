@@ -131,12 +131,14 @@ void draw_difference(string var1_, string var2_, Sample sample, int Nbins, doubl
 //gStyle->SetTitleFillColor(kWhite);
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
+  gStyle->SetLegendBorderSize(0); 
 //gPad->SetGrid();
   
   TH1F *hist = new TH1F((var1_ + " - " + var2_).c_str(), (var1_ + " - " + var2_).c_str(), Nbins, xmin, xmax);
   TFile file((sample.filename).c_str(), "READ");
-  TLegend *leg = new TLegend(0.18,0.8,0.5,0.9);
+  TLegend *leg = new TLegend(0.18,0.65,0.7,0.95);
   leg -> SetFillColor(kWhite);  
+  leg -> SetFillStyle(0);  
   TTree * tree = (TTree * )file.Get("ntupler/ElectronTree");
   
   float var1, var2;
@@ -158,9 +160,10 @@ void draw_difference(string var1_, string var2_, Sample sample, int Nbins, doubl
  hist -> SetLineColor(kBlue);
  hist -> GetXaxis() -> SetTitle("GeV");
  hist -> SetLineWidth(3.0);
+ leg->AddEntry((TObject*)0, (sample.Processname).c_str(), "");
  leg->AddEntry(hist, (var1_  + " - " + var2_).c_str(),"l");
  hist -> Draw("HISTE1SAME");
- leg -> SetHeader((sample.Processname).c_str());
+// leg -> SetHeader();
 
 
  leg -> Draw("SAME");   
