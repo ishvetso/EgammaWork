@@ -107,6 +107,9 @@ private:
   
   TTree *electronTree_;
   
+  //event info
+  int nevent, run, lumi;
+  
   // Vars for pile-up
   Int_t nPUTrue_;    // true pile-up
   Int_t nPU_;        // generated pile-up
@@ -205,6 +208,11 @@ ElectronNtupler_CITK::ElectronNtupler_CITK(const edm::ParameterSet& iConfig):
   edm::Service<TFileService> fs;
   electronTree_ = fs->make<TTree> ("ElectronTree", "Electron data");
   
+  //event info
+  electronTree_->Branch("event",	      &nevent,    	  "event/I"           );
+  electronTree_->Branch("lumi", 	      &lumi,   		  "lumi/I"  		);
+  electronTree_->Branch("run",	      &run,		  "run/I"  	       );
+  
   electronTree_->Branch("nPV"        ,  &nPV_     , "nPV/I");
   electronTree_->Branch("nPU"        ,  &nPU_     , "nPU/I");
   electronTree_->Branch("nPUTrue"    ,  &nPUTrue_ , "nPUTrue/I");
@@ -274,12 +282,16 @@ ElectronNtupler_CITK::analyze(const edm::Event& iEvent, const edm::EventSetup& i
   using namespace edm;
   using namespace reco;
   
+  //event info
+  nevent = iEvent.eventAuxiliary().event();
+  run    = iEvent.eventAuxiliary().run();
+  lumi   = iEvent.eventAuxiliary().luminosityBlock();
+  
   // Pruned particles are the one containing "important" stuff
  
   Handle<edm::View<reco::GenParticle> > prunedGenParticles;
   iEvent.getByToken(prunedGenToken_,prunedGenParticles);
-
-
+ 
   // Get Pileup info
   Handle<edm::View<PileupSummaryInfo> > pileupHandle;
   iEvent.getByToken(pileupToken_, pileupHandle);
