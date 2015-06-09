@@ -122,6 +122,9 @@ private:
   Int_t nPU_;        // generated pile-up
   Int_t nPV_;        // number of reconsrtucted primary vertices
   Float_t rho_;      // the rho variable
+  
+  //event info
+  int nevent, run, lumi;
 
   // all electron variables
   Float_t pt_;
@@ -174,6 +177,14 @@ private:
   Float_t relisoNeutralHadronPt_CITK;
   Float_t relisoPhotonPt_CITK;
   
+  Float_t relisoChargedHadronPt_PUPPI;
+  Float_t relisoNeutralHadronPt_PUPPI;
+  Float_t relisoPhotonPt_PUPPI;
+  
+  Float_t relisoChargedHadronPt_PUPPINoLeptons;
+  Float_t relisoNeutralHadronPt_PUPPINoLeptons;
+  Float_t relisoPhotonPt_PUPPINoLeptons;
+  
   bool isEB;
 };
 
@@ -222,6 +233,12 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
 
   edm::Service<TFileService> fs;
   electronTree_ = fs->make<TTree> ("ElectronTree", "Electron data");
+  
+  
+  //event info
+  electronTree_->Branch("event",	      &nevent,    	  "event/I"           );
+  electronTree_->Branch("lumi", 	      &lumi,   		  "lumi/I"  		);
+  electronTree_->Branch("run",	      &run,		  "run/I"  	       );
   
   electronTree_->Branch("nPV"        ,  &nPV_     , "nPV/I");
   electronTree_->Branch("nPU"        ,  &nPU_     , "nPU/I");
@@ -281,6 +298,14 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_ -> Branch("relisoNeutralHadronPt_CITK", &relisoNeutralHadronPt_CITK, "relisoNeutralHadronPt_CITK/F");
   electronTree_ -> Branch("relisoPhotonPt_CITK", &relisoPhotonPt_CITK, "relisoPhotonPt_CITK/F");
   
+  electronTree_ -> Branch("relisoChargedHadronPt_PUPPI", &relisoChargedHadronPt_PUPPI, "relisoChargedHadronPt_PUPPI/F");
+  electronTree_ -> Branch("relisoNeutralHadronPt_PUPPI", &relisoNeutralHadronPt_PUPPI, "relisoNeutralHadronPt_PUPPI/F");
+  electronTree_ -> Branch("relisoPhotonPt_PUPPI", &relisoPhotonPt_PUPPI, "relisoPhotonPt_PUPPI/F");
+  
+  electronTree_ -> Branch("relisoChargedHadronPt_PUPPINoLeptons", &relisoChargedHadronPt_PUPPINoLeptons, "relisoChargedHadronPt_PUPPINoLeptons/F");
+  electronTree_ -> Branch("relisoNeutralHadronPt_PUPPINoLeptons", &relisoNeutralHadronPt_PUPPINoLeptons, "relisoNeutralHadronPt_PUPPINoLeptons/F");
+  electronTree_ -> Branch("relisoPhotonPt_PUPPINoLeptons", &relisoPhotonPt_PUPPINoLeptons, "relisoPhotonPt_PUPPINoLeptons/F");
+  
   electronTree_ -> Branch("isEB", &isEB, "isEB/B");
 
 }
@@ -306,6 +331,12 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   using namespace std;
   using namespace edm;
   using namespace reco;
+  
+  
+  //event info
+  nevent = iEvent.eventAuxiliary().event();
+  run    = iEvent.eventAuxiliary().run();
+  lumi   = iEvent.eventAuxiliary().luminosityBlock();
   
   // Pruned particles are the one containing "important" stuff
  
@@ -379,10 +410,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ , ValueMaps_PUPPI_NoLeptons_ChargedHadrons);
   iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ , ValueMaps_PUPPI_NoLeptons_NeutralHadrons);
   iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_Photons_ , ValueMaps_PUPPI_NoLeptons_Photons);
-
-
-
-  
+   
   //
   // Loop over electrons
   //
@@ -486,11 +514,24 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     sumNeutralHadronPt_PUPPI_NoLeptons =  (*ValueMaps_PUPPI_NoLeptons_NeutralHadrons)[elePtr];
     sumPhotonPt_PUPPI_NoLeptons        =  (*ValueMaps_PUPPI_NoLeptons_Photons)[elePtr];
     
+    //CITK
     relisoChargedHadronPt_CITK = sumChargedHadronPt_CITK/pt_;
     relisoNeutralHadronPt_CITK = sumNeutralHadronPt_CITK/pt_;
     relisoPhotonPt_CITK = sumPhotonPt_CITK/pt_;
     
+    //PUPPI
+    relisoChargedHadronPt_PUPPI = sumChargedHadronPt_PUPPI/pt_;
+    relisoNeutralHadronPt_PUPPI = sumNeutralHadronPt_PUPPI/pt_;
+    relisoPhotonPt_PUPPI = sumPhotonPt_PUPPI/pt_;
+    
+    //PUPPI_NoLeptons
+    relisoChargedHadronPt_PUPPINoLeptons = sumChargedHadronPt_PUPPI_NoLeptons/pt_;
+    relisoNeutralHadronPt_PUPPINoLeptons = sumNeutralHadronPt_PUPPI_NoLeptons/pt_;
+    relisoPhotonPt_PUPPINoLeptons = sumPhotonPt_PUPPI_NoLeptons/pt_;
+    
+    //PUPPI total isolation   
     reliso_PUPPI = (sumChargedHadronPt_PUPPI + sumNeutralHadronPt_PUPPI + sumPhotonPt_PUPPI)/pt_;
+    //PUPPINoLeptons total isolation
     reliso_PUPPI_NoLeptons = (sumChargedHadronPt_PUPPI_NoLeptons + sumNeutralHadronPt_PUPPI_NoLeptons + sumPhotonPt_PUPPI_NoLeptons)/pt_;
     
     const reco::CaloClusterPtr& seed = eleGsfPtr -> superCluster()->seed();
