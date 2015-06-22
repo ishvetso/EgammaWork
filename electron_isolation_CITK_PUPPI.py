@@ -10,11 +10,13 @@ process.load("EgammaWork.ElectronNtupler.pfNoLeptons_cfi")
 
 process.puppi.candName = cms.InputTag('packedPFCandidates')
 process.puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
+process.puppi.puppiForLeptons = True
 
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
 
 process.puppiNoLeptons = process.puppi.clone()
+process.puppiNoLeptons.puppiForLeptons = True
 process.puppiNoLeptons.candName = cms.InputTag('pfNoLeptons')
 
 process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
@@ -119,7 +121,7 @@ process.electrons = cms.Path(process.pfNoLeptons +  process.puppi + process.pupp
 
 
 process.source = cms.Source("PoolSource",
-       fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/i/ishvetso/EgammaWork/ElectronIsolationPUPPI_updated28April2014/test_samples/ttbar.root')
+       fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/i/ishvetso/RunII_preparation/samples/WW_74X.root')
     
 )
 
