@@ -99,11 +99,16 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoPhotonIsolationToken_; 
   
-    //CITK
+  //CITK
   edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_CITK; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_CITK; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoPhotonIsolationToken_CITK; 
  
+  //PUPPI
+  edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_PUPPI; 
+  edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_PUPPI; 
+  edm::EDGetTokenT<edm::ValueMap<float> > phoPhotonIsolationToken_PUPPI; 
+  
   TTree *photonTree_;
   Float_t rho_;      // the rho variable
   
@@ -127,6 +132,10 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   std::vector<Float_t> isoChargedHadrons_CITK_;
   std::vector<Float_t> isoNeutralHadrons_CITK_;
   std::vector<Float_t> isoPhotons_CITK_;
+  
+  std::vector<Float_t> isoChargedHadrons_PUPPI_;
+  std::vector<Float_t> isoNeutralHadrons_PUPPI_;
+  std::vector<Float_t> isoPhotons_PUPPI_;
   
   std::vector<Float_t> isoChargedHadrons_pf_;
   std::vector<Float_t> isoNeutralHadrons_pf_;
@@ -175,7 +184,15 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   phoNeutralHadronIsolationToken_CITK(consumes <edm::ValueMap<float> >
 				  (iConfig.getParameter<edm::InputTag>("phoNeutralHadronIsolation_CITK"))),
   phoPhotonIsolationToken_CITK(consumes <edm::ValueMap<float> >
-			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation_CITK"))),	
+			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation_CITK"))),
+			   
+  // Isolations from PUPPI
+  phoChargedIsolationToken_PUPPI(consumes <edm::ValueMap<float> >
+			    (iConfig.getParameter<edm::InputTag>("phoChargedIsolation_PUPPI"))),
+  phoNeutralHadronIsolationToken_PUPPI(consumes <edm::ValueMap<float> >
+				  (iConfig.getParameter<edm::InputTag>("phoNeutralHadronIsolation_PUPPI"))),
+  phoPhotonIsolationToken_PUPPI(consumes <edm::ValueMap<float> >
+			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation_PUPPI"))),				   
 			   
   // Objects containing effective area constants
   effAreaChHadrons_( (iConfig.getParameter<edm::FileInPath>("effAreaChHadFile")).fullPath() ),
@@ -235,9 +252,15 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("isoNeutralHadrons_pf"      , &isoNeutralHadrons_pf_);
   photonTree_->Branch("isoPhotons_pf"             , &isoPhotons_pf_);
 
+  //isolation 
   photonTree_->Branch("isoChargedHadronsWithEA"      , &isoChargedHadronsWithEA_);
   photonTree_->Branch("isoNeutralHadronsWithEA"      , &isoNeutralHadronsWithEA_);
   photonTree_->Branch("isoPhotonsWithEA"             , &isoPhotonsWithEA_);
+  
+  //PUPPI 
+  photonTree_->Branch("isoChargedHadrons_PUPPI"      , &isoChargedHadrons_PUPPI_);
+  photonTree_->Branch("isoNeutralHadrons_PUPPI"      , &isoNeutralHadrons_PUPPI_);
+  photonTree_->Branch("isoPhotons_PUPPI"             , &isoPhotons_PUPPI_);
 
   photonTree_->Branch("isTrue"             , &isTrue_);
 
@@ -309,6 +332,15 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   iEvent.getByToken(phoNeutralHadronIsolationToken_CITK, phoNeutralHadronIsolationMap_CITK);
   edm::Handle<edm::ValueMap<float> > phoPhotonIsolationMap_CITK;
   iEvent.getByToken(phoPhotonIsolationToken_CITK, phoPhotonIsolationMap_CITK);
+  
+  
+   // Get the isolation maps for PUPPI
+  edm::Handle<edm::ValueMap<float> > phoChargedIsolationMap_PUPPI;
+  iEvent.getByToken(phoChargedIsolationToken_PUPPI, phoChargedIsolationMap_PUPPI);
+  edm::Handle<edm::ValueMap<float> > phoNeutralHadronIsolationMap_PUPPI;
+  iEvent.getByToken(phoNeutralHadronIsolationToken_PUPPI, phoNeutralHadronIsolationMap_PUPPI);
+  edm::Handle<edm::ValueMap<float> > phoPhotonIsolationMap_PUPPI;
+  iEvent.getByToken(phoPhotonIsolationToken_PUPPI, phoPhotonIsolationMap_PUPPI);
     
   // Clear vectors
   nPhotons_ = 0;
@@ -335,6 +367,10 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   isoChargedHadronsWithEA_.clear();
   isoNeutralHadronsWithEA_.clear();
   isoPhotonsWithEA_.clear();
+  //PUPPI
+  isoChargedHadrons_PUPPI_.clear();
+  isoNeutralHadrons_PUPPI_.clear();
+  isoPhotons_PUPPI_.clear();
   //
   isTrue_.clear();
 
@@ -364,24 +400,34 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     // However 7.2.0 and prior (this includes PHYS14 MC samples) requires ValueMaps.
     full5x5_sigmaIetaIeta_ .push_back( (*full5x5SigmaIEtaIEtaMap)[ pho ] );
 
+    //isolations from PhotonIDValueMapProducer
     float chIso =  (*phoChargedIsolationMap)[pho];
     float nhIso =  (*phoNeutralHadronIsolationMap)[pho];
     float phIso = (*phoPhotonIsolationMap)[pho];
     
-    //CITK
-    float chIso_CITK =  (*phoChargedIsolationMap_CITK)[pho];
-    float nhIso_CITK =  (*phoNeutralHadronIsolationMap_CITK)[pho];
-    float phIso_CITK = (*phoPhotonIsolationMap_CITK)[pho];
+    //PUPPI
+    float chIsoPUPPI =  (*phoChargedIsolationMap_PUPPI)[pho];
+    float nhIsoPUPPI =  (*phoNeutralHadronIsolationMap_PUPPI)[pho];
+    float phIsoPUPPI = (*phoPhotonIsolationMap_PUPPI)[pho];
     
     isoChargedHadrons_ .push_back( chIso );
     isoNeutralHadrons_ .push_back( nhIso );
     isoPhotons_        .push_back( phIso );
     
-    //CITK
+    isoChargedHadrons_PUPPI_ .push_back( chIsoPUPPI );
+    isoNeutralHadrons_PUPPI_ .push_back( nhIsoPUPPI );
+    isoPhotons_PUPPI_        .push_back( phIsoPUPPI );
+    
+    //isolations from CITK
+    float chIso_CITK =  (*phoChargedIsolationMap_CITK)[pho];
+    float nhIso_CITK =  (*phoNeutralHadronIsolationMap_CITK)[pho];
+    float phIso_CITK = (*phoPhotonIsolationMap_CITK)[pho];
+
     isoChargedHadrons_CITK_.push_back( chIso_CITK );
     isoNeutralHadrons_CITK_.push_back( nhIso_CITK );
     isoPhotons_CITK_       .push_back( phIso_CITK );
 
+    //isolations with effective area correction
     float abseta = fabs( pho->superCluster()->eta());
     isoChargedHadronsWithEA_ .push_back( std::max( (float)0.0, chIso 
 						   - rho_*effAreaChHadrons_.getEffectiveArea(abseta)));

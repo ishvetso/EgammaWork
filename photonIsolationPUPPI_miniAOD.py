@@ -19,6 +19,14 @@ process.source = cms.Source("PoolSource",
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.Geometry_cff")
 
+#Loading PUPPI sequences
+process.load("CommonTools.PileupAlgos.Puppi_cff")
+process.load("EgammaWork.ElectronNtupler.pfNoLeptons_cfi")
+
+process.puppi.candName = cms.InputTag('packedPFCandidates')
+process.puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
+process.puppi.puppiForLeptons = True
+
 process.egmPhotonIsolationMiniAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
 			  srcToIsolate = cms.InputTag("slimmedPhotons"),
 			  srcForIsolationCone = cms.InputTag('packedPFCandidates'),
@@ -43,6 +51,31 @@ process.egmPhotonIsolationMiniAOD = cms.EDProducer( "CITKPFIsolationSumProducer"
 				    )
     )
   )	
+
+process.egmPhotonIsolationMiniAODPUPPI = cms.EDProducer( "CITKPFIsolationSumProducer",
+			  srcToIsolate = cms.InputTag("slimmedPhotons"),
+			  srcForIsolationCone = cms.InputTag('puppi'),
+			  isolationConeDefinitions = cms.VPSet(
+			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
+				      coneSize = cms.double(0.3),
+				      isolateAgainst = cms.string('h+'),
+				      miniAODVertexCodes = cms.vuint32(3),
+				      vertexIndex = cms.int32(0),
+				    ),
+			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
+				      coneSize = cms.double(0.3),
+				      isolateAgainst = cms.string('h0'),
+				      miniAODVertexCodes = cms.vuint32(2,3),
+				      vertexIndex = cms.int32(0),
+				    ),
+			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
+				      coneSize = cms.double(0.3),
+				      isolateAgainst = cms.string('gamma'),
+				      miniAODVertexCodes = cms.vuint32(2,3),
+				      vertexIndex = cms.int32(0),
+				    )
+    )
+  )
 			   
 process.photonIDValueMapProducer = cms.EDProducer('PhotonIDValueMapProducer',
                                           # The module automatically detects AOD vs miniAOD, so we configure both
@@ -96,6 +129,10 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  phoChargedIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:h+-DR030-"),
                                  phoNeutralHadronIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:h0-DR030-"),
                                  phoPhotonIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:gamma-DR030-"),
+                                 #PUPPI
+                                 phoChargedIsolation_PUPPI = cms.InputTag("egmPhotonIsolationMiniAODPUPPI:h+-DR030-"),
+                                 phoNeutralHadronIsolation_PUPPI = cms.InputTag("egmPhotonIsolationMiniAODPUPPI:h0-DR030-"),
+                                 phoPhotonIsolation_PUPPI = cms.InputTag("egmPhotonIsolationMiniAODPUPPI:gamma-DR030-"),
                                  # 
                                  # Locations of files with the effective area constants.
                                  # The constants in these files below are derived for PHYS14 MC.
@@ -108,13 +145,13 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  ("EgammaAnalysis/PhotonTools/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt")
                                 )			   
 
-process.analysis = cms.Path(process.egmPhotonIsolationMiniAOD + process.photonIDValueMapProducer + process.ntupler)
+process.analysis = cms.Path(process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI + process.photonIDValueMapProducer + process.ntupler)
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-'''
+
 process.out = cms.OutputModule("PoolOutputModule",
                                fileName = cms.untracked.string('patTuple_miniAOD.root'),
                                outputCommands = cms.untracked.vstring('keep *')
@@ -122,7 +159,7 @@ process.out = cms.OutputModule("PoolOutputModule",
 
                            
 process.outpath = cms.EndPath(process.out)
-'''
+
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree.root")
                                   )
