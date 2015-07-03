@@ -3,8 +3,8 @@
     
   TGraph * ROC_Drawer::graph_ROC(string var, int Nbins, float xmin, float xmax)
 {
-  TFile file_bkg("/afs/cern.ch/work/i/ishvetso/EgammaWork/my_puppi_test/CMSSW_7_3_3/src/EgammaWork/ElectronNtupler/test/crab_projects/crab_Electron-Isolation_CITK_validation_ttbar_miniAOD_PUPPI_with_NoLeptons_update11May2015/results/ttbar.root");
-  TFile file_sig("/afs/cern.ch/work/i/ishvetso/EgammaWork/my_puppi_test/CMSSW_7_3_3/src/EgammaWork/ElectronNtupler/test/crab_projects/crab_Electron-Isolation_CITK_validation_DY_miniAOD_PUPPI_with_NoLeptons_update11May2015/results/DY.root");
+  TFile file_bkg("/afs/cern.ch/work/i/ishvetso/EgammaWork/ElectronIsolationPUPPI_745_30June/CMSSW_7_4_5/src/EgammaWork/ElectronNtupler/test/crab_projects/crab_Electron-Isolation_CITK_validation_ttbar_miniAOD_PUPPI_with_NoLeptons_update30June2015/results/ttbar.root");
+  TFile file_sig("/afs/cern.ch/work/i/ishvetso/EgammaWork/ElectronIsolationPUPPI_745_30June/CMSSW_7_4_5/src/EgammaWork/ElectronNtupler/test/crab_projects/crab_Electron-Isolation_CITK_validation_DY_miniAOD_PUPPI_with_NoLeptons_update30June2015/results/DY.root");
   
   TTree *tree_bkg = (TTree*)file_bkg.Get("ntupler/ElectronTree");
   TTree *tree_sig = (TTree*)file_sig.Get("ntupler/ElectronTree");
@@ -30,10 +30,10 @@
     float effBkg = (float) (hist_bkg -> Integral(1, iBin))/(hist_bkg -> Integral());
     
     sigEff.push_back(effSig);
-    bkgEff.push_back(effBkg);
+    bkgEff.push_back(1.0 - effBkg);
   }
   
-  TGraph *gr = new TGraph( sigEff.size(), bkgEff.data(), sigEff.data());
+  TGraph *gr = new TGraph( sigEff.size(), sigEff.data(), bkgEff.data());
   
   return gr;   
 }
@@ -46,14 +46,14 @@ void ROC_Drawer::draw_ROC()
   gStyle->SetOptTitle(0);
 //gPad->SetGrid();
   
-  TGraph * gr1 =  graph_ROC("relIsoWithEA", 100, 0., 2.);
-  TGraph * gr2 =  graph_ROC("relIsoWithDBeta", 100, 0., 2.);
-  TGraph * gr3 =  graph_ROC("reliso_PUPPI", 100, 0., 2.);
-  TGraph * gr4 =  graph_ROC("reliso_PUPPI_NoLeptons", 100, 0., 2.);
+  TGraph * gr1 =  graph_ROC("relIsoWithEA", 10000, 0., 10.);
+  TGraph * gr2 =  graph_ROC("relIsoWithDBeta", 10000, 0., 10.);
+  TGraph * gr3 =  graph_ROC("reliso_PUPPI", 10000, 0., 10.);
+  TGraph * gr4 =  graph_ROC("reliso_PUPPI_NoLeptons", 10000, 0., 10.);
   
   
-  gr1 -> GetXaxis() -> SetTitle("bkg eff");
-  gr1 -> GetYaxis() -> SetTitle("sig eff");
+  gr1 -> GetYaxis() -> SetTitle("bkg rej");
+  gr1 -> GetXaxis() -> SetTitle("sig eff");
   
   gr1 -> SetLineWidth(2.);
   gr2 -> SetLineWidth(2.);
@@ -68,7 +68,7 @@ void ROC_Drawer::draw_ROC()
   setTDRStyle();   
   TCanvas *c1= new TCanvas("c1","canvas",1200,800);
 
-  TLegend *leg = new TLegend(0.6,0.3,0.9,0.7);
+  TLegend *leg = new TLegend(0.2,0.3,0.5,0.7);
   leg -> SetFillColor(kWhite);  
   
   leg->AddEntry(gr1, "relIsoWithEA","l");
