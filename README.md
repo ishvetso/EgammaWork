@@ -3,10 +3,12 @@ It also includes PUPPI-based photon isolation.
 
 In order to run only photon isolation with CITK (pfIsolationVariables are also there), you should do following (CMSSW verstion is the one I used):
 
-cmsrel CMSSW_7_4_6_patch2 <br />
-cd CMSSW_7_4_6_patch2/src <br />
 
-1. do what is stated on the [PUPPI twiki]; <br />
+
+1. cmsrel CMSSW_7_4_6_patch2 <br />
+cd CMSSW_7_4_6_patch2/src <br />
+cmsenv <br />
+2. do what is stated on the [PUPPI twiki]; <br />
 for example: <br />
 git cms-addpkg CommonTools/PileupAlgos <br />
 git cms-merge-topic nhanvtran:puppi-etadep-746p2-v8 (<b>this might change!</b>) <br />
