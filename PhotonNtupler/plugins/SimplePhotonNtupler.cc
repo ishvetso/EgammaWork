@@ -145,6 +145,16 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   std::vector<Float_t> isoNeutralHadronsWithEA_;
   std::vector<Float_t> isoPhotonsWithEA_;
 
+  //relative isolation from photonIDValueMapProducer
+  std::vector<Float_t> relisoWithEA_;
+  //relative isolation from CITK with map based veto
+  std::vector<Float_t> relisoWithEA_CITK_;
+    //relative isolation for PUPPI
+  std::vector<Float_t> relisoWithEA_PUPPI_;
+  //relative isolation for pf
+  std::vector<Float_t> relisoWithEA_pf_;
+
+
   std::vector<Int_t> isTrue_;
 
   // Effective area constants for all isolation types
@@ -262,7 +272,13 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("isoNeutralHadrons_PUPPI"      , &isoNeutralHadrons_PUPPI_);
   photonTree_->Branch("isoPhotons_PUPPI"             , &isoPhotons_PUPPI_);
 
+  photonTree_->Branch("relisoWithEA"                 , &relisoWithEA_);
+  photonTree_->Branch("relisoWithEA_CITK_"                 , &relisoWithEA_CITK_);
+  photonTree_->Branch("relisoWithEA_PUPPI"                 , &relisoWithEA_PUPPI_);
+  photonTree_->Branch("relisoWithEA_pf"                 , &relisoWithEA_pf_);
+
   photonTree_->Branch("isTrue"             , &isTrue_);
+
 
 }
 
@@ -372,6 +388,11 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   isoNeutralHadrons_PUPPI_.clear();
   isoPhotons_PUPPI_.clear();
   //
+  relisoWithEA_.clear();
+  relisoWithEA_CITK_.clear();
+  relisoWithEA_PUPPI_.clear();
+  relisoWithEA_pf_.clear();
+  //
   isTrue_.clear();
 
   // Loop over photons
@@ -444,7 +465,13 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     isoChargedHadrons_pf_.push_back( chIso_pf );
     isoNeutralHadrons_pf_.push_back( nhIso_pf );
     isoPhotons_pf_       .push_back( phIso_pf );
-    
+
+    //relative isolations
+    float Area = effAreaChHadrons_.getEffectiveArea(abseta) + effAreaNeuHadrons_.getEffectiveArea(abseta) + effAreaPhotons_.getEffectiveArea(abseta);
+    relisoWithEA_.push_back((std::max( (float)0.0, chIso + nhIso + phIso - rho_*Area )) /(pho -> pt()) );
+    relisoWithEA_CITK_.push_back((std::max( (float)0.0, chIso_CITK + nhIso_CITK + phIso_CITK - rho_*Area))/(pho -> pt()) );
+    relisoWithEA_PUPPI_.push_back((chIsoPUPPI + nhIsoPUPPI + phIsoPUPPI)/(pho -> pt()));
+    relisoWithEA_pf_.push_back((std::max( (float)0.0, chIso_pf + nhIso_pf + phIso_pf - rho_*Area )) /(pho -> pt()) ); 
     // Save MC truth match
     isTrue_.push_back( matchToTruth(*pho, genParticles) );
 
