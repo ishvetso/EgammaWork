@@ -3,8 +3,8 @@
     
   TGraph * ROC_Drawer::graph_ROC(string var, int Nbins, float xmin, float xmax)
 {
-  TFile file_bkg("/afs/cern.ch/work/i/ishvetso/EgammaWork/ElectronIsolationPUPPI_745_30June/CMSSW_7_4_5/src/EgammaWork/ElectronNtupler/test/crab_projects/crab_Electron-Isolation_CITK_validation_ttbar_miniAOD_PUPPI_with_NoLeptons_update30June2015/results/ttbar.root");
-  TFile file_sig("/afs/cern.ch/work/i/ishvetso/EgammaWork/ElectronIsolationPUPPI_745_30June/CMSSW_7_4_5/src/EgammaWork/ElectronNtupler/test/crab_projects/crab_Electron-Isolation_CITK_validation_DY_miniAOD_PUPPI_with_NoLeptons_update30June2015/results/DY.root");
+  TFile file_bkg(bkgFileName.c_str());
+  TFile file_sig(sigFileName.c_str());
   
   TTree *tree_bkg = (TTree*)file_bkg.Get("ntupler/ElectronTree");
   TTree *tree_sig = (TTree*)file_sig.Get("ntupler/ElectronTree");
@@ -19,9 +19,15 @@
    
    TH1F *hist_sig = new TH1F("sig", "sig", Nbins, xmin, xmax);
    TH1F *hist_bkg = new TH1F("bkg", "bkg", Nbins, xmin, xmax);
+
+   TH1F *hist_sig_abs = new TH1F("sig_abs", "sig_abs", Nbins, 0., 10.);
+   TH1F *hist_bkg_abs = new TH1F("bkg_abs", "bkg_abs", Nbins, 0., 10.);
    
    tree_sig -> Project("sig", var.c_str(), (SigSelection + "&&" + addSelection) .c_str());
    tree_bkg -> Project("bkg", var.c_str(), (BkgSelection + "&&" + addSelection) .c_str());
+   
+   tree_sig -> Project("sig_abs", var.c_str(), (SigSelection + "&&" + addSelection) .c_str());
+   tree_bkg -> Project("bkg_abs", var.c_str(), (BkgSelection + "&&" + addSelection) .c_str());
    
    
   for (int iBin = 2; iBin < Nbins ; iBin += 1)
