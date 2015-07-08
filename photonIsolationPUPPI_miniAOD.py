@@ -52,9 +52,10 @@ process.egmPhotonIsolationMiniAOD = cms.EDProducer( "CITKPFIsolationSumProducer"
     )
   )	
 
-process.egmPhotonIsolationMiniAODPUPPI = cms.EDProducer( "CITKPFIsolationSumProducer",
+process.egmPhotonIsolationMiniAODPUPPI = cms.EDProducer( "CITKPFIsolationSumProducerForPUPPI",
 			  srcToIsolate = cms.InputTag("slimmedPhotons"),
-			  srcForIsolationCone = cms.InputTag('puppi'),
+			  srcForIsolationCone = cms.InputTag('packedPFCandidates'),
+        puppiValueMap = cms.InputTag('puppi'),
 			  isolationConeDefinitions = cms.VPSet(
 			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
 				      coneSize = cms.double(0.3),
@@ -100,7 +101,6 @@ process.photonIDValueMapProducer = cms.EDProducer('PhotonIDValueMapProducer',
                                           # there is no need for the isolation map here, for miniAOD it is inside packedPFCandidates
                                           srcMiniAOD = cms.InputTag('slimmedPhotons'),
                                           )
-
 process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  # The module automatically detects AOD vs miniAOD, so we configure both
                                  #
@@ -138,14 +138,14 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  # The constants in these files below are derived for PHYS14 MC.
                                  #
                                  effAreaChHadFile = cms.FileInPath
-                                 ("EgammaAnalysis/PhotonTools/data/PHYS14/effAreaPhotons_cone03_pfChargedHadrons_V2.txt"),
+                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfChargedHadrons_V2.txt"),
                                  effAreaNeuHadFile= cms.FileInPath
-                                 ("EgammaAnalysis/PhotonTools/data/PHYS14/effAreaPhotons_cone03_pfNeutralHadrons_V2.txt"),
+                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfNeutralHadrons_V2.txt"),
                                  effAreaPhoFile   = cms.FileInPath
-                                 ("EgammaAnalysis/PhotonTools/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt")
-                                )			   
+                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt")
+                                )			  
 
-process.analysis = cms.Path(process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI + process.photonIDValueMapProducer + process.ntupler)
+process.analysis = cms.Path(process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI + process.photonIDValueMapProducer )
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
