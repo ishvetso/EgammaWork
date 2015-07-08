@@ -21,7 +21,7 @@ process.load("Configuration.StandardSequences.Geometry_cff")
 
 #Loading PUPPI sequences
 process.load("CommonTools.PileupAlgos.Puppi_cff")
-process.load("EgammaWork.ElectronNtupler.pfNoLeptons_cfi")
+
 
 process.puppi.candName = cms.InputTag('packedPFCandidates')
 process.puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
@@ -145,20 +145,20 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt")
                                 )			  
 
-process.analysis = cms.Path(process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI + process.photonIDValueMapProducer )
+process.analysis = cms.Path(process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI + process.photonIDValueMapProducer + process.ntupler)
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-
+'''
 process.out = cms.OutputModule("PoolOutputModule",
                                fileName = cms.untracked.string('patTuple_miniAOD.root'),
                                outputCommands = cms.untracked.vstring('keep *')
                                )                            
 
                            
-process.outpath = cms.EndPath(process.out)
+process.outpath = cms.EndPath(process.out)'''
 
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree.root")
