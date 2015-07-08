@@ -6,10 +6,10 @@ In order to run only photon isolation with CITK (pfIsolationVariables are also t
 cmsrel CMSSW_7_4_6_patch2 <br />
 cd CMSSW_7_4_6_patch2/src <br />
 
-1. do what is stated on the [PUPPI twiki];
-for example:
-git cms-addpkg CommonTools/PileupAlgos
-git cms-merge-topic nhanvtran:puppi-etadep-746p2-v8 (<b>this might change!</b>)
+1. do what is stated on the [PUPPI twiki]; <br />
+for example: <br />
+git cms-addpkg CommonTools/PileupAlgos <br />
+git cms-merge-topic nhanvtran:puppi-etadep-746p2-v8 (<b>this might change!</b>) <br />
 2. git cms-merge-topic ikrav:egm_id_74X_v2
 3. git cms-merge-topic ishvetso:PhotonPFIsolationWithMapBasedVeto # get module for map-based vetoing
 4. git cms-merge-topic ishvetso:CITK_PUPPI # module for PUPPI to reweight PFCandidates on the fly using ValueMaps from puppi
