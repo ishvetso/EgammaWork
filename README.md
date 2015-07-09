@@ -17,6 +17,7 @@ git cms-merge-topic nhanvtran:puppi-etadep-746p2-v8 (<b>this might change!</b>) 
 4. git cms-merge-topic ishvetso:CITK_PUPPI # module for PUPPI to reweight PFCandidates on the fly using ValueMaps from puppi
 5. git clone -b PhotonBranch git@github.com:ishvetso/EgammaWork.git 
 6. scram b -j 20
+7. cmsRun EgammaWork/photonIsolationPUPPI_miniAOD.py
 
 
 [CITK twiki]:https://twiki.cern.ch/twiki/bin/viewauth/CMS/CommonIDAndIsolationFW
