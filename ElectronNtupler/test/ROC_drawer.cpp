@@ -8,9 +8,6 @@
   
   TTree *tree_bkg = (TTree*)file_bkg.Get("ntupler/ElectronTree");
   TTree *tree_sig = (TTree*)file_sig.Get("ntupler/ElectronTree");
-  
-  string SigSelection = "pt > 20 && isTrueElectron == 1";
-  string BkgSelection = "pt > 20 && ( isTrueElectron == 0 || isTrueElectron == 3 )";
 
    ostringstream ss;
    ss.precision(3);
@@ -32,8 +29,8 @@
    
   for (int iBin = 2; iBin < Nbins ; iBin += 1)
   {
-    float effSig = (float) (hist_sig -> Integral(1, iBin))/(hist_sig -> Integral());
-    float effBkg = (float) (hist_bkg -> Integral(1, iBin))/(hist_bkg -> Integral());
+    float effSig = (float) (hist_sig -> Integral(1, iBin))/(hist_sig_abs -> Integral());
+    float effBkg = (float) (hist_bkg -> Integral(1, iBin))/(hist_bkg_abs -> Integral());
     
     sigEff.push_back(effSig);
     bkgEff.push_back(1.0 - effBkg);

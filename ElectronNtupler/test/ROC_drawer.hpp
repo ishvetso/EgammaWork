@@ -22,7 +22,7 @@ using namespace std;
 class ROC_Drawer
 {
 public:
-    string name, addSelection, bkgFileName, sigFileName;
+    string name, addSelection, bkgFileName, sigFileName, SigSelection, BkgSelection;
     ROC_Drawer();
     TGraph * graph_ROC(string var, int Nbins, float xmin, float xmax);
     void draw_ROC();
