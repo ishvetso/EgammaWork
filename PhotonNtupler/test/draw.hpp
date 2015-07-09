@@ -127,6 +127,7 @@ void draw(vector<Var> Vars, Sample sample, string fileNamePrefix, string addComm
 void draw_difference(string var1_, string var2_, Sample sample, int Nbins, double xmin, double xmax, string attribute, string outDirectory)
 {
    system(("mkdir -p " + outDirectory).c_str());
+
   
   gStyle->SetCanvasColor(kWhite);
 //gStyle->SetTitleFillColor(kWhite);
@@ -136,13 +137,15 @@ void draw_difference(string var1_, string var2_, Sample sample, int Nbins, doubl
 //gPad->SetGrid();
   
   TH1F *hist = new TH1F((var1_ + " - " + var2_).c_str(), (var1_ + " - " + var2_).c_str(), Nbins, xmin, xmax);
+  hist -> Sumw2();
   TFile file((sample.filename).c_str(), "READ");
   TLegend *leg = new TLegend(0.18,0.65,0.7,0.95);
   leg -> SetFillColor(kWhite);  
   leg -> SetFillStyle(0);  
   TTree * tree = (TTree * )file.Get("ntupler/PhotonTree");
   
-  float var1, var2;
+  vector <float>* var1 = new std::vector<float>();
+  vector <float>*  var2 = new std::vector<float>();
   
   tree -> SetBranchAddress(var1_.c_str(), &var1);
   tree -> SetBranchAddress(var2_.c_str(), &var2);
@@ -150,8 +153,15 @@ void draw_difference(string var1_, string var2_, Sample sample, int Nbins, doubl
   for (unsigned int iEntry = 0; iEntry < tree -> GetEntries(); iEntry ++  )
   {
     tree -> GetEntry(iEntry);
-    hist -> Fill(var1 - var2);
+    //if (var1 -> size() != var2 -> size()) cerr << "Oops ... smth is going wrong :(" << endl;
+      for(unsigned int i = 0; i < var1 -> size(); i ++) 
+        {
+          hist -> Fill((var1 -> at(i)) - (var2 -> at(i)));
+        }
   }
+
+  hist -> Scale(1./(hist -> Integral()));
+ 
   
  // 
  TCanvas *c1= new TCanvas("c1","canvas",1200,800);
@@ -172,6 +182,7 @@ void draw_difference(string var1_, string var2_, Sample sample, int Nbins, doubl
 
  leg -> Draw("SAME");   
  CMS_lumi( c1, 4, 33 );
+  cout << "here " << endl;
  c1 -> SaveAs((outDirectory + "/"  + attribute + "_" + sample.Processname + ".png").c_str());
   
  delete c1;
@@ -189,26 +200,29 @@ void draw_difference2D(string var1_, string var2_, string var3_, Sample sample, 
   gStyle->SetOptTitle(0);
 //gPad->SetGrid();
   
-  TH2F *hist_barrel = new TH2F((var1_ + " - " + var2_ + "_" + var3_ + "_barrel").c_str(), (var1_ + " - " + var2_ + "_barrel").c_str(), NXbins, xmin, xmax, NYBins, ymin, ymax);
-  TH2F *hist_endcap = new TH2F((var1_ + " - " + var2_ + "_" + var3_ + "_endcap").c_str(), (var1_ + " - " + var2_ + "_endcap").c_str(), NXbins, xmin, xmax, NYBins, ymin, ymax);
+  TH2F *hist = new TH2F((var1_ + " - " + var2_ + "_" + var3_ + "_barrel").c_str(), (var1_ + " - " + var2_ + "_barrel").c_str(), NXbins, xmin, xmax, NYBins, ymin, ymax);
   TFile file((sample.filename).c_str(), "READ");
   TLegend *leg = new TLegend(0.18,0.8,0.5,0.9);
   leg -> SetFillColor(kWhite);  
   TTree * tree = (TTree * )file.Get("ntupler/PhotonTree");
   
-  float var1, var2, var3;
-  Char_t isEB;
+  vector <float>* var1 = new std::vector<float>();
+  vector <float>*  var2 = new std::vector<float>();
+  vector <float>*  var3 = new std::vector<float>();
+  
   
   tree -> SetBranchAddress(var1_.c_str(), &var1);
   tree -> SetBranchAddress(var2_.c_str(), &var2);
   tree -> SetBranchAddress(var3_.c_str(), &var3);
-  tree -> SetBranchAddress("isEB", &isEB);
+ 
   
   for (unsigned int iEntry = 0; iEntry < tree -> GetEntries(); iEntry ++  )
   {
     tree -> GetEntry(iEntry);
-    if (isEB)hist_barrel  -> Fill(var1 - var2, var3);
-    if (!isEB)hist_endcap  -> Fill(var1 - var2, var3);
+    for (unsigned int i = 0; i < var1 -> size(); i++)
+    {
+      hist  -> Fill((var1 -> at(i) ) - (var2 -> at(i)), var3 -> at(i));
+    }
   }
   
  // 
@@ -217,21 +231,14 @@ void draw_difference2D(string var1_, string var2_, string var3_, Sample sample, 
  c1 -> cd();
 
 // hist -> SetLineColor(kBlue);
- hist_barrel -> GetXaxis() -> SetTitle("difference (GeV)");
- hist_barrel -> GetYaxis() -> SetTitle(var3_.c_str());
- hist_endcap -> GetXaxis() -> SetTitle("difference (GeV)");
- hist_endcap -> GetYaxis() -> SetTitle(var3_.c_str());
+ hist -> GetXaxis() -> SetTitle("difference (GeV)");
+ hist -> GetYaxis() -> SetTitle(var3_.c_str());
+
  gStyle->SetPalette(1);
- hist_barrel -> Draw("COLZ");
+ hist -> Draw("COLZ");
  CMS_lumi( c1, 4, 33 );
- c1 -> SaveAs((outDirectory + "/"  + attribute + "_" + var3_ + "_" + sample.Processname + "_barrel.png").c_str());
- 
- c1 -> Clear();
- hist_endcap -> Draw("COLZ");
- CMS_lumi( c1, 4, 33 );
- c1 -> SaveAs((outDirectory + "/"  + attribute + "_" + var3_ + "_" + sample.Processname + "_endcap.png").c_str());
-  
+ c1 -> SaveAs((outDirectory + "/"  + attribute + "_" + var3_ + "_" + sample.Processname + ".png").c_str());
+   
  delete c1;
- delete hist_barrel;
- delete hist_endcap;
+ delete hist;
 } 
