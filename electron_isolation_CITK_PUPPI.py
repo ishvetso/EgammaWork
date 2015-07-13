@@ -20,7 +20,7 @@ process.puppiNoLeptons.puppiForLeptons = False
 process.puppiNoLeptons.candName = cms.InputTag('pfNoLeptons')
 
 process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("slimmedElectrons"),
+					    srcToIsolate = cms.InputTag("SelectedElectrons"),
 					    srcForIsolationCone = cms.InputTag('packedPFCandidates'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
@@ -45,7 +45,7 @@ process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
 					)
 
 process.ElectronIsolationMapBasedVeto = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("slimmedElectrons"),
+					    srcToIsolate = cms.InputTag("SelectedElectrons"),
 					    srcForIsolationCone = cms.InputTag('packedPFCandidates'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithMapBasedVeto'), 
@@ -64,7 +64,7 @@ process.ElectronIsolationMapBasedVeto = cms.EDProducer("CITKPFIsolationSumProduc
 					)
 									
 process.ElectronIsolationOnPUPPI = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("slimmedElectrons"),
+					    srcToIsolate = cms.InputTag("SelectedElectrons"),
 					    srcForIsolationCone = cms.InputTag('puppi'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
@@ -89,7 +89,7 @@ process.ElectronIsolationOnPUPPI = cms.EDProducer("CITKPFIsolationSumProducer",
 					)
 
 process.ElectronIsolationOnPUPPINoLeptons = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("slimmedElectrons"),
+					    srcToIsolate = cms.InputTag("SelectedElectrons"),
 					    srcForIsolationCone = cms.InputTag('puppiNoLeptons'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
@@ -119,7 +119,7 @@ process.ntupler = cms.EDAnalyzer('ElectronNtuplerTest',
 				 pruned = cms.InputTag("prunedGenParticles"),
 				 pileup = cms.InputTag("addPileupInfo"),
 				 vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
-				 electrons = cms.InputTag("slimmedElectrons"),
+				 electrons = cms.InputTag("SelectedElectrons"),
 				 rho = cms.InputTag("fixedGridRhoFastjetAll"),
 				 #CITK
 				 ValueMaps_ChargedHadrons_src = cms.InputTag("ElectronIsolation", "h+-DR030-BarVeto000-EndVeto001"),
@@ -140,7 +140,13 @@ process.ntupler = cms.EDAnalyzer('ElectronNtuplerTest',
 								
 				)
 
-process.electrons = cms.Path(process.pfNoLeptons +  process.puppi + process.puppiNoLeptons + process.ElectronIsolation + process.ElectronIsolationMapBasedVeto + process.ElectronIsolationOnPUPPI + process.ElectronIsolationOnPUPPINoLeptons + process.ntupler)
+process.SelectedElectrons = cms.EDFilter('ElectronSelector',
+				 electron_src = cms.InputTag("slimmedElectrons"),
+				 cand_src = cms.InputTag("packedPFCandidates"),
+				)
+
+
+process.electrons = cms.Path( process.SelectedElectrons + process.pfNoLeptons +  process.puppi + process.puppiNoLeptons + process.ElectronIsolation + process.ElectronIsolationMapBasedVeto + process.ElectronIsolationOnPUPPI + process.ElectronIsolationOnPUPPINoLeptons + process.ntupler)
 
 
 process.source = cms.Source("PoolSource",
@@ -149,15 +155,15 @@ process.source = cms.Source("PoolSource",
 )
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-'''
+
 process.out = cms.OutputModule("PoolOutputModule",
  fileName = cms.untracked.string('patTuple.root'),
   outputCommands = cms.untracked.vstring('keep *')
 )
 
-process.outpath = cms.EndPath(process.out)'''
+process.outpath = cms.EndPath(process.out)
 
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree.root")
