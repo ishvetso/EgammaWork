@@ -44,24 +44,7 @@ process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
 								      )
 					)
 
-process.ElectronIsolationMapBasedVeto = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("SelectedElectrons"),
-					    srcForIsolationCone = cms.InputTag('packedPFCandidates'),
-					    isolationConeDefinitions = cms.VPSet(
-									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithMapBasedVeto'), 
-									coneSize = cms.double(0.3),
-									isolateAgainst = cms.string('h+'),
-									miniAODVertexCodes = cms.vuint32(2,3) ),
-									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithMapBasedVeto'), 
-									coneSize = cms.double(0.3),
-									isolateAgainst = cms.string('h0'),
-									miniAODVertexCodes = cms.vuint32(2,3) ),
-									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithMapBasedVeto'), 
-									coneSize = cms.double(0.3),
-									isolateAgainst = cms.string('gamma'),
-									miniAODVertexCodes = cms.vuint32(2,3) )
-								      )
-					)
+
 									
 process.ElectronIsolationOnPUPPI = cms.EDProducer("CITKPFIsolationSumProducer",
 					    srcToIsolate = cms.InputTag("SelectedElectrons"),
@@ -115,7 +98,7 @@ process.ElectronIsolationOnPUPPINoLeptons = cms.EDProducer("CITKPFIsolationSumPr
 									
 									
 									
-process.ntupler = cms.EDAnalyzer('ElectronNtuplerTest',
+process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 pruned = cms.InputTag("prunedGenParticles"),
 				 pileup = cms.InputTag("addPileupInfo"),
 				 vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -125,10 +108,6 @@ process.ntupler = cms.EDAnalyzer('ElectronNtuplerTest',
 				 ValueMaps_ChargedHadrons_src = cms.InputTag("ElectronIsolation", "h+-DR030-BarVeto000-EndVeto001"),
 				 ValueMaps_NeutralHadrons_src = cms.InputTag("ElectronIsolation", "h0-DR030-BarVeto000-EndVeto000"),
 				 ValueMaps_Photons_src = cms.InputTag("ElectronIsolation", "gamma-DR030-BarVeto000-EndVeto008"),
-				 #CITK map based
-				 ValueMaps_ChargedHadrons_MapBasedVeto_src = cms.InputTag("ElectronIsolationMapBasedVeto", "h+-DR030-"),
-				 ValueMaps_NeutralHadrons_MapBasedVeto_src = cms.InputTag("ElectronIsolationMapBasedVeto", "h0-DR030-"),
-				 ValueMaps_Photons_MapBasedVeto_src = cms.InputTag("ElectronIsolationMapBasedVeto", "gamma-DR030-"),
 				 #PUPPI
 				 ValueMaps_PUPPI_ChargedHadrons_src = cms.InputTag("ElectronIsolationOnPUPPI", "h+-DR030-BarVeto000-EndVeto001"),
 				 ValueMaps_PUPPI_NeutralHadrons_src = cms.InputTag("ElectronIsolationOnPUPPI", "h0-DR030-BarVeto000-EndVeto000"),
@@ -146,7 +125,7 @@ process.SelectedElectrons = cms.EDFilter('ElectronSelector',
 				)
 
 
-process.electrons = cms.Path( process.SelectedElectrons + process.pfNoLeptons +  process.puppi + process.puppiNoLeptons + process.ElectronIsolation + process.ElectronIsolationMapBasedVeto + process.ElectronIsolationOnPUPPI + process.ElectronIsolationOnPUPPINoLeptons + process.ntupler)
+process.electrons = cms.Path( process.SelectedElectrons + process.pfNoLeptons +  process.puppi + process.puppiNoLeptons + process.ElectronIsolation + process.ElectronIsolationOnPUPPI + process.ElectronIsolationOnPUPPINoLeptons + process.ntupler)
 
 
 process.source = cms.Source("PoolSource",
