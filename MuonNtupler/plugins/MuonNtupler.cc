@@ -82,6 +82,14 @@ private:
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_ChargedHadrons_;
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_NeutralHadrons_;
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_Photons_;
+
+   //PUPPI
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_ChargedHadrons_PUPPI_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_NeutralHadrons_PUPPI_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_Photons_PUPPI_;
+
+
+
   
   TTree *muonTree_;
   
@@ -110,12 +118,19 @@ private:
   Float_t sumChargedHadronPt_CITK;
   Float_t sumNeutralHadronPt_CITK;
   Float_t sumPhotonPt_CITK;
+
+    //CITK
+  Float_t sumChargedHadronPt_PUPPI;
+  Float_t sumNeutralHadronPt_PUPPI;
+  Float_t sumPhotonPt_PUPPI;
   
 
   
   Float_t relisoChargedHadronPt_CITK;
   Float_t relisoNeutralHadronPt_CITK;
   Float_t relisoPhotonPt_CITK;
+
+  Float_t relIso_PUPPI;
   
 };
 
@@ -139,12 +154,16 @@ MuonNtupler::MuonNtupler(const edm::ParameterSet& iConfig):
   //CITK
   ValueMaps_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_src" ) ) ),
   ValueMaps_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_src" ) ) ),
-  ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) )
+  ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) ),
+  ValueMaps_ChargedHadrons_PUPPI_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_PUPPI_src" ) ) ),
+  ValueMaps_NeutralHadrons_PUPPI_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_PUPPI_src" ) ) ),
+  ValueMaps_Photons_PUPPI_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_PUPPI_src" ) ) )
+
 
 {
 
   edm::Service<TFileService> fs;
-  muonTree_ = fs->make<TTree> ("ElectronTree", "Electron data");
+  muonTree_ = fs->make<TTree> ("MuonTree", "Muon data");
   
   //event info
   muonTree_->Branch("event",	      &nevent,    	  "event/I"           );
@@ -175,9 +194,17 @@ MuonNtupler::MuonNtupler(const edm::ParameterSet& iConfig):
   muonTree_ -> Branch("sumNeutralHadronPt_CITK", &sumNeutralHadronPt_CITK, "sumNeutralHadronPt_CITK/F");
   muonTree_ -> Branch("sumPhotonPt_CITK", &sumPhotonPt_CITK, "sumPhotonPt_CITK/F");
     
+  //PUPPI
+  muonTree_ -> Branch("sumChargedHadronPt_PUPPI", &sumChargedHadronPt_PUPPI, "sumChargedHadronPt_PUPPI/F");
+  muonTree_ -> Branch("sumNeutralHadronPt_PUPPI", &sumNeutralHadronPt_PUPPI, "sumNeutralHadronPt_PUPPI/F");
+  muonTree_ -> Branch("sumPhotonPt_PUPPI", &sumPhotonPt_PUPPI, "sumPhotonPt_PUPPI/F");
+
   muonTree_ -> Branch("relisoChargedHadronPt_CITK", &relisoChargedHadronPt_CITK, "relisoChargedHadronPt_CITK/F");
   muonTree_ -> Branch("relisoNeutralHadronPt_CITK", &relisoNeutralHadronPt_CITK, "relisoNeutralHadronPt_CITK/F");
   muonTree_ -> Branch("relisoPhotonPt_CITK", &relisoPhotonPt_CITK, "relisoPhotonPt_CITK/F");
+  
+
+    muonTree_ -> Branch("relIso_PUPPI", &relIso_PUPPI, "relIso_PUPPI/F");
   
 
 
@@ -227,13 +254,20 @@ MuonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
   //CITK
   Handle <edm::ValueMap <float> > ValueMaps_ChargedHadrons, ValueMaps_NeutralHadrons, ValueMaps_Photons;
-  Handle <edm::ValueMap <float> > ValueMaps_PUPPI_ChargedHadrons, ValueMaps_PUPPI_NeutralHadrons, ValueMaps_PUPPI_Photons;
-  Handle <edm::ValueMap <float> > ValueMaps_PUPPI_NoLeptons_ChargedHadrons, ValueMaps_PUPPI_NoLeptons_NeutralHadrons, ValueMaps_PUPPI_NoLeptons_Photons;
+  //CITK
+  Handle <edm::ValueMap <float> > ValueMaps_ChargedHadrons_PUPPI, ValueMaps_NeutralHadrons_PUPPI, ValueMaps_Photons_PUPPI;
+  
+  
   
   //CITK
   iEvent.getByToken( ValueMaps_ChargedHadrons_ , ValueMaps_ChargedHadrons);
   iEvent.getByToken( ValueMaps_NeutralHadrons_ , ValueMaps_NeutralHadrons);
   iEvent.getByToken( ValueMaps_Photons_ , ValueMaps_Photons);
+
+  //PUPPI
+  iEvent.getByToken( ValueMaps_ChargedHadrons_PUPPI_ , ValueMaps_ChargedHadrons_PUPPI);
+  iEvent.getByToken( ValueMaps_NeutralHadrons_PUPPI_, ValueMaps_NeutralHadrons_PUPPI);
+  iEvent.getByToken( ValueMaps_Photons_PUPPI_ , ValueMaps_Photons_PUPPI);
 
 
   //
@@ -254,7 +288,7 @@ MuonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
         
     // Isolation
-    reco::MuonPFIsolation pfIso = muonPtr -> pfIsolationR03();
+    reco::MuonPFIsolation pfIso = muonPtr -> pfIsolationR04();
     isoChargedHadrons_ = pfIso.sumChargedHadronPt ;
     isoNeutralHadrons_ = pfIso.sumNeutralHadronEt ;
     isoPhotons_        = pfIso.sumPhotonEt ;
@@ -273,10 +307,17 @@ MuonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     sumChargedHadronPt_CITK =  (*ValueMaps_ChargedHadrons)[muonPtr];
     sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[muonPtr];
     sumPhotonPt_CITK        =  (*ValueMaps_Photons)[muonPtr];
+
+    //PUPPI
+    sumChargedHadronPt_PUPPI =  (*ValueMaps_ChargedHadrons_PUPPI)[muonPtr];
+    sumNeutralHadronPt_PUPPI =  (*ValueMaps_NeutralHadrons_PUPPI)[muonPtr];
+    sumPhotonPt_PUPPI       =  (*ValueMaps_Photons_PUPPI)[muonPtr];
   
     relisoChargedHadronPt_CITK = sumChargedHadronPt_CITK/pt_;
     relisoNeutralHadronPt_CITK = sumNeutralHadronPt_CITK/pt_;
     relisoPhotonPt_CITK = sumPhotonPt_CITK/pt_;
+
+    relIso_PUPPI = (sumChargedHadronPt_PUPPI + sumNeutralHadronPt_PUPPI + sumPhotonPt_PUPPI)/pt_;
     
          
     // Save this electron's info
