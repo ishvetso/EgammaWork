@@ -33,7 +33,7 @@
 
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
-#include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
@@ -75,7 +75,7 @@ private:
   
   // ----------member data ---------------------------
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
-  edm::EDGetTokenT<edm::View<reco::Muon>> muonToken_;
+  edm::EDGetTokenT<edm::View<pat::Muon>> muonToken_;
  
   
   //CITK
@@ -131,6 +131,8 @@ private:
   Float_t relisoPhotonPt_CITK;
 
   Float_t relIso_PUPPI;
+
+  bool isTightMuon;
   
 };
 
@@ -150,7 +152,7 @@ private:
 MuonNtupler::MuonNtupler(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   
-  muonToken_(consumes<edm::View<reco::Muon> >(iConfig.getParameter<edm::InputTag>("muons"))),
+  muonToken_(consumes<edm::View<pat::Muon> >(iConfig.getParameter<edm::InputTag>("muons"))),
   //CITK
   ValueMaps_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_src" ) ) ),
   ValueMaps_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_src" ) ) ),
@@ -203,8 +205,9 @@ MuonNtupler::MuonNtupler(const edm::ParameterSet& iConfig):
   muonTree_ -> Branch("relisoNeutralHadronPt_CITK", &relisoNeutralHadronPt_CITK, "relisoNeutralHadronPt_CITK/F");
   muonTree_ -> Branch("relisoPhotonPt_CITK", &relisoPhotonPt_CITK, "relisoPhotonPt_CITK/F");
   
+  muonTree_ -> Branch("relIso_PUPPI", &relIso_PUPPI, "relIso_PUPPI/F");
 
-    muonTree_ -> Branch("relIso_PUPPI", &relIso_PUPPI, "relIso_PUPPI/F");
+  muonTree_ -> Branch("isTightMuon", &isTightMuon, "isTightMuon/F");
   
 
 
@@ -249,7 +252,7 @@ MuonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   
   // Get electron collection
-  Handle<edm::View<reco::Muon> > muons;
+  Handle<edm::View<pat::Muon> > muons;
   iEvent.getByToken(muonToken_, muons);
     
   //CITK
@@ -318,6 +321,8 @@ MuonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     relisoPhotonPt_CITK = sumPhotonPt_CITK/pt_;
 
     relIso_PUPPI = (sumChargedHadronPt_PUPPI + sumNeutralHadronPt_PUPPI + sumPhotonPt_PUPPI)/pt_;
+
+    isTightMuon = muonPtr -> isTightMuon(vertices -> at(0));
     
          
     // Save this electron's info
