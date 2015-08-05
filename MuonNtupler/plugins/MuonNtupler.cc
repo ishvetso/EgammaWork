@@ -207,7 +207,7 @@ MuonNtupler::MuonNtupler(const edm::ParameterSet& iConfig):
   
   muonTree_ -> Branch("relIso_PUPPI", &relIso_PUPPI, "relIso_PUPPI/F");
 
-  muonTree_ -> Branch("isTightMuon", &isTightMuon, "isTightMuon/F");
+  muonTree_ -> Branch("isTightMuon", &isTightMuon, "isTightMuon/B");
   
 
 
