@@ -59,6 +59,7 @@ process.ntupler = cms.EDAnalyzer('MuonNtupler',
 				 ValueMaps_ChargedHadrons_PUPPI_src = cms.InputTag("MuonIsolationPUPPI", "h+-DR040-"),
 				 ValueMaps_NeutralHadrons_PUPPI_src = cms.InputTag("MuonIsolationPUPPI", "h0-DR040-"),
 				 ValueMaps_Photons_PUPPI_src = cms.InputTag("MuonIsolationPUPPI", "gamma-DR040-"),
+				 genInfo = cms.InputTag("generator")
 								
 				)
 

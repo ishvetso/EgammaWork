@@ -47,6 +47,7 @@
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 #include "TTree.h"
 #include "Math/VectorUtil.h"
@@ -87,6 +88,8 @@ private:
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_ChargedHadrons_PUPPI_;
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_NeutralHadrons_PUPPI_;
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_Photons_PUPPI_;
+
+  edm::EDGetTokenT<GenEventInfoProduct> genInfoToken;
 
 
 
@@ -131,6 +134,7 @@ private:
   Float_t relisoPhotonPt_CITK;
 
   Float_t relIso_PUPPI;
+  Int_t genWeight;
 
   bool isTightMuon;
   
@@ -159,7 +163,10 @@ MuonNtupler::MuonNtupler(const edm::ParameterSet& iConfig):
   ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) ),
   ValueMaps_ChargedHadrons_PUPPI_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_PUPPI_src" ) ) ),
   ValueMaps_NeutralHadrons_PUPPI_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_PUPPI_src" ) ) ),
-  ValueMaps_Photons_PUPPI_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_PUPPI_src" ) ) )
+  ValueMaps_Photons_PUPPI_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_PUPPI_src" ) ) ),
+  genInfoToken(consumes<GenEventInfoProduct> (iConfig.getParameter<edm::InputTag>( "genInfo" ) ) )
+
+
 
 
 {
@@ -206,6 +213,8 @@ MuonNtupler::MuonNtupler(const edm::ParameterSet& iConfig):
   muonTree_ -> Branch("relisoPhotonPt_CITK", &relisoPhotonPt_CITK, "relisoPhotonPt_CITK/F");
   
   muonTree_ -> Branch("relIso_PUPPI", &relIso_PUPPI, "relIso_PUPPI/F");
+  muonTree_ -> Branch("genWeight", &genWeight, "genWeight/I");
+
 
   muonTree_ -> Branch("isTightMuon", &isTightMuon, "isTightMuon/B");
   
@@ -259,8 +268,8 @@ MuonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   Handle <edm::ValueMap <float> > ValueMaps_ChargedHadrons, ValueMaps_NeutralHadrons, ValueMaps_Photons;
   //CITK
   Handle <edm::ValueMap <float> > ValueMaps_ChargedHadrons_PUPPI, ValueMaps_NeutralHadrons_PUPPI, ValueMaps_Photons_PUPPI;
-  
-  
+
+  Handle <GenEventInfoProduct> genInfo;  
   
   //CITK
   iEvent.getByToken( ValueMaps_ChargedHadrons_ , ValueMaps_ChargedHadrons);
@@ -271,6 +280,8 @@ MuonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken( ValueMaps_ChargedHadrons_PUPPI_ , ValueMaps_ChargedHadrons_PUPPI);
   iEvent.getByToken( ValueMaps_NeutralHadrons_PUPPI_, ValueMaps_NeutralHadrons_PUPPI);
   iEvent.getByToken( ValueMaps_Photons_PUPPI_ , ValueMaps_Photons_PUPPI);
+  iEvent.getByToken( genInfoToken , genInfo);
+
 
 
   //
@@ -323,6 +334,9 @@ MuonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     relIso_PUPPI = (sumChargedHadronPt_PUPPI + sumNeutralHadronPt_PUPPI + sumPhotonPt_PUPPI)/pt_;
 
     isTightMuon = muonPtr -> isTightMuon(vertices -> at(0));
+
+    genWeight = (genInfo -> weight()) > 0 ? 1 : -1;
+            
     
          
     // Save this electron's info
