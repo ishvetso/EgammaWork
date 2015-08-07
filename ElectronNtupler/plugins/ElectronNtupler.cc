@@ -114,7 +114,10 @@ private:
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_ChargedHadrons_;
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_NeutralHadrons_;
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_Photons_;
-  
+
+  edm::EDGetTokenT<edm::ValueMap<bool> > ValueMap_ids_wp80_Token;
+  edm::EDGetTokenT<edm::ValueMap<bool> > ValueMap_ids_wp90_Token;  
+
   TTree *electronTree_;
   
   // Vars for pile-up
@@ -184,6 +187,9 @@ private:
   Float_t relisoChargedHadronPt_PUPPINoLeptons;
   Float_t relisoNeutralHadronPt_PUPPINoLeptons;
   Float_t relisoPhotonPt_PUPPINoLeptons;
+
+  Int_t mvaIDBit_w80;
+  Int_t mvaIDBit_w90;
   
   bool isEB;
 };
@@ -227,10 +233,11 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   //PUPPINoLeptons
   ValueMaps_PUPPI_NoLeptons_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_ChargedHadrons_src" ) ) ),
   ValueMaps_PUPPI_NoLeptons_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_NeutralHadrons_src" ) ) ),
-  ValueMaps_PUPPI_NoLeptons_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_Photons_src" ) ) )
+  ValueMaps_PUPPI_NoLeptons_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_Photons_src" ) ) ),
 
+ ValueMap_ids_wp80_Token(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>( "mva_idw80_src" ) ) ),
+ ValueMap_ids_wp90_Token(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>( "mva_idw90_src" ) ) )
 {
-
   edm::Service<TFileService> fs;
   electronTree_ = fs->make<TTree> ("ElectronTree", "Electron data");
   
@@ -305,6 +312,9 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_ -> Branch("relisoChargedHadronPt_PUPPINoLeptons", &relisoChargedHadronPt_PUPPINoLeptons, "relisoChargedHadronPt_PUPPINoLeptons/F");
   electronTree_ -> Branch("relisoNeutralHadronPt_PUPPINoLeptons", &relisoNeutralHadronPt_PUPPINoLeptons, "relisoNeutralHadronPt_PUPPINoLeptons/F");
   electronTree_ -> Branch("relisoPhotonPt_PUPPINoLeptons", &relisoPhotonPt_PUPPINoLeptons, "relisoPhotonPt_PUPPINoLeptons/F");
+
+  electronTree_ -> Branch("mvaIDBit_w80", &mvaIDBit_w80, "mvaIDBit_w80/I");
+  electronTree_ -> Branch("mvaIDBit_w90", &mvaIDBit_w90, "mvaIDBit_w90/I");
   
   electronTree_ -> Branch("isEB", &isEB, "isEB/B");
 
@@ -410,6 +420,11 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ , ValueMaps_PUPPI_NoLeptons_ChargedHadrons);
   iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ , ValueMaps_PUPPI_NoLeptons_NeutralHadrons);
   iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_Photons_ , ValueMaps_PUPPI_NoLeptons_Photons);
+
+  Handle <edm::ValueMap <bool> >  ValueMap_ids_wp80, ValueMap_ids_wp90;
+
+  iEvent.getByToken( ValueMap_ids_wp80_Token , ValueMap_ids_wp80);
+  iEvent.getByToken( ValueMap_ids_wp90_Token , ValueMap_ids_wp90);
    
   //
   // Loop over electrons
@@ -536,6 +551,10 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     
     const reco::CaloClusterPtr& seed = eleGsfPtr -> superCluster()->seed();
     isEB = ( seed->seed().subdetId() == EcalBarrel );
+
+    //saving id bits
+    mvaIDBit_w80  =  (*ValueMap_ids_wp80)[elePtr];
+    mvaIDBit_w90  =  (*ValueMap_ids_wp90)[elePtr];
          
     // Save this electron's info
     electronTree_->Fill();
