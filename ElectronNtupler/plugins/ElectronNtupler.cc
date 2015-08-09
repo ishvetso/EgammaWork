@@ -47,6 +47,7 @@
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 #include "TTree.h"
 #include "Math/VectorUtil.h"
@@ -116,7 +117,9 @@ private:
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_Photons_;
 
   edm::EDGetTokenT<edm::ValueMap<bool> > ValueMap_ids_wp80_Token;
-  edm::EDGetTokenT<edm::ValueMap<bool> > ValueMap_ids_wp90_Token;  
+  edm::EDGetTokenT<edm::ValueMap<bool> > ValueMap_ids_wp90_Token; 
+
+  edm::EDGetTokenT<GenEventInfoProduct> genInfoToken;
 
   TTree *electronTree_;
   
@@ -191,6 +194,8 @@ private:
   Int_t mvaIDBit_w80;
   Int_t mvaIDBit_w90;
   
+   Int_t genWeight;
+
   bool isEB;
 };
 
@@ -236,7 +241,8 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   ValueMaps_PUPPI_NoLeptons_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_Photons_src" ) ) ),
 
  ValueMap_ids_wp80_Token(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>( "mva_idw80_src" ) ) ),
- ValueMap_ids_wp90_Token(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>( "mva_idw90_src" ) ) )
+ ValueMap_ids_wp90_Token(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>( "mva_idw90_src" ) ) ),
+ genInfoToken(consumes<GenEventInfoProduct> (iConfig.getParameter<edm::InputTag>( "genInfo" ) ) )
 {
   edm::Service<TFileService> fs;
   electronTree_ = fs->make<TTree> ("ElectronTree", "Electron data");
@@ -315,6 +321,7 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
 
   electronTree_ -> Branch("mvaIDBit_w80", &mvaIDBit_w80, "mvaIDBit_w80/I");
   electronTree_ -> Branch("mvaIDBit_w90", &mvaIDBit_w90, "mvaIDBit_w90/I");
+  electronTree_ -> Branch("genWeight", &genWeight, "genWeight/I");
   
   electronTree_ -> Branch("isEB", &isEB, "isEB/B");
 
@@ -425,6 +432,9 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   iEvent.getByToken( ValueMap_ids_wp80_Token , ValueMap_ids_wp80);
   iEvent.getByToken( ValueMap_ids_wp90_Token , ValueMap_ids_wp90);
+
+   Handle <GenEventInfoProduct> genInfo; 
+   iEvent.getByToken( genInfoToken , genInfo);
    
   //
   // Loop over electrons
@@ -555,6 +565,8 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     //saving id bits
     mvaIDBit_w80  =  (*ValueMap_ids_wp80)[elePtr];
     mvaIDBit_w90  =  (*ValueMap_ids_wp90)[elePtr];
+
+    genWeight = (genInfo -> weight()) > 0 ? 1 : -1;
          
     // Save this electron's info
     electronTree_->Fill();

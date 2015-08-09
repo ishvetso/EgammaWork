@@ -143,6 +143,7 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 ValueMaps_PUPPI_NoLeptons_Photons_src = cms.InputTag("ElectronIsolationOnPUPPINoLeptons", "gamma-DR030-BarVeto000-EndVeto008"),
 				 mva_idw80_src = cms.InputTag("egmGsfElectronIDs", "mvaEleID-PHYS14-PU20bx25-nonTrig-V1-wp80"),
 				 mva_idw90_src = cms.InputTag("egmGsfElectronIDs", "mvaEleID-PHYS14-PU20bx25-nonTrig-V1-wp90"),
+  				 genInfo = cms.InputTag("generator")
 				)
 
 process.electrons = cms.Path( process.egmGsfElectronIDSequence + process.pfNoLeptons +  process.puppi + process.puppiNoLeptons + process.ElectronIsolation + process.ElectronIsolationOnPUPPI + process.ElectronIsolationOnPUPPINoLeptons + process.ntupler)
