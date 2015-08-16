@@ -42,7 +42,10 @@ my_id_modules = ['RecoEgamma.ElectronIdentification.Identification.mvaElectronID
 for idmod in my_id_modules:
     setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
 
-
+process.SelectedElectrons = cms.EDFilter('ElectronSelector',
+				 electron_src = cms.InputTag("slimmedElectrons"),
+				 cand_src = cms.InputTag("packedPFCandidates"),
+				)
 
 process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
 					    srcToIsolate = cms.InputTag("slimmedElectrons"),
@@ -74,50 +77,52 @@ process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
 process.ElectronIsolationOnPUPPI = cms.EDProducer("CITKPFIsolationSumProducer",
 					    srcToIsolate = cms.InputTag("slimmedElectrons"),
 					    srcForIsolationCone = cms.InputTag('puppi'),
+					   # puppiValueMap = cms.InputTag('puppi'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
 									VetoConeSizeEndcaps = cms.double(0.015),
 									VetoConeSizeBarrel = cms.double(0.0),
 									isolateAgainst = cms.string('h+'),
-									miniAODVertexCodes = cms.vuint32(1,2,3) ),
+									miniAODVertexCodes = cms.vuint32(2,3) ),
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
 									VetoConeSizeEndcaps = cms.double(0.0),
 									VetoConeSizeBarrel = cms.double(0.0),
 									isolateAgainst = cms.string('h0'),
-									miniAODVertexCodes = cms.vuint32(1,2,3) ),
+									miniAODVertexCodes = cms.vuint32(2,3) ),
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
 									VetoConeSizeEndcaps = cms.double(0.08),
 									VetoConeSizeBarrel = cms.double(0.0),
 									isolateAgainst = cms.string('gamma'),
-									miniAODVertexCodes = cms.vuint32(1,2,3) )
+									miniAODVertexCodes = cms.vuint32(2,3) )
 								      )
 					)
 
 process.ElectronIsolationOnPUPPINoLeptons = cms.EDProducer("CITKPFIsolationSumProducer",
 					    srcToIsolate = cms.InputTag("slimmedElectrons"),
 					    srcForIsolationCone = cms.InputTag('puppiNoLeptons'),
+					    #puppiValueMap = cms.InputTag('puppi'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
 									VetoConeSizeEndcaps = cms.double(0.015),
 									VetoConeSizeBarrel = cms.double(0.0),
 									isolateAgainst = cms.string('h+'),
-									miniAODVertexCodes = cms.vuint32(1,2,3) ),
+									miniAODVertexCodes = cms.vuint32(2,3) ),
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
 									VetoConeSizeEndcaps = cms.double(0.0),
 									VetoConeSizeBarrel = cms.double(0.0),
 									isolateAgainst = cms.string('h0'),
-									miniAODVertexCodes = cms.vuint32(1,2,3) ),
+									miniAODVertexCodes = cms.vuint32(2,3) ),
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
 									VetoConeSizeEndcaps = cms.double(0.08),
 									VetoConeSizeBarrel = cms.double(0.0),
 									isolateAgainst = cms.string('gamma'),
-									miniAODVertexCodes = cms.vuint32(1,2,3) )
+									miniAODVertexCodes = cms.vuint32(2,3) )
 								      )
 					)									
 									
@@ -127,7 +132,7 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 pruned = cms.InputTag("prunedGenParticles"),
 				 pileup = cms.InputTag("addPileupInfo"),
 				 vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
-				 electrons = cms.InputTag("slimmedElectrons"),
+				 electrons = cms.InputTag("SelectedElectrons"),
 				 rho = cms.InputTag("fixedGridRhoFastjetAll"),
 				 #CITK
 				 ValueMaps_ChargedHadrons_src = cms.InputTag("ElectronIsolation", "h+-DR030-BarVeto000-EndVeto001"),
@@ -146,7 +151,7 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
   				 genInfo = cms.InputTag("generator")
 				)
 
-process.electrons = cms.Path( process.egmGsfElectronIDSequence + process.pfNoLeptons +  process.puppi + process.puppiNoLeptons + process.ElectronIsolation + process.ElectronIsolationOnPUPPI + process.ElectronIsolationOnPUPPINoLeptons + process.ntupler)
+process.electrons = cms.Path( process.SelectedElectrons + process.egmGsfElectronIDSequence + process.pfNoLeptons +  process.puppi + process.puppiNoLeptons + process.ElectronIsolation + process.ElectronIsolationOnPUPPI + process.ElectronIsolationOnPUPPINoLeptons + process.ntupler)
 
 
 process.source = cms.Source("PoolSource",
@@ -158,12 +163,12 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 
-'''process.out = cms.OutputModule("PoolOutputModule",
+process.out = cms.OutputModule("PoolOutputModule",
  fileName = cms.untracked.string('patTuple.root'),
   outputCommands = cms.untracked.vstring('keep *')
 )
 
-process.outpath = cms.EndPath(process.out)'''
+process.outpath = cms.EndPath(process.out)
 
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree.root")

@@ -36,6 +36,9 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/Common/interface/Ref.h"
+
+
 //
 // class declaration
 //
@@ -79,7 +82,7 @@ ElectronSelector::ElectronSelector(const edm::ParameterSet& iConfig):
   cands_(consumes<edm::View<pat::PackedCandidate> > (iConfig.getParameter<edm::InputTag>( "cand_src" ) ) )
 {
    //now do what ever initialization is needed
-   produces<std::vector<pat::Electron>>();
+   produces<edm::RefVector<std::vector<pat::Electron>>>();
 
 }
 
@@ -107,7 +110,7 @@ ElectronSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   bool pass = false;
 
-    std::auto_ptr<std::vector<pat::Electron> > ElectronsSelected(new std::vector<pat::Electron>);
+    std::auto_ptr<edm::RefVector<std::vector<pat::Electron> > > ElectronsSelected(new edm::RefVector<std::vector<pat::Electron>>);
 
     iEvent.getByToken(Electrons_, Electrons);
      iEvent.getByToken(cands_, cands);
@@ -129,12 +132,13 @@ ElectronSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             if (deltaR_ < 0.01 ) pass = true;
            }
        }
-       if (pass) ElectronsSelected -> push_back( Electrons -> at(iElectron));
+       if (pass) ElectronsSelected -> push_back( Electrons -> refAt(iElectron).castTo<edm::Ref<std::vector<pat::Electron> > >());
    }
 
    bool passEvent = false;
    if (ElectronsSelected -> size() > 0 ) passEvent = true;
    iEvent.put(ElectronsSelected);
+    std::cout << passEvent << std::endl;
 
 
 #ifdef THIS_IS_AN_EVENT_EXAMPLE

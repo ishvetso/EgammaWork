@@ -48,13 +48,20 @@
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
-
+#include "DataFormats/Common/interface/Ref.h"
+#include "DataFormats/Common/interface/RefVector.h"
 #include "TTree.h"
 #include "Math/VectorUtil.h"
+#include "DataFormats/Common/interface/RefToPtr.h"
+
 
 
 namespace reco {
   typedef edm::Ptr<reco::GsfElectron> GsfElectronPtr;
+}
+
+namespace pat {
+  typedef edm::Ptr<pat::Electron> PatElectronPtr;
 }
 //
 // class declaration
@@ -96,7 +103,7 @@ private:
   // ----------member data ---------------------------
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
   edm::EDGetTokenT<edm::View<PileupSummaryInfo> > pileupToken_;
-  edm::EDGetTokenT<edm::View<reco::Candidate>> electronToken_;
+  edm::EDGetTokenT<edm::RefVector<std::vector<pat::Electron>>> electronToken_;
   edm::EDGetTokenT<edm::View<reco::GenParticle> > prunedGenToken_;
   edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
   edm::EDGetTokenT<double> rhoToken_;
@@ -223,7 +230,7 @@ namespace EffectiveAreas {
 ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   pileupToken_(consumes<edm::View<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("pileup"))),
-  electronToken_(consumes<edm::View<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("electrons"))),
+  electronToken_(consumes<edm::RefVector<std::vector<pat::Electron>>>(iConfig.getParameter<edm::InputTag>("electrons"))),
   prunedGenToken_(consumes<edm::View<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>("pruned"))),
   rhoToken_(consumes<double> (iConfig.getParameter<edm::InputTag>("rho"))),
   
@@ -403,7 +410,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   rho_ = *rhoH;
   
   // Get electron collection
-  Handle<edm::View<reco::Candidate> > electrons;
+  Handle<edm::RefVector<std::vector<pat::Electron>>> electrons;
   iEvent.getByToken(electronToken_, electrons);
   
 
@@ -439,14 +446,17 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //
   // Loop over electrons
   //
-  // printf("DEBUG: new event\n"); 
+  // printf("DEBUG: new event\n");
+   std::cout << "size " << electrons -> size() << std::endl; 
   for (unsigned int iElectron = 0; iElectron < electrons -> size(); iElectron++) {
     
     
-    auto elePtr = electrons -> ptrAt(iElectron);
+    auto eleRef = (*electrons)[iElectron];
+    auto elePtr = edm::refToPtr(eleRef);
     reco::GsfElectronPtr eleGsfPtr(elePtr);
     // Kinematics
     pt_ = eleGsfPtr -> pt();
+    std::cout << "pt " << pt_ << std::endl;
     
     // Keep only electrons above 10 GeV.
     // NOTE: miniAOD does not store some of the info for electrons <5 GeV at all!
@@ -523,12 +533,15 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     // For debug purposes, one can use this utility that prints 
     // the decay history, using standard matching in this case:
     //   printAllZeroMothers( el.genParticle() );
+
+    std::cout << "value map " << ValueMaps_Photons -> size() << std::endl;
     
     //CITK
-    sumChargedHadronPt_CITK =  (*ValueMaps_ChargedHadrons)[elePtr];
-    sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[elePtr];
-    sumPhotonPt_CITK        =  (*ValueMaps_Photons)[elePtr];
-    
+    sumChargedHadronPt_CITK =  (*ValueMaps_ChargedHadrons)[eleGsfPtr];
+    sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[eleGsfPtr];
+    sumPhotonPt_CITK        =  (*ValueMaps_Photons)[eleGsfPtr];
+
+     
     //PUPPI
     sumChargedHadronPt_PUPPI =  (*ValueMaps_PUPPI_ChargedHadrons)[elePtr];
     sumNeutralHadronPt_PUPPI =  (*ValueMaps_PUPPI_NeutralHadrons)[elePtr];
