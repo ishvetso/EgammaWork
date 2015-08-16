@@ -49,12 +49,10 @@ void ROC_Drawer::draw_ROC()
   gStyle->SetOptTitle(0);
 //gPad->SetGrid();
   
-  TGraph * gr1 =  graph_ROC("reliso_raw", 10000, 0., 15.);
-  TGraph * gr2 =  graph_ROC("relIsoWithEA", 10000, 0., 15.);
-  TGraph * gr3 =  graph_ROC("relIsoWithDBeta", 10000, 0., 15.);
-  TGraph * gr4 =  graph_ROC("relIsoWithEA_MapBasedVeto", 10000, 0., 15.);
-  TGraph * gr5 =  graph_ROC("reliso_PUPPI", 10000, 0., 15.);
-  TGraph * gr6 =  graph_ROC("reliso_PUPPI_NoLeptons", 10000, 0., 15.);
+  TGraph * gr1 =  graph_ROC("relIsoWithEA", 10000, 0., 15.);
+  TGraph * gr2 =  graph_ROC("relIsoWithDBeta", 10000, 0., 15.);
+  TGraph * gr3 =  graph_ROC("reliso_PUPPI", 10000, 0., 15.);
+  TGraph * gr4 =  graph_ROC("reliso_PUPPI_NoLeptons", 10000, 0., 15.);
   
   
   gr1 -> GetYaxis() -> SetTitle("bkg rejection");
@@ -64,15 +62,12 @@ void ROC_Drawer::draw_ROC()
   gr2 -> SetLineWidth(2.);
   gr3 -> SetLineWidth(2.);
   gr4 -> SetLineWidth(2.);
-  gr5 -> SetLineWidth(2.);
-  gr6 -> SetLineWidth(2.);
   
   gr1 -> SetLineColor(kBlack);
   gr2 -> SetLineColor(kBlue);
   gr3 -> SetLineColor(kGreen);
-  gr4 -> SetLineColor(kMagenta);
-  gr5 -> SetLineColor(kRed);
-  gr6 -> SetLineColor(kOrange);
+  gr4 -> SetLineColor(kRed);
+ 
   
   setTDRStyle();   
   TCanvas *c1= new TCanvas("c1","canvas",1200,800);
@@ -80,21 +75,17 @@ void ROC_Drawer::draw_ROC()
   TLegend *leg = new TLegend(0.2,0.3,0.5,0.7);
   leg -> SetFillColor(kWhite);  
   
-  leg->AddEntry(gr1, "reliso_raw","l");
-  leg->AddEntry(gr2, "relIsoWithEA","l");
-  leg->AddEntry(gr3, "relIsoWithDBeta","l");
-  leg->AddEntry(gr4, "relIsoWithEA_MapBasedVeto","l");
-  leg->AddEntry(gr5, "reliso_PUPPI","l");
-  leg->AddEntry(gr6, "reliso_PUPPI_NoLeptons","l");
-  
+  leg->AddEntry(gr1, "relIsoWithEA","l");
+  leg->AddEntry(gr2, "relIsoWithDBeta","l");
+  leg->AddEntry(gr3, "reliso_PUPPI","l");
+  leg->AddEntry(gr4, "reliso_PUPPI_NoLeptons","l");
+ 
  
   c1 -> cd();
   gr1 -> Draw();
   gr2 -> Draw("SAME");
   gr3 -> Draw("SAME");
   gr4 -> Draw("SAME");
-  gr5 -> Draw("SAME");
-  gr6 -> Draw("SAME");
   leg -> Draw("SAME");
 
   CMS_lumi( c1, 4, 0 );
