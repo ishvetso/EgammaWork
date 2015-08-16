@@ -12,8 +12,8 @@ config.Data.inputDBS = 'global'
 config.Data.splitting = 'FileBased'
 config.Data.unitsPerJob = 1
 #config.Data.outLFN = '/store/user/<subdir>' # or '/store/group/<subdir>'
-config.Data.publication = True
+config.Data.publication = False
 #config.Data.Data.publishDBS = 'phys03'
-config.Data.publishDataName = 'Electron-Isolation_CITK_validation_DY_miniAOD_PUPPI_with_NoLeptons_update22June2015'
+#config.Data.publishDataName = 'Electron-Isolation_CITK_validation_DY_miniAOD_PUPPI_with_NoLeptons_update22June2015'
 config.section_("Site")
 config.Site.storageSite = 'T2_DE_DESY'
