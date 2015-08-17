@@ -470,7 +470,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     float Area = effAreaChHadrons_.getEffectiveArea(abseta) + effAreaNeuHadrons_.getEffectiveArea(abseta) + effAreaPhotons_.getEffectiveArea(abseta);
     relisoWithEA_.push_back((std::max( (float)0.0, chIso + nhIso + phIso - rho_*Area )) /(pho -> pt()) );
     relisoWithEA_CITK_.push_back((std::max( (float)0.0, chIso_CITK + nhIso_CITK + phIso_CITK - rho_*Area))/(pho -> pt()) );
-    relisoWithEA_CITK_dcuts_.push_back((chIso_CITK_dcuts + nhIso_CITK_dcuts + phIso_CITK_dcuts - rho_*Area)/(pho -> pt()));
+    relisoWithEA_CITK_dcuts_.push_back((std::max( (float)0.0, chIso_CITK_dcuts + nhIso_CITK_dcuts + phIso_CITK_dcuts - rho_*Area))/(pho -> pt()) );
     relisoWithEA_pf_.push_back((std::max( (float)0.0, chIso_pf + nhIso_pf + phIso_pf - rho_*Area )) /(pho -> pt()) ); 
     // Save MC truth match
     isTrue_.push_back( matchToTruth(*pho, genParticles) );
