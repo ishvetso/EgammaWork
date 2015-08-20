@@ -1,8 +1,7 @@
 This repository contains a setup for running photon isolation with CITK (Common Isolation Toolkit) [CITK twiki]. 
 
 
-In order to run only photon isolation with CITK (pfIsolationVariables are also there), you should do following (CMSSW verstion is the one I used):
-
+In order to run only photon isolation with CITK (pfIsolationVariables are also there), you should do following (CMSSW verstion is the one I used), only <b> miniAOD</b> is supported now:
 
 
 1. cmsrel CMSSW_7_4_7 <br />
