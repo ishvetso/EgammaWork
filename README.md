@@ -13,19 +13,17 @@ scram b -j10  <br />
 cmsRun EgammaWork/electron_isolation_CITK.py (for miniAOD)  <br />
 cmsRun EgammaWork/electron_isolation_CITK_AOD.py (for AOD)  <br />
 
-In order to run only <b>electron isolation</b> with CITK <b>including PUPPI-based electron isolation</b>, you should following (CMSSW verstion is the one I used): 
-
-1.cmsrel CMSSW_7_4_6_patch2  <br />
-  cd CMSSW_7_4_6_patch2/src <br />
+In order to run only <b>electron isolation</b> with CITK <b>including PUPPI-based electron isolation</b>, you should do following (CMSSW verstion is the one I used): 
+(<b>CMSSW_7_4_7 should be used or later</b>(mva electrons ids are not available in earlier releases))
+1.cmsrel CMSSW_7_4_7  <br />
+  cd CMSSW_7_4_7/src <br />
   cmsenv <br />
   git clone -b ElectronBranch git@github.com:ishvetso/EgammaWork.git <br />
 2. do what is stated on the [PUPPI twiki] <br/>
 3. Then: 
   scram b -j10  <br />
   # this is to run electron isolation for puppi with electrons with cone footprint removal <br / >
-  cmsRun EgammaWork/electron_isolation_CITK_PUPPI.py (miniAOD) <br />
-  # this is  for cross-checks, added isolation with map-based footprint removal (for standard PFCandidates, not for puppi) <br />
-  cmsRun EgammaWork/electron_isolation_CITK_PUPPI_working.py <br />
+  cmsRun EgammaWork/electron_isolation_CITK_PUPPI_IDs.py (miniAOD) <br />
 
 [CITK twiki]:https://twiki.cern.ch/twiki/bin/viewauth/CMS/CommonIDAndIsolationFW
 [PUPPI twiki]:https://twiki.cern.ch/twiki/bin/viewauth/CMS/PUPPI#Validation_framework_in_CMSSW_73
