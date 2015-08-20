@@ -99,12 +99,8 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoPhotonIsolationToken_; 
   
-  //CITK
-  edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_CITK; 
-  edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_CITK; 
-  edm::EDGetTokenT<edm::ValueMap<float> > phoPhotonIsolationToken_CITK; 
  
-  //dcuts
+  //CITK dcuts
   edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_CITK_dcuts; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_CITK_dcuts; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoPhotonIsolationToken_CITK_dcuts; 
@@ -129,10 +125,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   std::vector<Float_t> isoNeutralHadrons_;
   std::vector<Float_t> isoPhotons_;
   
-  std::vector<Float_t> isoChargedHadrons_CITK_;
-  std::vector<Float_t> isoNeutralHadrons_CITK_;
-  std::vector<Float_t> isoPhotons_CITK_;
-  
+    
   std::vector<Float_t> isoChargedHadrons_CITK_dcuts_;
   std::vector<Float_t> isoNeutralHadrons_CITK_dcuts_;
   std::vector<Float_t> isoPhotons_CITK_dcuts_;
@@ -147,9 +140,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
 
   //relative isolation from photonIDValueMapProducer
   std::vector<Float_t> relisoWithEA_;
-  //relative isolation from CITK with map based veto
-  std::vector<Float_t> relisoWithEA_CITK_;
-    //relative isolation dcuts
+  //relative isolation  by CITK dcuts
   std::vector<Float_t> relisoWithEA_CITK_dcuts_;
   //relative isolation for pf
   std::vector<Float_t> relisoWithEA_pf_;
@@ -187,16 +178,9 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
 				  (iConfig.getParameter<edm::InputTag>("phoNeutralHadronIsolation"))),
   phoPhotonIsolationToken_(consumes <edm::ValueMap<float> >
 			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation"))),
+	
 			   
-  // Isolations from CITK
-  phoChargedIsolationToken_CITK(consumes <edm::ValueMap<float> >
-			    (iConfig.getParameter<edm::InputTag>("phoChargedIsolation_CITK"))),
-  phoNeutralHadronIsolationToken_CITK(consumes <edm::ValueMap<float> >
-				  (iConfig.getParameter<edm::InputTag>("phoNeutralHadronIsolation_CITK"))),
-  phoPhotonIsolationToken_CITK(consumes <edm::ValueMap<float> >
-			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation_CITK"))),
-			   
-  // Isolations from dcuts
+  // Isolations by CITK with dcuts
   phoChargedIsolationToken_CITK_dcuts(consumes <edm::ValueMap<float> >
 			    (iConfig.getParameter<edm::InputTag>("phoChargedIsolation_CITK_dcuts"))),
   phoNeutralHadronIsolationToken_CITK_dcuts(consumes <edm::ValueMap<float> >
@@ -252,11 +236,6 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("isoNeutralHadrons"      , &isoNeutralHadrons_);
   photonTree_->Branch("isoPhotons"             , &isoPhotons_);
 
-  //CITK
-  photonTree_->Branch("isoChargedHadrons_CITK"      , &isoChargedHadrons_CITK_);
-  photonTree_->Branch("isoNeutralHadrons_CITK"      , &isoNeutralHadrons_CITK_);
-  photonTree_->Branch("isoPhotons_CITK"             , &isoPhotons_CITK_);
-  
   //pfIsolation variables
   photonTree_->Branch("isoChargedHadrons_pf"      , &isoChargedHadrons_pf_);
   photonTree_->Branch("isoNeutralHadrons_pf"      , &isoNeutralHadrons_pf_);
@@ -267,13 +246,12 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("isoNeutralHadronsWithEA"      , &isoNeutralHadronsWithEA_);
   photonTree_->Branch("isoPhotonsWithEA"             , &isoPhotonsWithEA_);
   
-  //dcuts 
+  //CITK with dcuts 
   photonTree_->Branch("isoChargedHadrons_CITK_dcuts"      , &isoChargedHadrons_CITK_dcuts_);
   photonTree_->Branch("isoNeutralHadrons_CITK_dcuts"      , &isoNeutralHadrons_CITK_dcuts_);
   photonTree_->Branch("isoPhotons_CITK_dcuts"             , &isoPhotons_CITK_dcuts_);
 
   photonTree_->Branch("relisoWithEA"                 , &relisoWithEA_);
-  photonTree_->Branch("relisoWithEA_CITK"                 , &relisoWithEA_CITK_);
   photonTree_->Branch("relisoWithEA_CITK_dcuts"                 , &relisoWithEA_CITK_dcuts_);
   photonTree_->Branch("relisoWithEA_pf"                 , &relisoWithEA_pf_);
 
@@ -341,16 +319,8 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   edm::Handle<edm::ValueMap<float> > phoPhotonIsolationMap;
   iEvent.getByToken(phoPhotonIsolationToken_, phoPhotonIsolationMap);
   
-  // Get the isolation maps for CITK
-  edm::Handle<edm::ValueMap<float> > phoChargedIsolationMap_CITK;
-  iEvent.getByToken(phoChargedIsolationToken_CITK, phoChargedIsolationMap_CITK);
-  edm::Handle<edm::ValueMap<float> > phoNeutralHadronIsolationMap_CITK;
-  iEvent.getByToken(phoNeutralHadronIsolationToken_CITK, phoNeutralHadronIsolationMap_CITK);
-  edm::Handle<edm::ValueMap<float> > phoPhotonIsolationMap_CITK;
-  iEvent.getByToken(phoPhotonIsolationToken_CITK, phoPhotonIsolationMap_CITK);
-  
-  
-   // Get the isolation maps for dcuts
+    
+   // Get CITK isolation maps for dcuts
   edm::Handle<edm::ValueMap<float> > phoChargedIsolationMap_CITK_dcuts;
   iEvent.getByToken(phoChargedIsolationToken_CITK_dcuts, phoChargedIsolationMap_CITK_dcuts);
   edm::Handle<edm::ValueMap<float> > phoNeutralHadronIsolationMap_CITK_dcuts;
@@ -372,10 +342,6 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   isoNeutralHadrons_.clear();
   isoPhotons_.clear();
   //
-  isoChargedHadrons_CITK_.clear();
-  isoNeutralHadrons_CITK_.clear();
-  isoPhotons_CITK_.clear();
-  //
   isoChargedHadrons_pf_.clear();
   isoNeutralHadrons_pf_.clear();
   isoPhotons_pf_.clear();
@@ -389,7 +355,6 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   isoPhotons_CITK_dcuts_.clear();
   //
   relisoWithEA_.clear();
-  relisoWithEA_CITK_.clear();
   relisoWithEA_CITK_dcuts_.clear();
   relisoWithEA_pf_.clear();
   //
@@ -439,15 +404,6 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     isoNeutralHadrons_CITK_dcuts_ .push_back( nhIso_CITK_dcuts );
     isoPhotons_CITK_dcuts_        .push_back( phIso_CITK_dcuts );
     
-    //isolations from CITK
-    float chIso_CITK =  (*phoChargedIsolationMap_CITK)[pho];
-    float nhIso_CITK =  (*phoNeutralHadronIsolationMap_CITK)[pho];
-    float phIso_CITK = (*phoPhotonIsolationMap_CITK)[pho];
-
-    isoChargedHadrons_CITK_.push_back( chIso_CITK );
-    isoNeutralHadrons_CITK_.push_back( nhIso_CITK );
-    isoPhotons_CITK_       .push_back( phIso_CITK );
-
     //isolations with effective area correction
     float abseta = fabs( pho->superCluster()->eta());
     isoChargedHadronsWithEA_ .push_back( std::max( (float)0.0, chIso 
@@ -469,7 +425,6 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     //relative isolations
     float Area = effAreaChHadrons_.getEffectiveArea(abseta) + effAreaNeuHadrons_.getEffectiveArea(abseta) + effAreaPhotons_.getEffectiveArea(abseta);
     relisoWithEA_.push_back((std::max( (float)0.0, chIso + nhIso + phIso - rho_*Area )) /(pho -> pt()) );
-    relisoWithEA_CITK_.push_back((std::max( (float)0.0, chIso_CITK + nhIso_CITK + phIso_CITK - rho_*Area))/(pho -> pt()) );
     relisoWithEA_CITK_dcuts_.push_back((std::max( (float)0.0, chIso_CITK_dcuts + nhIso_CITK_dcuts + phIso_CITK_dcuts - rho_*Area))/(pho -> pt()) );
     relisoWithEA_pf_.push_back((std::max( (float)0.0, chIso_pf + nhIso_pf + phIso_pf - rho_*Area )) /(pho -> pt()) ); 
     // Save MC truth match
