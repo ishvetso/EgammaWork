@@ -10,7 +10,7 @@ cd CMSSW_7_4_6_patch2/src <br />
 cmsenv  <br />
 git clone -b ElectronBranch git@github.com:ishvetso/EgammaWork.git  <br />
 scram b -j10  <br />
-cmsRun EgammaWork/electron_isolation_CITK.py (for miniAOD)  <br />
+cmsRun EgammaWork/electron_isolation_CITK_miniAOD.py (for miniAOD)  <br />
 cmsRun EgammaWork/electron_isolation_CITK_AOD.py (for AOD)  <br />
 
 In order to run only <b>electron isolation</b> with CITK <b>including PUPPI-based electron isolation</b>, you should do following (CMSSW verstion is the one I used):<br/> 
