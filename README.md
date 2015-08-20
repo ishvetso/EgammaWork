@@ -13,8 +13,8 @@ scram b -j10  <br />
 cmsRun EgammaWork/electron_isolation_CITK.py (for miniAOD)  <br />
 cmsRun EgammaWork/electron_isolation_CITK_AOD.py (for AOD)  <br />
 
-In order to run only <b>electron isolation</b> with CITK <b>including PUPPI-based electron isolation</b>, you should do following (CMSSW verstion is the one I used): 
-(<b>CMSSW_7_4_7 should be used or later</b>(mva electrons ids are not available in earlier releases))
+In order to run only <b>electron isolation</b> with CITK <b>including PUPPI-based electron isolation</b>, you should do following (CMSSW verstion is the one I used):<br/> 
+(<b>CMSSW_7_4_7 should be used or later</b>(mva electrons ids are not available in earlier releases))<br/>
 1.cmsrel CMSSW_7_4_7  <br />
   cd CMSSW_7_4_7/src <br />
   cmsenv <br />
