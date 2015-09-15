@@ -185,6 +185,7 @@ private:
   Float_t sumPhotonPt_PUPPI_NoLeptons;
   
   Float_t reliso_PUPPI, reliso_PUPPI_NoLeptons;
+  Float_t reliso_PUPPI_average;
   
   Float_t relisoChargedHadronPt_CITK;
   Float_t relisoNeutralHadronPt_CITK;
@@ -312,6 +313,8 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_ -> Branch("sumPhotonPt_PUPPI_NoLeptons", &sumPhotonPt_PUPPI_NoLeptons, "sumPhotonPt_PUPPI_NoLeptons/F");
   
   electronTree_ -> Branch("reliso_PUPPI_NoLeptons", &reliso_PUPPI_NoLeptons, "reliso_PUPPI_NoLeptons/F");
+
+  electronTree_ -> Branch("reliso_PUPPI_average", &reliso_PUPPI_average, "reliso_PUPPI_average/F");
   
     
   electronTree_ -> Branch("relisoChargedHadronPt_CITK", &relisoChargedHadronPt_CITK, "relisoChargedHadronPt_CITK/F");
@@ -447,7 +450,6 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   // Loop over electrons
   //
   // printf("DEBUG: new event\n");
-   std::cout << "size " << electrons -> size() << std::endl; 
   for (unsigned int iElectron = 0; iElectron < electrons -> size(); iElectron++) {
     
     
@@ -456,8 +458,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     reco::GsfElectronPtr eleGsfPtr(elePtr);
     // Kinematics
     pt_ = eleGsfPtr -> pt();
-    std::cout << "pt " << pt_ << std::endl;
-    
+   
     // Keep only electrons above 10 GeV.
     // NOTE: miniAOD does not store some of the info for electrons <5 GeV at all!
     if( pt_ < 10 ) 
@@ -534,8 +535,6 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     // the decay history, using standard matching in this case:
     //   printAllZeroMothers( el.genParticle() );
 
-    std::cout << "value map " << ValueMaps_Photons -> size() << std::endl;
-    
     //CITK
     sumChargedHadronPt_CITK =  (*ValueMaps_ChargedHadrons)[eleGsfPtr];
     sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[eleGsfPtr];
@@ -571,6 +570,9 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     reliso_PUPPI = (sumChargedHadronPt_PUPPI + sumNeutralHadronPt_PUPPI + sumPhotonPt_PUPPI)/pt_;
     //PUPPINoLeptons total isolation
     reliso_PUPPI_NoLeptons = (sumChargedHadronPt_PUPPI_NoLeptons + sumNeutralHadronPt_PUPPI_NoLeptons + sumPhotonPt_PUPPI_NoLeptons)/pt_;
+
+    //reliso puppi average
+    reliso_PUPPI_average = 0.5*(reliso_PUPPI_NoLeptons + reliso_PUPPI);
     
     const reco::CaloClusterPtr& seed = eleGsfPtr -> superCluster()->seed();
     isEB = ( seed->seed().subdetId() == EcalBarrel );

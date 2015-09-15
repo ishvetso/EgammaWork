@@ -138,7 +138,7 @@ ElectronSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
    bool passEvent = false;
    if (ElectronsSelected -> size() > 0 ) passEvent = true;
    iEvent.put(ElectronsSelected);
-    std::cout << passEvent << std::endl;
+    //std::cout << passEvent << std::endl;
 
 
 #ifdef THIS_IS_AN_EVENT_EXAMPLE
