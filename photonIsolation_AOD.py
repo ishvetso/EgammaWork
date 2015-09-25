@@ -147,7 +147,8 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  effAreaNeuHadFile= cms.FileInPath
                                  ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfNeutralHadrons_V2.txt"),
                                  effAreaPhoFile   = cms.FileInPath
-                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt")
+                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt"),
+                                 genInfo = cms.InputTag("generator")
                                 )			   
 
 process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates + process.egmPhotonIsolationAOD + process.egmPhotonIsolationAODDcuts + process.photonIDValueMapProducer + process.ntupler)

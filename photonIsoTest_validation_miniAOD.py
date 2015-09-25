@@ -51,7 +51,7 @@ process.egmPhotonIsolationMiniAODDcuts = cms.EDProducer( "CITKPFIsolationSumProd
          cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto_dzcut'), 
               coneSize = cms.double(0.3),
               isolateAgainst = cms.string('h+'),
-              miniAODVertexCodes = cms.vuint32(3),
+              miniAODVertexCodes = cms.vuint32(2,3),
               vertexIndex = cms.int32(0),
               vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
             ),
@@ -137,7 +137,8 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  effAreaNeuHadFile= cms.FileInPath
                                  ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfNeutralHadrons_V2.txt"),
                                  effAreaPhoFile   = cms.FileInPath
-                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt")
+                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt"),
+                                 genInfo = cms.InputTag("generator")
                                 )			   
 
 process.analysis = cms.Path(process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODDcuts + process.photonIDValueMapProducer + process.ntupler)

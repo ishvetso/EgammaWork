@@ -44,6 +44,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 #include "TTree.h"
 #include "Math/VectorUtil.h"
@@ -154,13 +155,19 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   //relative isolation for pf
   std::vector<Float_t> relisoWithEA_pf_;
 
+  std::vector<Float_t> r9;
+
 
   std::vector<Int_t> isTrue_;
+
+  std::vector<int> genWeight;
 
   // Effective area constants for all isolation types
   EffectiveAreas effAreaChHadrons_;
   EffectiveAreas effAreaNeuHadrons_;
   EffectiveAreas effAreaPhotons_;
+
+   edm::EDGetTokenT<GenEventInfoProduct> genInfoToken;
 
 };
 
@@ -207,7 +214,8 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   // Objects containing effective area constants
   effAreaChHadrons_( (iConfig.getParameter<edm::FileInPath>("effAreaChHadFile")).fullPath() ),
   effAreaNeuHadrons_( (iConfig.getParameter<edm::FileInPath>("effAreaNeuHadFile")).fullPath() ),
-  effAreaPhotons_( (iConfig.getParameter<edm::FileInPath>("effAreaPhoFile")).fullPath() )
+  effAreaPhotons_( (iConfig.getParameter<edm::FileInPath>("effAreaPhoFile")).fullPath() ),
+  genInfoToken(consumes<GenEventInfoProduct> (iConfig.getParameter<edm::InputTag>( "genInfo" ) ) )
 {
 
   //
@@ -277,7 +285,10 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("relisoWithEA_CITK_dcuts"                 , &relisoWithEA_CITK_dcuts_);
   photonTree_->Branch("relisoWithEA_pf"                 , &relisoWithEA_pf_);
 
+  photonTree_->Branch("r9"                 , &r9);
+
   photonTree_->Branch("isTrue"             , &isTrue_);
+  photonTree_ -> Branch("genWeight", &genWeight);
 
 
 }
@@ -357,6 +368,12 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   iEvent.getByToken(phoNeutralHadronIsolationToken_CITK_dcuts, phoNeutralHadronIsolationMap_CITK_dcuts);
   edm::Handle<edm::ValueMap<float> > phoPhotonIsolationMap_CITK_dcuts;
   iEvent.getByToken(phoPhotonIsolationToken_CITK_dcuts, phoPhotonIsolationMap_CITK_dcuts);
+
+  //generator info
+  Handle <GenEventInfoProduct> genInfo; 
+   iEvent.getByToken( genInfoToken , genInfo);
+
+   std::cout << "gen weight " << genInfo -> weight() << std::endl;
     
   // Clear vectors
   nPhotons_ = 0;
@@ -392,8 +409,10 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   relisoWithEA_CITK_.clear();
   relisoWithEA_CITK_dcuts_.clear();
   relisoWithEA_pf_.clear();
+  r9.clear();
   //
   isTrue_.clear();
+  genWeight.clear();
 
   // Loop over photons
   for (size_t i = 0; i < photons->size(); ++i){
@@ -414,6 +433,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
     hOverE_                .push_back( pho->hadTowOverEm() );
     hasPixelSeed_          .push_back( (Int_t)pho->hasPixelSeed() );
+    r9.push_back( pho->r9() );
 
     // Get values from ValueMaps, use the photon pointer as the key.
     // Note: starting from CMSSW 7.2.1 or so one can get any full5x5 quantity
@@ -474,6 +494,9 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     relisoWithEA_pf_.push_back((std::max( (float)0.0, chIso_pf + nhIso_pf + phIso_pf - rho_*Area )) /(pho -> pt()) ); 
     // Save MC truth match
     isTrue_.push_back( matchToTruth(*pho, genParticles) );
+    genWeight.push_back (  (genInfo -> weight()) > 0 ? 1 : -1 ) ;
+
+
 
    }
    
