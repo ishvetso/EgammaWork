@@ -7,10 +7,9 @@ In order to run only photon isolation with CITK (pfIsolationVariables are also t
 1. cmsrel CMSSW_7_4_7 <br />
 cd CMSSW_7_4_7/src <br />
 cmsenv <br />
-2. git cms-merge-topic ikrav:egm_id_74X_v2
-3. git cms-merge-topic ishvetso:PhotonPFIsolationWithMapBasedVeto # get module for map-based vetoing
-5. git clone -b PhotonBranch git@github.com:ishvetso/EgammaWork.git 
-6. scram b -j 20
+2. git cms-merge-topic ishvetso:PhotonIsolationCITKRecipe # get CITK module for photons
+5. git clone -b PhotonIsolationCITKRecipe git@github.com:ishvetso/EgammaWork.git 
+6. scram b -j 10
 7. cmsRun EgammaWork/photonIsolation_miniAOD.py
 
 
