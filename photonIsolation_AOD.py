@@ -54,58 +54,6 @@ process.egmPhotonIsolationAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
     )
   )	
 
-process.egmPhotonIsolationAODDcuts = cms.EDProducer( "CITKPFIsolationSumProducer",
-        srcToIsolate = cms.InputTag("gedPhotons"),
-        srcForIsolationCone = cms.InputTag('pfNoPileUpCandidates'),
-        isolationConeDefinitions = cms.VPSet(
-         cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto_dzcut'), 
-              coneSize = cms.double(0.3),
-              isolateAgainst = cms.string('h+'),
-              miniAODVertexCodes = cms.vuint32(2,3),
-              vertexIndex = cms.int32(0),
-              vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
-            ),
-         cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto_dzcut'), 
-              coneSize = cms.double(0.3),
-              isolateAgainst = cms.string('h0'),
-              miniAODVertexCodes = cms.vuint32(2,3),
-              vertexIndex = cms.int32(0),
-              vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
-            ),
-         cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto_dzcut'), 
-              coneSize = cms.double(0.3),
-              isolateAgainst = cms.string('gamma'),
-              miniAODVertexCodes = cms.vuint32(2,3),
-              vertexIndex = cms.int32(0),
-              vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
-            )
-    )
-  ) 
-			   
-process.photonIDValueMapProducer = cms.EDProducer('PhotonIDValueMapProducer',
-                                          # The module automatically detects AOD vs miniAOD, so we configure both
-                                          #
-                                          # AOD case
-                                          #
-                                          ebReducedRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),
-                                          eeReducedRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
-                                          esReducedRecHitCollection = cms.InputTag("reducedEcalRecHitsES"),
-                                          particleBasedIsolation = cms.InputTag("particleBasedIsolation","gedPhotons"),
-                                          vertices = cms.InputTag("offlinePrimaryVertices"),
-                                          pfCandidates = cms.InputTag("particleFlow"),
-                                          src = cms.InputTag('gedPhotons'),
-                                          #
-                                          # miniAOD case
-                                          #
-                                          ebReducedRecHitCollectionMiniAOD = cms.InputTag("reducedEgamma:reducedEBRecHits"),
-                                          eeReducedRecHitCollectionMiniAOD = cms.InputTag("reducedEgamma:reducedEERecHits"),
-                                          esReducedRecHitCollectionMiniAOD = cms.InputTag("reducedEgamma:reducedESRecHits"),
-                                          verticesMiniAOD = cms.InputTag("offlineSlimmedPrimaryVertices"),
-                                          pfCandidatesMiniAOD = cms.InputTag("packedPFCandidates"),
-                                          # there is no need for the isolation map here, for miniAOD it is inside packedPFCandidates
-                                          srcMiniAOD = cms.InputTag('slimmedPhotons'),
-                                          )
-
 process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  # The module automatically detects AOD vs miniAOD, so we configure both
                                  #
@@ -122,22 +70,10 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  #
                                  photonsMiniAOD = cms.InputTag("slimmedPhotons"),
                                  genParticlesMiniAOD = cms.InputTag("prunedGenParticles"),
-                                 #
-                                 # ValueMap names from the producer upstream
-                                 #
-                                 full5x5SigmaIEtaIEtaMap   = cms.InputTag("photonIDValueMapProducer:phoFull5x5SigmaIEtaIEta"),
-                                 phoChargedIsolation = cms.InputTag("photonIDValueMapProducer:phoChargedIsolation"),
-                                 phoNeutralHadronIsolation = cms.InputTag("photonIDValueMapProducer:phoNeutralHadronIsolation"),
-                                 phoPhotonIsolation = cms.InputTag("photonIDValueMapProducer:phoPhotonIsolation"),
-                                 
                                  #CITK
                                  phoChargedIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:h+-DR030-"),
                                  phoNeutralHadronIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:h0-DR030-"),
                                  phoPhotonIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:gamma-DR030-"),
-                                 #CITK dcuts
-                                 phoChargedIsolation_CITK_dcuts = cms.InputTag("egmPhotonIsolationAODDcuts:h+-DR030-"),
-                                 phoNeutralHadronIsolation_CITK_dcuts = cms.InputTag("egmPhotonIsolationAODDcuts:h0-DR030-"),
-                                 phoPhotonIsolation_CITK_dcuts = cms.InputTag("egmPhotonIsolationAODDcuts:gamma-DR030-"),
                                  # 
                                  # Locations of files with the effective area constants.
                                  # The constants in these files below are derived for PHYS14 MC.
@@ -151,7 +87,7 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  genInfo = cms.InputTag("generator")
                                 )			   
 
-process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates + process.egmPhotonIsolationAOD + process.egmPhotonIsolationAODDcuts + process.photonIDValueMapProducer + process.ntupler)
+process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates + process.egmPhotonIsolationAOD +  process.ntupler)
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
