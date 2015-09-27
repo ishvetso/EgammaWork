@@ -10,7 +10,7 @@ cmsenv <br />
 2. git cms-merge-topic ishvetso:PhotonIsolationCITK_747_recipe # get CITK module for photons
 3. git clone -b PhotonIsolationCITK git@github.com:ishvetso/EgammaWork.git 
 4. scram b -j 10
-5. cmsRun EgammaWork/photonIsolation_miniAOD.py # miniAOD case
+5. cmsRun EgammaWork/photonIsolation_miniAOD.py # miniAOD case <br/>
    cmsRun EgammaWork/photonIsolation_AOD.py # AOD case
 
 
