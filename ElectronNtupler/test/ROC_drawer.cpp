@@ -19,6 +19,11 @@
 
    TH1F *hist_sig_abs = new TH1F("sig_abs", "sig_abs", Nbins, 0., 15.);
    TH1F *hist_bkg_abs = new TH1F("bkg_abs", "bkg_abs", Nbins, 0., 15.);
+
+   hist_sig -> Sumw2();
+   hist_bkg -> Sumw2();
+   hist_sig_abs -> Sumw2();
+   hist_bkg_abs -> Sumw2();
    
    tree_sig -> Project("sig", var.c_str(), (SigSelection + "&&" + addSelection) .c_str());
    tree_bkg -> Project("bkg", var.c_str(), (BkgSelection + "&&" + addSelection) .c_str());
@@ -34,6 +39,15 @@
     
     sigEff.push_back(effSig);
     bkgEff.push_back(1.0 - effBkg);
+
+
+  /*  if (effSig < 0.52 && effSig > 0.48)
+      { 
+        std::cout << " var "  << var << std::endl;
+        std::cout << "signal effeciency " << effSig << std::endl;
+        std::cout << "cut " << hist_sig -> GetBinLowEdge(iBin + 1) << std::endl;
+      }*/
+
   }
   
   TGraph *gr = new TGraph( sigEff.size(), sigEff.data(), bkgEff.data());
@@ -53,6 +67,7 @@ void ROC_Drawer::draw_ROC()
   TGraph * gr2 =  graph_ROC("relIsoWithDBeta", 10000, 0., 15.);
   TGraph * gr3 =  graph_ROC("reliso_PUPPI", 10000, 0., 15.);
   TGraph * gr4 =  graph_ROC("reliso_PUPPI_NoLeptons", 10000, 0., 15.);
+  TGraph * gr5 =  graph_ROC("reliso_PUPPI_average", 10000, 0., 15.);
   
   
   gr1 -> GetYaxis() -> SetTitle("bkg rejection");
@@ -62,11 +77,13 @@ void ROC_Drawer::draw_ROC()
   gr2 -> SetLineWidth(2.);
   gr3 -> SetLineWidth(2.);
   gr4 -> SetLineWidth(2.);
+  gr5 -> SetLineWidth(2.);
   
   gr1 -> SetLineColor(kBlack);
   gr2 -> SetLineColor(kBlue);
   gr3 -> SetLineColor(kGreen);
   gr4 -> SetLineColor(kRed);
+  gr5 -> SetLineColor(kCyan);
  
   
   setTDRStyle();   
@@ -79,6 +96,7 @@ void ROC_Drawer::draw_ROC()
   leg->AddEntry(gr2, "relIsoWithDBeta","l");
   leg->AddEntry(gr3, "reliso_PUPPI","l");
   leg->AddEntry(gr4, "reliso_PUPPI_NoLeptons","l");
+  leg->AddEntry(gr5, "reliso_PUPPI_average","l");
  
  
   c1 -> cd();
@@ -86,6 +104,7 @@ void ROC_Drawer::draw_ROC()
   gr2 -> Draw("SAME");
   gr3 -> Draw("SAME");
   gr4 -> Draw("SAME");
+  gr5 -> Draw("SAME");
   leg -> Draw("SAME");
 
   CMS_lumi( c1, 4, 0 );
