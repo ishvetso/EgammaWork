@@ -1,8 +1,6 @@
 <b> This branch contains a setup for running photon isolation with CITK (Common Isolation Toolkit):</b> [CITK twiki]. 
 
-In order to run only photon isolation with CITK (pfIsolationVariables are also there), you should do following (CMSSW verstion is the one I used):
-
-
+In order to run only photon isolation with CITK, you should do following (CMSSW version is the one recipe is produced with):
 
 1. cmsrel CMSSW_7_4_7 <br />
 cd CMSSW_7_4_7/src <br />
