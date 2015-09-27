@@ -26,7 +26,7 @@ process.egmPhotonIsolationMiniAOD = cms.EDProducer( "CITKPFIsolationSumProducer"
 			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
 				      coneSize = cms.double(0.3),
 				      isolateAgainst = cms.string('h+'),
-				      miniAODVertexCodes = cms.vuint32(3),
+				      miniAODVertexCodes = cms.vuint32(2,3),
 				      vertexIndex = cms.int32(0),
 				    ),
 			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
