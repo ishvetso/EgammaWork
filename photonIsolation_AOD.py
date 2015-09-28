@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process( "PhotonIsoTest" )
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(10)
 )
 
 process.load("Configuration.StandardSequences.Geometry_cff")
@@ -13,7 +13,7 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/i/ishvetso/EgammaWork/PhotonIsolation_final_checks/CMSSW_7_4_7/src/EgammaWork/PhotonNtupler/test/test_samples/GJets_AOD.root')
+    fileNames = cms.untracked.vstring('/store/mc/RunIISpring15DR74/GJet_Pt-15ToInf_TuneCUETP8M1_13TeV-pythia8/AODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/0A00198B-7603-E511-9877-008CFA1979A4.root')
 )
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
