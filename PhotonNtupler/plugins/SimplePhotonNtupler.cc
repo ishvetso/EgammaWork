@@ -293,7 +293,6 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   eta_.clear();
   phi_.clear();
   //
-  full5x5_sigmaIetaIeta_.clear();
   hOverE_.clear();
   hasPixelSeed_.clear();
   //
