@@ -13,7 +13,7 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring("/store/mc/RunIISpring15DR74/GJet_Pt-15ToInf_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/16D66419-9203-E511-98F3-549F358EB73B.root")
+    fileNames = cms.untracked.vstring('/store/mc/RunIISpring15DR74/GJet_Pt-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/60000/02FC90C1-4A05-E511-9282-0025905521B2.root')
 )
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
