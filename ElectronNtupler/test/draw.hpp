@@ -31,6 +31,7 @@ struct Var
   range Range;
   Color_t color;
   void SetRange(double xlow, double xhigh, int NBins);
+   string label;
 };
 
 void Var::SetRange(double xlow, double xhigh, int NBinsX)
@@ -87,6 +88,7 @@ void draw(vector<Var> Vars, Sample sample, string fileNamePrefix, string addComm
  {
     TH1F *hist_tmp = new TH1F((Vars.at(iVar).VarName + "_tmp").c_str(), (Vars.at(iVar).VarName + "_tmp").c_str(), Vars.at(iVar).Range.NBins, Vars.at(iVar).Range.low, Vars.at(iVar).Range.high);
   //  hist_tmp->SetDirectory(0);// histogram would be deleted otherwise when file is closed
+    hist_tmp -> Sumw2();
     ((TTree*)file.Get("ntupler/ElectronTree")) -> Project((Vars.at(iVar).VarName + "_tmp").c_str(), (Vars.at(iVar).VarName).c_str(), selection.c_str());
     hists.push_back(hist_tmp);
  }
@@ -108,7 +110,7 @@ void draw(vector<Var> Vars, Sample sample, string fileNamePrefix, string addComm
     hists.at(iVar) -> GetXaxis() -> SetTitle("");
     hists.at(iVar) -> GetYaxis() -> SetRangeUser(0., 1.2*hist_max);
     hists.at(iVar) -> SetLineWidth(3.0);
-    leg->AddEntry(hists.at(iVar), (Vars.at(iVar).VarName).c_str(),"l");
+    leg->AddEntry(hists.at(iVar), (Vars.at(iVar).label).c_str(),"l");
     hists.at(iVar) -> Draw("HISTE1SAME");
     leg -> SetHeader((sample.Processname + "  " + addCommentOnLegend).c_str());
   }
