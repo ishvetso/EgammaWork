@@ -37,9 +37,11 @@
     float effSig = (float) (hist_sig -> Integral(1, iBin))/(hist_sig_abs -> Integral());
     float effBkg = (float) (hist_bkg -> Integral(1, iBin))/(hist_bkg_abs -> Integral());
     
-    sigEff.push_back(effSig);
-    bkgEff.push_back(1.0 - effBkg);
-
+    if (effSig < 0.99 && effSig >  0.8)
+    {
+      sigEff.push_back(effSig);
+      bkgEff.push_back(1.0 - effBkg);
+    }
 
   /*  if (effSig < 0.52 && effSig > 0.48)
       { 
@@ -79,11 +81,11 @@ void ROC_Drawer::draw_ROC()
   gr4 -> SetLineWidth(2.);
   gr5 -> SetLineWidth(2.);
   
-  gr1 -> SetLineColor(kBlack);
-  gr2 -> SetLineColor(kBlue);
-  gr3 -> SetLineColor(kGreen);
+  gr1 -> SetLineColor(kCyan);
+  gr2 -> SetLineColor(kBlack);
+  gr3 -> SetLineColor(kBlue);
   gr4 -> SetLineColor(kRed);
-  gr5 -> SetLineColor(kCyan);
+  gr5 -> SetLineColor(kGreen);
  
   
   setTDRStyle();   
@@ -92,11 +94,11 @@ void ROC_Drawer::draw_ROC()
   TLegend *leg = new TLegend(0.2,0.3,0.5,0.7);
   leg -> SetFillColor(kWhite);  
   
-  leg->AddEntry(gr1, "relIsoWithEA","l");
-  leg->AddEntry(gr2, "relIsoWithDBeta","l");
-  leg->AddEntry(gr3, "reliso_PUPPI","l");
-  leg->AddEntry(gr4, "reliso_PUPPI_NoLeptons","l");
-  leg->AddEntry(gr5, "reliso_PUPPI_average","l");
+  leg->AddEntry(gr1, "effective area","l");
+  leg->AddEntry(gr2, "#delta#beta-corrected","l");
+  leg->AddEntry(gr3, "PUPPI","l");
+  leg->AddEntry(gr4, "PUPPINoLeptons","l");
+  leg->AddEntry(gr5, "PUPPI combined","l");
  
  
   c1 -> cd();
