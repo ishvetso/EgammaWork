@@ -132,7 +132,7 @@ ElectronSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
             if (deltaR_ < 0.01 ) pass = true;
            }
        }
-       if (pass) ElectronsSelected -> push_back( Electrons -> refAt(iElectron).castTo<edm::Ref<std::vector<pat::Electron> > >());
+       if (pass == 1 ) ElectronsSelected -> push_back( Electrons -> refAt(iElectron).castTo<edm::Ref<std::vector<pat::Electron> > >());
    }
 
    bool passEvent = false;
