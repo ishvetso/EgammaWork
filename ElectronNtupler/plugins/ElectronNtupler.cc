@@ -103,7 +103,8 @@ private:
   // ----------member data ---------------------------
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
   edm::EDGetTokenT<edm::View<PileupSummaryInfo> > pileupToken_;
-  edm::EDGetTokenT<edm::RefVector<std::vector<pat::Electron>>> electronToken_;
+  edm::EDGetTokenT<edm::View<pat::Electron>> electronToken_;
+  edm::EDGetTokenT<edm::View<pat::PackedCandidate> > cands_;
   edm::EDGetTokenT<edm::View<reco::GenParticle> > prunedGenToken_;
   edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
   edm::EDGetTokenT<double> rhoToken_;
@@ -199,11 +200,10 @@ private:
   Float_t relisoNeutralHadronPt_PUPPINoLeptons;
   Float_t relisoPhotonPt_PUPPINoLeptons;
 
-  Int_t mvaIDBit_w80;
-  Int_t mvaIDBit_w90;
-  
-   Int_t genWeight;
-
+  bool mvaIDBit_w80;
+  bool mvaIDBit_w90;
+  bool PF_ID;
+  Int_t genWeight;
   bool isEB;
 };
 
@@ -231,7 +231,8 @@ namespace EffectiveAreas {
 ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   pileupToken_(consumes<edm::View<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("pileup"))),
-  electronToken_(consumes<edm::RefVector<std::vector<pat::Electron>>>(iConfig.getParameter<edm::InputTag>("electrons"))),
+  electronToken_(consumes<edm::View<pat::Electron>>(iConfig.getParameter<edm::InputTag>("electrons"))),
+  cands_(consumes<edm::View<pat::PackedCandidate> > (iConfig.getParameter<edm::InputTag>( "cand_src" ) ) ),
   prunedGenToken_(consumes<edm::View<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>("pruned"))),
   rhoToken_(consumes<double> (iConfig.getParameter<edm::InputTag>("rho"))),
   
@@ -329,8 +330,11 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_ -> Branch("relisoNeutralHadronPt_PUPPINoLeptons", &relisoNeutralHadronPt_PUPPINoLeptons, "relisoNeutralHadronPt_PUPPINoLeptons/F");
   electronTree_ -> Branch("relisoPhotonPt_PUPPINoLeptons", &relisoPhotonPt_PUPPINoLeptons, "relisoPhotonPt_PUPPINoLeptons/F");
 
-  electronTree_ -> Branch("mvaIDBit_w80", &mvaIDBit_w80, "mvaIDBit_w80/I");
-  electronTree_ -> Branch("mvaIDBit_w90", &mvaIDBit_w90, "mvaIDBit_w90/I");
+  electronTree_ -> Branch("mvaIDBit_w80", &mvaIDBit_w80, "mvaIDBit_w80/B");
+  electronTree_ -> Branch("mvaIDBit_w90", &mvaIDBit_w90, "mvaIDBit_w90/B");
+
+  electronTree_ -> Branch("PF_ID", &PF_ID, "PF_ID/B");
+
   electronTree_ -> Branch("genWeight", &genWeight, "genWeight/I");
   
   electronTree_ -> Branch("isEB", &isEB, "isEB/B");
@@ -413,10 +417,10 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   rho_ = *rhoH;
   
   // Get electron collection
-  Handle<edm::RefVector<std::vector<pat::Electron>>> electrons;
+  Handle<edm::View<pat::Electron>> electrons;
   iEvent.getByToken(electronToken_, electrons);
-  
-
+  Handle<edm::View<pat::PackedCandidate> > cands;
+  iEvent.getByToken(cands_, cands);
   
   //CITK
   Handle <edm::ValueMap <float> > ValueMaps_ChargedHadrons, ValueMaps_NeutralHadrons, ValueMaps_Photons;
@@ -450,11 +454,10 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   // Loop over electrons
   //
   // printf("DEBUG: new event\n");
+
   for (unsigned int iElectron = 0; iElectron < electrons -> size(); iElectron++) {
     
-    
-    auto eleRef = (*electrons)[iElectron];
-    auto elePtr = edm::refToPtr(eleRef);
+    auto elePtr = electrons -> ptrAt(iElectron);
     reco::GsfElectronPtr eleGsfPtr(elePtr);
     // Kinematics
     pt_ = eleGsfPtr -> pt();
@@ -580,6 +583,24 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     //saving id bits
     mvaIDBit_w80  =  (*ValueMap_ids_wp80)[elePtr];
     mvaIDBit_w90  =  (*ValueMap_ids_wp90)[elePtr];
+
+    reco::GsfTrackRef trackref_ele = elePtr -> gsfTrack() ;
+
+    float eta_track_ele = trackref_ele -> eta();
+    float phi_track_ele = trackref_ele -> phi();
+
+    PF_ID = false;
+      
+    for (unsigned iCand = 0; iCand < cands -> size(); iCand ++)
+    {
+      reco::Track cand_track = (cands -> at(iCand)).pseudoTrack();
+      float eta_cand = cand_track.eta();
+      float phi_cand = cand_track.phi();
+      if (  fabs((cands -> at(iCand).pdgId()) == 11 ) ) {
+         float deltaR_ = deltaR(eta_track_ele, phi_track_ele, eta_cand, phi_cand); 
+         if (deltaR_ < 0.01 ) PF_ID = true;
+       }
+    }
 
     genWeight = (genInfo -> weight()) > 0 ? 1 : -1;
          

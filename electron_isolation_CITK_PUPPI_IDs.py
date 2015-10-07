@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process( "ElectronIsolation" )
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(10)
 )
 
 process.load("CommonTools.PileupAlgos.Puppi_cff")
@@ -42,15 +42,11 @@ my_id_modules = ['RecoEgamma.ElectronIdentification.Identification.mvaElectronID
 for idmod in my_id_modules:
     setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
 
-process.SelectedElectrons = cms.EDFilter('ElectronSelector',
-				 electron_src = cms.InputTag("slimmedElectrons"),
-				 cand_src = cms.InputTag("packedPFCandidates"),
-				)
-
 process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
 					    srcToIsolate = cms.InputTag("slimmedElectrons"),
 					    srcForIsolationCone = cms.InputTag('packedPFCandidates'),
-					    isolationConeDefinitions = cms.VPSet(
+					    #puppiValueMap = cms.InputTag('puppiNoLeptons'),
+					   	isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
 									VetoConeSizeEndcaps = cms.double(0.015),
@@ -77,7 +73,6 @@ process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
 process.ElectronIsolationOnPUPPI = cms.EDProducer("CITKPFIsolationSumProducer",
 					    srcToIsolate = cms.InputTag("slimmedElectrons"),
 					    srcForIsolationCone = cms.InputTag('puppi'),
-					   # puppiValueMap = cms.InputTag('puppi'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
@@ -103,7 +98,6 @@ process.ElectronIsolationOnPUPPI = cms.EDProducer("CITKPFIsolationSumProducer",
 process.ElectronIsolationOnPUPPINoLeptons = cms.EDProducer("CITKPFIsolationSumProducer",
 					    srcToIsolate = cms.InputTag("slimmedElectrons"),
 					    srcForIsolationCone = cms.InputTag('puppiNoLeptons'),
-					    #puppiValueMap = cms.InputTag('puppi'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
@@ -132,7 +126,8 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 pruned = cms.InputTag("prunedGenParticles"),
 				 pileup = cms.InputTag("addPileupInfo"),
 				 vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
-				 electrons = cms.InputTag("SelectedElectrons"),
+				 electrons = cms.InputTag("slimmedElectrons"),
+				 cand_src = cms.InputTag("packedPFCandidates"),
 				 rho = cms.InputTag("fixedGridRhoFastjetAll"),
 				 #CITK
 				 ValueMaps_ChargedHadrons_src = cms.InputTag("ElectronIsolation", "h+-DR030-BarVeto000-EndVeto001"),
@@ -149,23 +144,22 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 # for electron ids
 				 mva_idw80_src = cms.InputTag("egmGsfElectronIDs", "mvaEleID-PHYS14-PU20bx25-nonTrig-V1-wp80"),
 				 mva_idw90_src = cms.InputTag("egmGsfElectronIDs", "mvaEleID-PHYS14-PU20bx25-nonTrig-V1-wp90"),
-  				#generator info 
-				genInfo = cms.InputTag("generator")
+  				 #generator info 
+				 genInfo = cms.InputTag("generator")
 				)
 
-process.electrons = cms.Path( process.SelectedElectrons + process.egmGsfElectronIDSequence + process.pfNoLeptons +  process.puppi + process.puppiNoLeptons + process.ElectronIsolation + process.ElectronIsolationOnPUPPI + process.ElectronIsolationOnPUPPINoLeptons + process.ntupler)
+process.electrons = cms.Path(process.egmGsfElectronIDSequence + process.pfNoLeptons + process.puppi + process.puppiNoLeptons + process.ElectronIsolation + process.ElectronIsolationOnPUPPI + process.ElectronIsolationOnPUPPINoLeptons + process.ntupler)
 
 
 process.source = cms.Source("PoolSource",
-       fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/i/ishvetso/RunII_preparation/samples/WW_74X.root')
-    
+       fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/i/ishvetso/EgammaWork/ElectronIsolationPUPPI_747_ID_reweighting_PFSelection/CMSSW_7_4_7/src/EgammaWork/ElectronNtupler/test/test_sample/DY_test.root'),
 )
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-
-'''process.out = cms.OutputModule("PoolOutputModule",
+'''
+process.out = cms.OutputModule("PoolOutputModule",
  fileName = cms.untracked.string('patTuple.root'),
   outputCommands = cms.untracked.vstring('keep *')
 )
