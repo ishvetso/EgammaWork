@@ -30,6 +30,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -103,8 +104,8 @@ private:
   // ----------member data ---------------------------
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
   edm::EDGetTokenT<edm::View<PileupSummaryInfo> > pileupToken_;
-  edm::EDGetTokenT<edm::View<pat::Electron>> electronToken_;
-  edm::EDGetTokenT<edm::View<pat::PackedCandidate> > cands_;
+  edm::EDGetTokenT<edm::View<reco::GsfElectron>> electronToken_;
+  edm::EDGetTokenT<edm::View<reco::PFCandidate> > cands_;
   edm::EDGetTokenT<edm::View<reco::GenParticle> > prunedGenToken_;
   edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
   edm::EDGetTokenT<double> rhoToken_;
@@ -231,8 +232,8 @@ namespace EffectiveAreas {
 ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   pileupToken_(consumes<edm::View<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("pileup"))),
-  electronToken_(consumes<edm::View<pat::Electron>>(iConfig.getParameter<edm::InputTag>("electrons"))),
-  cands_(consumes<edm::View<pat::PackedCandidate> > (iConfig.getParameter<edm::InputTag>( "cand_src" ) ) ),
+  electronToken_(consumes<edm::View<reco::GsfElectron>>(iConfig.getParameter<edm::InputTag>("electrons"))),
+  cands_(consumes<edm::View<reco::PFCandidate> > (iConfig.getParameter<edm::InputTag>( "cand_src" ) ) ),
   prunedGenToken_(consumes<edm::View<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>("pruned"))),
   rhoToken_(consumes<double> (iConfig.getParameter<edm::InputTag>("rho"))),
   
@@ -417,9 +418,9 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   rho_ = *rhoH;
   
   // Get electron collection
-  Handle<edm::View<pat::Electron>> electrons;
+  Handle<edm::View<reco::GsfElectron>> electrons;
   iEvent.getByToken(electronToken_, electrons);
-  Handle<edm::View<pat::PackedCandidate> > cands;
+  Handle<edm::View<reco::PFCandidate> > cands;
   iEvent.getByToken(cands_, cands);
   
   //CITK
@@ -586,20 +587,11 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
     reco::GsfTrackRef trackref_ele = elePtr -> gsfTrack() ;
 
-    float eta_track_ele = trackref_ele -> eta();
-    float phi_track_ele = trackref_ele -> phi();
-
     PF_ID = false;
       
     for (unsigned iCand = 0; iCand < cands -> size(); iCand ++)
     {
-      reco::Track cand_track = (cands -> at(iCand)).pseudoTrack();
-      float eta_cand = cand_track.eta();
-      float phi_cand = cand_track.phi();
-      if (  fabs((cands -> at(iCand).pdgId()) == 11 ) ) {
-         float deltaR_ = deltaR(eta_track_ele, phi_track_ele, eta_cand, phi_cand); 
-         if (deltaR_ < 0.01 ) PF_ID = true;
-       }
+      if (  fabs((cands -> at(iCand).pdgId()) == 11 ) && trackref_ele  == cands -> at(iCand).gsfTrackRef() )   PF_ID = true;
     }
 
     genWeight = (genInfo -> weight()) > 0 ? 1 : -1;
