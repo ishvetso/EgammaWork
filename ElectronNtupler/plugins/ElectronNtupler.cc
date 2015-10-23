@@ -591,7 +591,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       
     for (unsigned iCand = 0; iCand < cands -> size(); iCand ++)
     {
-      if (  fabs((cands -> at(iCand).pdgId()) == 11 ) && trackref_ele  == cands -> at(iCand).gsfTrackRef() )   PF_ID = true;
+      if (  std::abs((cands -> at(iCand).pdgId()) == 11 ) && trackref_ele  == cands -> at(iCand).gsfTrackRef() )   PF_ID = true;
     }
 
     genWeight = (genInfo -> weight()) > 0 ? 1 : -1;
