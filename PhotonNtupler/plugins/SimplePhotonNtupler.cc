@@ -44,6 +44,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 
 #include "TTree.h"
 #include "Math/VectorUtil.h"
@@ -93,12 +94,6 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   edm::EDGetToken photonsMiniAODToken_;
   edm::EDGetTokenT<edm::View<reco::GenParticle> > genParticlesMiniAODToken_;
   
-  // Photon variables computed upstream in a special producer
-  edm::EDGetTokenT<edm::ValueMap<float> > full5x5SigmaIEtaIEtaMapToken_; 
-  edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_; 
-  edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_; 
-  edm::EDGetTokenT<edm::ValueMap<float> > phoPhotonIsolationToken_; 
-  
   //CITK
   edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_CITK; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_CITK; 
@@ -108,6 +103,8 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_PUPPI; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_PUPPI; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoPhotonIsolationToken_PUPPI; 
+
+  edm::EDGetTokenT<edm::View<reco::PFCandidate>> candidatesToken; 
   
   TTree *photonTree_;
   Float_t rho_;      // the rho variable
@@ -121,14 +118,9 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   std::vector<Float_t> phi_;
 
   // Variables typically used for cut based photon ID
-  std::vector<Float_t> full5x5_sigmaIetaIeta_;
   std::vector<Float_t> hOverE_;
   std::vector<Int_t> hasPixelSeed_;
 
-  std::vector<Float_t> isoChargedHadrons_;
-  std::vector<Float_t> isoNeutralHadrons_;
-  std::vector<Float_t> isoPhotons_;
-  
   std::vector<Float_t> isoChargedHadrons_CITK_;
   std::vector<Float_t> isoNeutralHadrons_CITK_;
   std::vector<Float_t> isoPhotons_CITK_;
@@ -145,8 +137,6 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   std::vector<Float_t> isoNeutralHadronsWithEA_;
   std::vector<Float_t> isoPhotonsWithEA_;
 
-  //relative isolation from photonIDValueMapProducer
-  std::vector<Float_t> relisoWithEA_;
   //relative isolation from CITK with map based veto
   std::vector<Float_t> relisoWithEA_CITK_;
     //relative isolation for PUPPI
@@ -156,6 +146,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
 
 
   std::vector<Int_t> isTrue_;
+  std::vector<bool> PF_IDs;
 
   // Effective area constants for all isolation types
   EffectiveAreas effAreaChHadrons_;
@@ -177,17 +168,6 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
 //
 SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   rhoToken_(consumes<double> (iConfig.getParameter<edm::InputTag>("rho"))),
-  // Cluster shapes
-  full5x5SigmaIEtaIEtaMapToken_(consumes <edm::ValueMap<float> >
-				(iConfig.getParameter<edm::InputTag>("full5x5SigmaIEtaIEtaMap"))),
-  // Isolations
-  phoChargedIsolationToken_(consumes <edm::ValueMap<float> >
-			    (iConfig.getParameter<edm::InputTag>("phoChargedIsolation"))),
-  phoNeutralHadronIsolationToken_(consumes <edm::ValueMap<float> >
-				  (iConfig.getParameter<edm::InputTag>("phoNeutralHadronIsolation"))),
-  phoPhotonIsolationToken_(consumes <edm::ValueMap<float> >
-			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation"))),
-			   
   // Isolations from CITK
   phoChargedIsolationToken_CITK(consumes <edm::ValueMap<float> >
 			    (iConfig.getParameter<edm::InputTag>("phoChargedIsolation_CITK"))),
@@ -202,7 +182,8 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   phoNeutralHadronIsolationToken_PUPPI(consumes <edm::ValueMap<float> >
 				  (iConfig.getParameter<edm::InputTag>("phoNeutralHadronIsolation_PUPPI"))),
   phoPhotonIsolationToken_PUPPI(consumes <edm::ValueMap<float> >
-			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation_PUPPI"))),				   
+			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation_PUPPI"))),
+  candidatesToken(consumes <edm::View<reco::PFCandidate> >(iConfig.getParameter<edm::InputTag>("candidates"))),    				   
 			   
   // Objects containing effective area constants
   effAreaChHadrons_( (iConfig.getParameter<edm::FileInPath>("effAreaChHadFile")).fullPath() ),
@@ -244,13 +225,8 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("phi" ,  &phi_ );
 
   // Variables typically used for cut based photon ID
-  photonTree_->Branch("full5x5_sigmaIetaIeta"  , &full5x5_sigmaIetaIeta_);
   photonTree_->Branch("hOverE"                 ,  &hOverE_);
   photonTree_->Branch("hasPixelSeed"           ,  &hasPixelSeed_);
-
-  photonTree_->Branch("isoChargedHadrons"      , &isoChargedHadrons_);
-  photonTree_->Branch("isoNeutralHadrons"      , &isoNeutralHadrons_);
-  photonTree_->Branch("isoPhotons"             , &isoPhotons_);
 
   //CITK
   photonTree_->Branch("isoChargedHadrons_CITK"      , &isoChargedHadrons_CITK_);
@@ -262,22 +238,18 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("isoNeutralHadrons_pf"      , &isoNeutralHadrons_pf_);
   photonTree_->Branch("isoPhotons_pf"             , &isoPhotons_pf_);
 
-  //isolation 
-  photonTree_->Branch("isoChargedHadronsWithEA"      , &isoChargedHadronsWithEA_);
-  photonTree_->Branch("isoNeutralHadronsWithEA"      , &isoNeutralHadronsWithEA_);
-  photonTree_->Branch("isoPhotonsWithEA"             , &isoPhotonsWithEA_);
   
   //PUPPI 
   photonTree_->Branch("isoChargedHadrons_PUPPI"      , &isoChargedHadrons_PUPPI_);
   photonTree_->Branch("isoNeutralHadrons_PUPPI"      , &isoNeutralHadrons_PUPPI_);
   photonTree_->Branch("isoPhotons_PUPPI"             , &isoPhotons_PUPPI_);
 
-  photonTree_->Branch("relisoWithEA"                 , &relisoWithEA_);
   photonTree_->Branch("relisoWithEA_CITK_"                 , &relisoWithEA_CITK_);
   photonTree_->Branch("relisoWithEA_PUPPI"                 , &relisoWithEA_PUPPI_);
   photonTree_->Branch("relisoWithEA_pf"                 , &relisoWithEA_pf_);
 
   photonTree_->Branch("isTrue"             , &isTrue_);
+  photonTree_->Branch("PF_ID"             , &PF_IDs);
 
 
 }
@@ -328,18 +300,6 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   edm::Handle< double > rhoH;
   iEvent.getByToken(rhoToken_,rhoH);
   rho_ = *rhoH;
-
-  // Get the full5x5 map
-  edm::Handle<edm::ValueMap<float> > full5x5SigmaIEtaIEtaMap;
-  iEvent.getByToken(full5x5SigmaIEtaIEtaMapToken_, full5x5SigmaIEtaIEtaMap);
-
-  // Get the isolation maps
-  edm::Handle<edm::ValueMap<float> > phoChargedIsolationMap;
-  iEvent.getByToken(phoChargedIsolationToken_, phoChargedIsolationMap);
-  edm::Handle<edm::ValueMap<float> > phoNeutralHadronIsolationMap;
-  iEvent.getByToken(phoNeutralHadronIsolationToken_, phoNeutralHadronIsolationMap);
-  edm::Handle<edm::ValueMap<float> > phoPhotonIsolationMap;
-  iEvent.getByToken(phoPhotonIsolationToken_, phoPhotonIsolationMap);
   
   // Get the isolation maps for CITK
   edm::Handle<edm::ValueMap<float> > phoChargedIsolationMap_CITK;
@@ -357,6 +317,9 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   iEvent.getByToken(phoNeutralHadronIsolationToken_PUPPI, phoNeutralHadronIsolationMap_PUPPI);
   edm::Handle<edm::ValueMap<float> > phoPhotonIsolationMap_PUPPI;
   iEvent.getByToken(phoPhotonIsolationToken_PUPPI, phoPhotonIsolationMap_PUPPI);
+
+  edm::Handle<edm::View<reco::PFCandidate> > candidates;
+  iEvent.getByToken(candidatesToken, candidates);
     
   // Clear vectors
   nPhotons_ = 0;
@@ -364,13 +327,8 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   eta_.clear();
   phi_.clear();
   //
-  full5x5_sigmaIetaIeta_.clear();
   hOverE_.clear();
   hasPixelSeed_.clear();
-  //
-  isoChargedHadrons_.clear();
-  isoNeutralHadrons_.clear();
-  isoPhotons_.clear();
   //
   isoChargedHadrons_CITK_.clear();
   isoNeutralHadrons_CITK_.clear();
@@ -379,21 +337,18 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   isoChargedHadrons_pf_.clear();
   isoNeutralHadrons_pf_.clear();
   isoPhotons_pf_.clear();
-  //
-  isoChargedHadronsWithEA_.clear();
-  isoNeutralHadronsWithEA_.clear();
-  isoPhotonsWithEA_.clear();
+
   //PUPPI
   isoChargedHadrons_PUPPI_.clear();
   isoNeutralHadrons_PUPPI_.clear();
   isoPhotons_PUPPI_.clear();
   //
-  relisoWithEA_.clear();
   relisoWithEA_CITK_.clear();
   relisoWithEA_PUPPI_.clear();
   relisoWithEA_pf_.clear();
   //
   isTrue_.clear();
+  PF_IDs.clear();
 
   // Loop over photons
   for (size_t i = 0; i < photons->size(); ++i){
@@ -419,21 +374,12 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     // Note: starting from CMSSW 7.2.1 or so one can get any full5x5 quantity
     // directly from the photon object, there is no need for value maps anymore.
     // However 7.2.0 and prior (this includes PHYS14 MC samples) requires ValueMaps.
-    full5x5_sigmaIetaIeta_ .push_back( (*full5x5SigmaIEtaIEtaMap)[ pho ] );
-
-    //isolations from PhotonIDValueMapProducer
-    float chIso =  (*phoChargedIsolationMap)[pho];
-    float nhIso =  (*phoNeutralHadronIsolationMap)[pho];
-    float phIso = (*phoPhotonIsolationMap)[pho];
-    
+        
     //PUPPI
     float chIsoPUPPI =  (*phoChargedIsolationMap_PUPPI)[pho];
     float nhIsoPUPPI =  (*phoNeutralHadronIsolationMap_PUPPI)[pho];
     float phIsoPUPPI = (*phoPhotonIsolationMap_PUPPI)[pho];
-    
-    isoChargedHadrons_ .push_back( chIso );
-    isoNeutralHadrons_ .push_back( nhIso );
-    isoPhotons_        .push_back( phIso );
+  
     
     isoChargedHadrons_PUPPI_ .push_back( chIsoPUPPI );
     isoNeutralHadrons_PUPPI_ .push_back( nhIsoPUPPI );
@@ -450,12 +396,6 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
     //isolations with effective area correction
     float abseta = fabs( pho->superCluster()->eta());
-    isoChargedHadronsWithEA_ .push_back( std::max( (float)0.0, chIso 
-						   - rho_*effAreaChHadrons_.getEffectiveArea(abseta)));
-    isoNeutralHadronsWithEA_ .push_back( std::max( (float)0.0, nhIso 
-						   - rho_*effAreaNeuHadrons_.getEffectiveArea(abseta)));
-    isoPhotonsWithEA_ .push_back( std::max( (float)0.0, phIso 
-					    - rho_*effAreaPhotons_.getEffectiveArea(abseta)));
     
      //pfIsolation variables
     float chIso_pf = pho -> chargedHadronIso() ;
@@ -468,12 +408,17 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
     //relative isolations
     float Area = effAreaChHadrons_.getEffectiveArea(abseta) + effAreaNeuHadrons_.getEffectiveArea(abseta) + effAreaPhotons_.getEffectiveArea(abseta);
-    relisoWithEA_.push_back((std::max( (float)0.0, chIso + nhIso + phIso - rho_*Area )) /(pho -> pt()) );
     relisoWithEA_CITK_.push_back((std::max( (float)0.0, chIso_CITK + nhIso_CITK + phIso_CITK - rho_*Area))/(pho -> pt()) );
     relisoWithEA_PUPPI_.push_back((chIsoPUPPI + nhIsoPUPPI + phIsoPUPPI)/(pho -> pt()));
     relisoWithEA_pf_.push_back((std::max( (float)0.0, chIso_pf + nhIso_pf + phIso_pf - rho_*Area )) /(pho -> pt()) ); 
     // Save MC truth match
     isTrue_.push_back( matchToTruth(*pho, genParticles) );
+
+    bool PF_ID = false;
+    for (unsigned int iCand = 0; iCand < candidates -> size(); iCand++){
+      if((candidates -> at(iCand)).superClusterRef() == pho -> superCluster() && std::abs((candidates -> at(iCand)).pdgId()) == 22 )  PF_ID = true;
+    }
+    PF_IDs.push_back(PF_ID);
 
    }
    
