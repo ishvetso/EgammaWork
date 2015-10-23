@@ -403,7 +403,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     if (  /*!vtx->isFake() &&*/ 
 	!(vtx->chi2()==0 && vtx->ndof()==0) 
 	&&  vtx->ndof()>=4. && vtx->position().Rho()<=2.0
-	&& fabs(vtx->position().Z())<=24.0) {
+	&& std::abs(vtx->position().Z())<=24.0) {
       firstGoodVertex = vtx;
       break;
     }
@@ -486,7 +486,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       printf("Electron energy is not finite!\n");
       ooEmooP_ = 1e30;
     }else{
-      ooEmooP_ = fabs(1.0/eleGsfPtr -> ecalEnergy() - eleGsfPtr -> eSuperClusterOverP()/eleGsfPtr -> ecalEnergy() );
+      ooEmooP_ = std::abs(1.0/eleGsfPtr -> ecalEnergy() - eleGsfPtr -> eSuperClusterOverP()/eleGsfPtr -> ecalEnergy() );
     }
     
     // Isolation
