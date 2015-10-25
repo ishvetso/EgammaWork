@@ -10,8 +10,11 @@ from RecoEgamma.EgammaIsolationAlgos.egmGedGsfElectronPFIsolation_cfi import *
 process.load("CommonTools.ParticleFlow.pfNoPileUpIso_cff")
 process.load("CommonTools.ParticleFlow.pfParticleSelection_cff")
 
-process.pfNoPileUpCandidates = process.pfAllChargedHadrons.clone()
-process.pfNoPileUpCandidates.pdgId.extend(process.pfAllNeutralHadronsAndPhotons.pdgId)
+process.pfNoPileUpCandidates = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    src = cms.InputTag("pfNoPileUpIso"),
+    pdgId = cms.vint32(211,-211,321,-321,999211,2212,-2212, 22, 111, 130, 310, 2112, 11, -11, 13, -13),
+    makeClones = cms.bool(True)
+)
 
 process.load("CommonTools.PileupAlgos.Puppi_cff")
 process.load("EgammaWork.ElectronNtupler.pfNoLeptons_cfi")
@@ -26,6 +29,7 @@ process.options.allowUnscheduled = cms.untracked.bool(False)
 
 process.puppiNoLeptons = process.puppi.clone()
 process.puppiNoLeptons.puppiForLeptons = False
+process.puppiNoLeptons.candName = cms.InputTag('pfNoLeptons')
 
 
 
@@ -136,7 +140,7 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 pileup = cms.InputTag("addPileupInfo"),
 				 vertices = cms.InputTag("offlinePrimaryVertices"),
 				 electrons = cms.InputTag("gedGsfElectrons"),
-				 cand_src = cms.InputTag("particleFlow"),
+				 cand_src = cms.InputTag("pfNoPileUpCandidates"),
 				 rho = cms.InputTag("fixedGridRhoFastjetAll"),
 				 #CITK
 				 ValueMaps_ChargedHadrons_src = cms.InputTag("ElectronIsolation", "h+-DR030-BarVeto000-EndVeto001"),
@@ -170,16 +174,16 @@ process.source = cms.Source("PoolSource",
 )
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 
-process.out = cms.OutputModule("PoolOutputModule",
+'''process.out = cms.OutputModule("PoolOutputModule",
  fileName = cms.untracked.string('patTuple.root'),
   outputCommands = cms.untracked.vstring('keep *')
 )
 
 process.outpath = cms.EndPath(process.out)
-
+'''
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree.root")
                                   )
