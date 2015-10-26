@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process( "ElectronIsolation" )
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(100000)
 )
 
 from RecoEgamma.EgammaIsolationAlgos.egmGedGsfElectronPFIsolation_cfi import *
@@ -10,17 +10,14 @@ from RecoEgamma.EgammaIsolationAlgos.egmGedGsfElectronPFIsolation_cfi import *
 process.load("CommonTools.ParticleFlow.pfNoPileUpIso_cff")
 process.load("CommonTools.ParticleFlow.pfParticleSelection_cff")
 
-process.pfNoPileUpCandidates = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
-    src = cms.InputTag("pfNoPileUpIso"),
-    pdgId = cms.vint32(211,-211,321,-321,999211,2212,-2212, 22, 111, 130, 310, 2112, 11, -11, 13, -13),
-    makeClones = cms.bool(True)
-)
+process.pfNoPileUpCandidates = process.pfAllChargedHadrons.clone()
+process.pfNoPileUpCandidates.pdgId.extend(process.pfAllNeutralHadronsAndPhotons.pdgId)
 
 process.load("CommonTools.PileupAlgos.Puppi_cff")
 process.load("EgammaWork.ElectronNtupler.pfNoLeptons_cfi")
-process.pfNoLeptons.src = cms.InputTag('pfNoPileUpCandidates')
+process.pfNoLeptons.src = cms.InputTag('particleFlow')
 
-process.puppi.candName = cms.InputTag('pfNoPileUpCandidates')
+process.puppi.candName = cms.InputTag('particleFlow')
 process.puppi.vertexName = cms.InputTag('offlinePrimaryVertices')
 process.puppi.puppiForLeptons = False
 
