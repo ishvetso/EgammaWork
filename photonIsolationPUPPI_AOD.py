@@ -26,12 +26,14 @@ process.source = cms.Source("PoolSource",
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.Geometry_cff")
 
+
 #Loading PUPPI sequences
 process.load("CommonTools.PileupAlgos.Puppi_cff")
 
-process.puppi.candName = cms.InputTag('pfNoPileUpCandidates')
+process.puppi.candName = cms.InputTag('particleFlow')
 process.puppi.vertexName = cms.InputTag('offlinePrimaryVertices')
 process.puppi.puppiForLeptons = True
+
 
 process.particleFlowTmpPtrs = cms.EDProducer("PFCandidateFwdPtrProducer",
 src = cms.InputTag('particleFlow')
@@ -65,8 +67,8 @@ process.egmPhotonIsolationMiniAOD = cms.EDProducer( "CITKPFIsolationSumProducer"
 
 process.egmPhotonIsolationMiniAODPUPPI = cms.EDProducer( "CITKPFIsolationSumProducerForPUPPI",
 			  srcToIsolate = cms.InputTag("gedPhotons"),
-			  srcForIsolationCone = cms.InputTag('pfNoPileUpCandidates'),
-        puppiValueMap = cms.InputTag('puppi'),
+			  srcForIsolationCone = cms.InputTag('particleFlow'),
+              puppiValueMap = cms.InputTag('puppi'),
 			  isolationConeDefinitions = cms.VPSet(
 			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
 				      coneSize = cms.double(0.3),
@@ -88,7 +90,8 @@ process.egmPhotonIsolationMiniAODPUPPI = cms.EDProducer( "CITKPFIsolationSumProd
 				    )
     )
   )
-			   
+
+	   
 
 process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  # The module automatically detects AOD vs miniAOD, so we configure both
@@ -102,7 +105,8 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  photons = cms.InputTag("gedPhotons"),
                                  genParticles = cms.InputTag("genParticles"),
 
-                                 candidates = cms.InputTag("pfNoPileUpCandidates"),
+                                 candidates = cms.InputTag("particleFlow"),
+                                 vertices = cms.InputTag("offlinePrimaryVertices"),
                                  #
                                  # Objects specific to MiniAOD format
                                  #
@@ -125,10 +129,11 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  effAreaNeuHadFile= cms.FileInPath
                                  ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfNeutralHadrons_V2.txt"),
                                  effAreaPhoFile   = cms.FileInPath
-                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt")
+                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt"),
+                                  genInfo = cms.InputTag("generator")
                                 )			  
 
-process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates +  process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI + process.ntupler)
+process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates +  process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI   + process.ntupler)
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
