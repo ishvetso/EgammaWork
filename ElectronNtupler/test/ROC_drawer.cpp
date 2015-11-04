@@ -2,7 +2,9 @@
  ROC_Drawer::ROC_Drawer(){}
     
   TGraph * ROC_Drawer::graph_ROC(string var, int Nbins, float xmin, float xmax)
+
 {
+  std::cout << var << std::endl;
   TFile file_bkg(bkgFileName.c_str());
   TFile file_sig(sigFileName.c_str());
   
@@ -25,17 +27,18 @@
    hist_sig_abs -> Sumw2();
    hist_bkg_abs -> Sumw2();
    
-   tree_sig -> Project("sig", var.c_str(), (SigSelection + "&&" + addSelection) .c_str());
-   tree_bkg -> Project("bkg", var.c_str(), (BkgSelection + "&&" + addSelection) .c_str());
+   tree_sig -> Project("sig", var.c_str(), (SigSelection + " && " + addSelection) .c_str());
+   tree_bkg -> Project("bkg", var.c_str(), (BkgSelection + " && " + addSelection) .c_str());
    
-   tree_sig -> Project("sig_abs", var.c_str(), (SigSelection + "&&" + addSelection) .c_str());
-   tree_bkg -> Project("bkg_abs", var.c_str(), (BkgSelection + "&&" + addSelection) .c_str());
+   tree_sig -> Project("sig_abs", var.c_str(), (SigSelection + " && " + addSelection) .c_str());
+   tree_bkg -> Project("bkg_abs", var.c_str(), (BkgSelection + " && " + addSelection) .c_str());
    
    
-  for (int iBin = 2; iBin < Nbins ; iBin += 1)
+  for (int iBin = 1; iBin < Nbins ; iBin += 1)
   {
     float effSig = (float) (hist_sig -> Integral(1, iBin))/(hist_sig_abs -> Integral());
     float effBkg = (float) (hist_bkg -> Integral(1, iBin))/(hist_bkg_abs -> Integral());
+    std::cout << effSig << "  " << effBkg << std::endl;
     
     if (effSig < 0.99 && effSig >  0.8)
     {
