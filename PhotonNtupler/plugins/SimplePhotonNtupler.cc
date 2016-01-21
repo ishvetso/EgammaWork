@@ -110,6 +110,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::View<reco::PFCandidate>> candidatesToken; 
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
   edm::EDGetTokenT<GenEventInfoProduct> genInfoToken;
+  edm::EDGetTokenT<edm::ValueMap<bool> > ValueMap_ids_wp90_Token; 
 
 
   
@@ -155,6 +156,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
 
   std::vector<Int_t> isTrue_;
   std::vector<bool> PF_IDs;
+  std::vector<bool> mvaIDBits;
   std::vector<Int_t> nPVs;  
 
   // Effective area constants for all isolation types
@@ -195,6 +197,7 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   candidatesToken(consumes <edm::View<reco::PFCandidate> >(iConfig.getParameter<edm::InputTag>("candidates"))),
    vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
    genInfoToken(consumes<GenEventInfoProduct> (iConfig.getParameter<edm::InputTag>( "genInfo" ) ) ),
+   ValueMap_ids_wp90_Token(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>( "mva_idw90_src" ) ) ),
 
 			   
   // Objects containing effective area constants
@@ -343,6 +346,9 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
   edm::Handle <GenEventInfoProduct> genInfo; 
   iEvent.getByToken( genInfoToken , genInfo);
+
+  edm::Handle <edm::ValueMap<bool>> ValueMap_ids_wp90; 
+  iEvent.getByToken( ValueMap_ids_wp90_Token , ValueMap_ids_wp90);
     
   // Clear vectors
   nPhotons_ = 0;
@@ -372,6 +378,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   //
   isTrue_.clear();
   PF_IDs.clear();
+  mvaIDBits.clear();
   genWeights.clear();
   nPVs.clear();
 
@@ -446,6 +453,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       if((candidates -> at(iCand)).superClusterRef() == pho -> superCluster() && std::abs((candidates -> at(iCand)).pdgId()) == 22 )  PF_ID = true;
     }
     PF_IDs.push_back(PF_ID);
+    mvaIDBits.push_back((*ValueMap_ids_wp90)[pho]);
     double genWeight = (genInfo -> weight()) > 0 ? 1 : -1;
     genWeights.push_back(genWeight);
 

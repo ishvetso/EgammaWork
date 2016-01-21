@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
 
 process = cms.Process( "PhotonIsoTest" )
 process.maxEvents = cms.untracked.PSet(
@@ -20,11 +21,25 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/i/ishvetso/EgammaWork/test_samples/ttbar_AOD.root')
+    fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/i/ishvetso/EgammaWork/test_samples/GJets-AOD.root')
 )
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.Geometry_cff")
+
+useAOD = True
+
+if useAOD == True :
+    dataFormat = DataFormat.AOD
+else :
+    dataFormat = DataFormat.MiniAOD
+
+switchOnVIDPhotonIdProducer(process, dataFormat)
+
+my_id_modules = ['RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring15_50ns_nonTrig_V0_cff']
+
+for idmod in my_id_modules:
+    setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
 
 #Loading PUPPI sequences
@@ -130,23 +145,25 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfNeutralHadrons_V2.txt"),
                                  effAreaPhoFile   = cms.FileInPath
                                  ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt"),
-                                  genInfo = cms.InputTag("generator")
+                                  genInfo = cms.InputTag("generator"),
+                                  mva_idw90_src = cms.InputTag("egmPhotonIDs:mvaPhoID-Spring15-50ns-nonTrig-V0-wp90")
                                 )			  
 
-process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates +  process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI   + process.ntupler)
+#process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates +  process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI   + process.egmPhotonIDs +  process.ntupler)
+process.analysis = cms.Path( process.egmPhotonIDs)
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-'''
+
 process.out = cms.OutputModule("PoolOutputModule",
                                fileName = cms.untracked.string('patTuple_miniAOD.root'),
                                outputCommands = cms.untracked.vstring('keep *')
                                )                            
 
                            
-process.outpath = cms.EndPath(process.out)'''
+process.outpath = cms.EndPath(process.out)
 
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree.root")
