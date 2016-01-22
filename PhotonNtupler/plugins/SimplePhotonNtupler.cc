@@ -266,6 +266,7 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("isTrue"             , &isTrue_);
   photonTree_->Branch("PF_ID"             , &PF_IDs);
   photonTree_->Branch("genWeight"             , &genWeights);
+  photonTree_->Branch("mvaIDBits"             , &mvaIDBits);
    photonTree_->Branch("nPV"             , &nPVs);
 
 
