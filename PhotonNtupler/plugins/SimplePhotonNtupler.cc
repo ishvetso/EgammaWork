@@ -47,7 +47,8 @@
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h" 
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/VertexReco/interface/Vertex.h"    
+#include "DataFormats/VertexReco/interface/Vertex.h"  
+#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"  
 
 #include "TTree.h"
 #include "Math/VectorUtil.h"
@@ -127,6 +128,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
 
   // Variables typically used for cut based photon ID
   std::vector<Float_t> hOverE_;
+  std::vector<Float_t> full5x5_sigmaIetaIeta_;
   std::vector<Int_t> hasPixelSeed_;
 
   std::vector<Float_t> isoChargedHadrons_CITK_;
@@ -141,9 +143,9 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   std::vector<Float_t> isoNeutralHadrons_pf_;
   std::vector<Float_t> isoPhotons_pf_;
 
-  std::vector<Float_t> isoChargedHadronsWithEA_;
-  std::vector<Float_t> isoNeutralHadronsWithEA_;
-  std::vector<Float_t> isoPhotonsWithEA_;
+  std::vector<Float_t> isoChargedHadronsWithEA_CITK;
+  std::vector<Float_t> isoNeutralHadronsWithEA_CITK;
+  std::vector<Float_t> isoPhotonsWithEA_CITK;
 
   //relative isolation from CITK with map based veto
   std::vector<Float_t> relisoWithEA_CITK_;
@@ -157,6 +159,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   std::vector<Int_t> isTrue_;
   std::vector<bool> PF_IDs;
   std::vector<bool> mvaIDBits;
+  std::vector<bool> isEB;
   std::vector<Int_t> nPVs;  
 
   // Effective area constants for all isolation types
@@ -241,12 +244,18 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
 
   // Variables typically used for cut based photon ID
   photonTree_->Branch("hOverE"                 ,  &hOverE_);
+  photonTree_->Branch("full5x5_sigmaIetaIeta"                 ,  &full5x5_sigmaIetaIeta_);
   photonTree_->Branch("hasPixelSeed"           ,  &hasPixelSeed_);
 
   //CITK
   photonTree_->Branch("isoChargedHadrons_CITK"      , &isoChargedHadrons_CITK_);
   photonTree_->Branch("isoNeutralHadrons_CITK"      , &isoNeutralHadrons_CITK_);
   photonTree_->Branch("isoPhotons_CITK"             , &isoPhotons_CITK_);
+  
+  //CITK rho corrected
+  photonTree_->Branch("isoChargedHadronsWithEA_CITK"      , &isoChargedHadronsWithEA_CITK);
+  photonTree_->Branch("isoNeutralHadronsWithEA_CITK"      , &isoNeutralHadronsWithEA_CITK);
+  photonTree_->Branch("isoPhotonsWithEA_CITK"             , &isoPhotonsWithEA_CITK);
   
   //pfIsolation variables
   photonTree_->Branch("isoChargedHadrons_pf"      , &isoChargedHadrons_pf_);
@@ -267,7 +276,9 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("PF_ID"             , &PF_IDs);
   photonTree_->Branch("genWeight"             , &genWeights);
   photonTree_->Branch("mvaIDBits"             , &mvaIDBits);
-   photonTree_->Branch("nPV"             , &nPVs);
+  photonTree_->Branch("isEB"             , &isEB);
+  photonTree_->Branch("nPV"             , &nPVs);
+
 
 
 
@@ -358,11 +369,16 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   phi_.clear();
   //
   hOverE_.clear();
+  full5x5_sigmaIetaIeta_.clear();
   hasPixelSeed_.clear();
   //
   isoChargedHadrons_CITK_.clear();
   isoNeutralHadrons_CITK_.clear();
   isoPhotons_CITK_.clear();
+  //
+  isoChargedHadronsWithEA_CITK.clear();
+  isoNeutralHadronsWithEA_CITK.clear();
+  isoPhotonsWithEA_CITK.clear();
   //
   isoChargedHadrons_pf_.clear();
   isoNeutralHadrons_pf_.clear();
@@ -380,6 +396,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   isTrue_.clear();
   PF_IDs.clear();
   mvaIDBits.clear();
+  isEB.clear();
   genWeights.clear();
   nPVs.clear();
 
@@ -402,6 +419,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     phi_ .push_back( pho->superCluster()->phi() );
 
     hOverE_                .push_back( pho->hadTowOverEm() );
+    full5x5_sigmaIetaIeta_ .push_back( pho->full5x5_sigmaIetaIeta() );
     hasPixelSeed_          .push_back( (Int_t)pho->hasPixelSeed() );
 
     // Get values from ValueMaps, use the photon pointer as the key.
@@ -425,12 +443,25 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     float nhIso_CITK =  (*phoNeutralHadronIsolationMap_CITK)[pho];
     float phIso_CITK = (*phoPhotonIsolationMap_CITK)[pho];
 
+    
+
     isoChargedHadrons_CITK_.push_back( chIso_CITK );
     isoNeutralHadrons_CITK_.push_back( nhIso_CITK );
     isoPhotons_CITK_       .push_back( phIso_CITK );
 
+   
     //isolations with effective area correction
     float abseta = fabs( pho->superCluster()->eta());
+
+     //isolations from CITK rho corrected
+    float chIso_CITKWithEA = std::max((float)0., chIso_CITK - rho_*effAreaChHadrons_.getEffectiveArea(abseta)) ;
+    float nhIso_CITKWithEA = std::max((float)0., nhIso_CITK - rho_*effAreaNeuHadrons_.getEffectiveArea(abseta)) ;
+    float phIso_CITKWithEA = std::max((float)0., phIso_CITK - rho_*effAreaPhotons_.getEffectiveArea(abseta)) ;
+
+    isoChargedHadronsWithEA_CITK.push_back( chIso_CITKWithEA );
+    isoNeutralHadronsWithEA_CITK.push_back( nhIso_CITKWithEA );
+    isoPhotonsWithEA_CITK       .push_back( phIso_CITKWithEA );
+
     
      //pfIsolation variables
     float chIso_pf = pho -> chargedHadronIso() ;
@@ -457,6 +488,9 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     mvaIDBits.push_back((*ValueMap_ids_wp90)[pho]);
     double genWeight = (genInfo -> weight()) > 0 ? 1 : -1;
     genWeights.push_back(genWeight);
+
+    const reco::CaloClusterPtr& seed = pho -> superCluster()->seed();
+    isEB.push_back(( seed->seed().subdetId() == EcalBarrel ));
 
     Int_t nPV = vertices -> size();
     nPVs.push_back(nPV);
