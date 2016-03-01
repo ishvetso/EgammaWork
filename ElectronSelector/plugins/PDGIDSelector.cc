@@ -112,7 +112,7 @@ PDGIDSelector::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   for (unsigned int iCand = 0; iCand < PF -> size(); iCand ++)
    {
        for (unsigned int iPDGID = 0; iPDGID < PDGIDs.size(); iPDGID++){
-        if ( PF -> at(iCand).pdgId() == PDGIDs.at(iPDGID)) CandidatesSelected -> push_back(PF-> at(iCand));
+        if ( PF -> at(iCand).pdgId() == std::abs(PDGIDs.at(iPDGID))) CandidatesSelected -> push_back(PF-> at(iCand));
 
        }
       
