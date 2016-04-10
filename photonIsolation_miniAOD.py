@@ -1,11 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process( "PhotonIsoTest" )
+process = cms.Process( "PhotonIsolation" )
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(10)
 )
 
-process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag.globaltag = 'MCRUN2_74_V9::All'
 
@@ -18,6 +17,8 @@ process.source = cms.Source("PoolSource",
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
+
+from RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationMiniAOD_cff import egmPhotonIsolationMiniAOD
 
 process.egmPhotonIsolationMiniAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
 			  srcToIsolate = cms.InputTag("slimmedPhotons"),
@@ -82,17 +83,8 @@ process.analysis = cms.Path(process.egmPhotonIsolationMiniAOD +  process.ntupler
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
-'''
-process.out = cms.OutputModule("PoolOutputModule",
-                               fileName = cms.untracked.string('patTuple_miniAOD.root'),
-                               outputCommands = cms.untracked.vstring('keep *')
-                               )                            
-
-                           
-process.outpath = cms.EndPath(process.out)
-'''
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree_miniAOD.root")
                                   )
