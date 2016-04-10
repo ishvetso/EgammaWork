@@ -2,22 +2,21 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process( "PhotonIsoTest" )
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(1000)
 )
 
-process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = 'MCRUN2_74_V9::All'
+process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_RunIIFall15DR76_v1'
 
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/mc/RunIISpring15DR74/GJet_Pt-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8/AODSIM/Asympt50ns_MCRUN2_74_V9A-v1/60000/0006B4F9-AB04-E511-B402-6CC2173C9150.root')
+    fileNames = cms.untracked.vstring('/store/mc/RunIIFall15DR76/GJets_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/AODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/20000/002D5F68-00A6-E511-891C-20CF305B059C.root')
 )
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.load("Configuration.StandardSequences.Geometry_cff")
+process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 
 process.load("CommonTools.ParticleFlow.pfNoPileUpIso_cff")
 process.load("CommonTools.ParticleFlow.pfParticleSelection_cff")
@@ -28,31 +27,9 @@ process.pfNoPileUpCandidates.pdgId.extend(process.pfAllNeutralHadronsAndPhotons.
 process.particleFlowTmpPtrs = cms.EDProducer("PFCandidateFwdPtrProducer",
 src = cms.InputTag('particleFlow')
 )
+from RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationAOD_cff import egmPhotonIsolationAOD
 
-process.egmPhotonIsolationAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
-			  srcToIsolate = cms.InputTag("gedPhotons"),
-			  srcForIsolationCone = cms.InputTag('pfNoPileUpCandidates'),
-			  isolationConeDefinitions = cms.VPSet(
-			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
-				      coneSize = cms.double(0.3),
-				      isolateAgainst = cms.string('h+'),
-				      miniAODVertexCodes = cms.vuint32(2,3),
-				      vertexIndex = cms.int32(0),
-				    ),
-			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
-				      coneSize = cms.double(0.3),
-				      isolateAgainst = cms.string('h0'),
-				      miniAODVertexCodes = cms.vuint32(2,3),
-				      vertexIndex = cms.int32(0),
-				    ),
-			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
-				      coneSize = cms.double(0.3),
-				      isolateAgainst = cms.string('gamma'),
-				      miniAODVertexCodes = cms.vuint32(2,3),
-				      vertexIndex = cms.int32(0),
-				    )
-    )
-  )	
+process.egmPhotonIsolationAOD = egmPhotonIsolationAOD.clone()
 
 process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  # The module automatically detects AOD vs miniAOD, so we configure both
@@ -70,7 +47,7 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  #
                                  photonsMiniAOD = cms.InputTag("slimmedPhotons"),
                                  genParticlesMiniAOD = cms.InputTag("prunedGenParticles"),
-                                 #CITK
+                                 #Value maps from CITK
                                  phoChargedIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:h+-DR030-"),
                                  phoNeutralHadronIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:h0-DR030-"),
                                  phoPhotonIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:gamma-DR030-"),
@@ -91,17 +68,8 @@ process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSel
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
-'''
-process.out = cms.OutputModule("PoolOutputModule",
-                               fileName = cms.untracked.string('patTuple_miniAOD.root'),
-                               outputCommands = cms.untracked.vstring('keep *')
-                               )                            
-
-                           
-process.outpath = cms.EndPath(process.out)
-'''
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree_AOD.root")
                                   )

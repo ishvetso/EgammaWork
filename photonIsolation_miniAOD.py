@@ -39,7 +39,7 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  #
                                  photonsMiniAOD = cms.InputTag("slimmedPhotons"),
                                  genParticlesMiniAOD = cms.InputTag("prunedGenParticles"),
-                                 #CITK
+                                 #Value maps from CITK
                                  phoChargedIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:h+-DR030-"),
                                  phoNeutralHadronIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:h0-DR030-"),
                                  phoPhotonIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:gamma-DR030-"),
