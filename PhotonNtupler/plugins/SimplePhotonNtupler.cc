@@ -113,6 +113,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
 
   // Variables typically used for cut based photon ID
   std::vector<Float_t> hOverE_;
+  std::vector<Float_t> full5x5_sigmaIetaIeta_;
   std::vector<Int_t> hasPixelSeed_;
 
   std::vector<Float_t> isoChargedHadrons_CITK_;
@@ -124,7 +125,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   std::vector<Float_t> isoPhotons_pf_;
 
   //relative isolation from CITK with map based veto
-  std::vector<Float_t> relisoWithEA_CITK_;
+  std::vector<Float_t> reliso_PUPPI;
   //relative isolation for pf
   std::vector<Float_t> relisoWithEA_pf_;
 
@@ -206,6 +207,7 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
 
   // Variables typically used for cut based photon ID
   photonTree_->Branch("hOverE"                 ,  &hOverE_);
+  photonTree_->Branch("full5x5_sigmaIetaIeta"                 ,  &full5x5_sigmaIetaIeta_);
   photonTree_->Branch("hasPixelSeed"           ,  &hasPixelSeed_);
 
   //CITK
@@ -219,7 +221,7 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("isoPhotons_pf"             , &isoPhotons_pf_);
 
   //relative isolation
-  photonTree_->Branch("relisoWithEA_CITK"                 , &relisoWithEA_CITK_);
+  photonTree_->Branch("reliso_PUPPI"                 , &reliso_PUPPI);
   photonTree_->Branch("relisoWithEA_pf"                 , &relisoWithEA_pf_);
 
   photonTree_->Branch("r9"                 , &r9);
@@ -294,6 +296,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   phi_.clear();
   //
   hOverE_.clear();
+  full5x5_sigmaIetaIeta_.clear();
   hasPixelSeed_.clear();
   //
   isoChargedHadrons_CITK_.clear();
@@ -304,8 +307,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   isoNeutralHadrons_pf_.clear();
   isoPhotons_pf_.clear();
   //
-  relisoWithEA_CITK_.clear();
-  relisoWithEA_pf_.clear();
+  reliso_PUPPI.clear();
   r9.clear();
   //
   isTrue_.clear();
@@ -329,6 +331,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     phi_ .push_back( pho->superCluster()->phi() );
 
     hOverE_                .push_back( pho->hadTowOverEm() );
+    full5x5_sigmaIetaIeta_ .push_back( pho->full5x5_sigmaIetaIeta() );
     hasPixelSeed_          .push_back( (Int_t)pho->hasPixelSeed() );
     r9.push_back( pho->r9() );
 
@@ -355,7 +358,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
     //relative isolations
     float Area = effAreaChHadrons_.getEffectiveArea(abseta) + effAreaNeuHadrons_.getEffectiveArea(abseta) + effAreaPhotons_.getEffectiveArea(abseta);
-    relisoWithEA_CITK_.push_back((std::max( (float)0.0, chIso_CITK + nhIso_CITK + phIso_CITK - rho_*Area))/(pho -> pt()) );
+    reliso_PUPPI.push_back((std::max( (float)0.0, chIso_CITK + nhIso_CITK + phIso_CITK))/(pho -> pt()) );
     relisoWithEA_pf_.push_back((std::max( (float)0.0, chIso_pf + nhIso_pf + phIso_pf - rho_*Area )) /(pho -> pt()) ); 
     // Save MC truth match
     isTrue_.push_back( matchToTruth(*pho, genParticles) );
