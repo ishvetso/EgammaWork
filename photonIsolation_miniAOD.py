@@ -2,17 +2,17 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process( "PhotonIsolation" )
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(1000)
 )
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = 'MCRUN2_74_V9::All'
+process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_RunIIFall15DR76_v1'
 
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/mc/RunIIFall15DR76/GJet_Pt-15ToInf_TuneCUETP8M1_13TeV-pythia8/DQMIO/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/10000/E83F8C2B-3C93-E511-82CF-001E6739815B.root')
+    fileNames = cms.untracked.vstring('/store/mc/RunIIFall15MiniAODv1/GJets_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/20000/167B87FB-84AC-E511-A144-0CC47A745298.root')
 )
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
@@ -20,30 +20,7 @@ process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 
 from RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationMiniAOD_cff import egmPhotonIsolationMiniAOD
 
-process.egmPhotonIsolationMiniAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
-			  srcToIsolate = cms.InputTag("slimmedPhotons"),
-			  srcForIsolationCone = cms.InputTag('packedPFCandidates'),
-			  isolationConeDefinitions = cms.VPSet(
-			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
-				      coneSize = cms.double(0.3),
-				      isolateAgainst = cms.string('h+'),
-				      miniAODVertexCodes = cms.vuint32(2,3),
-				      vertexIndex = cms.int32(0),
-				    ),
-			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
-				      coneSize = cms.double(0.3),
-				      isolateAgainst = cms.string('h0'),
-				      miniAODVertexCodes = cms.vuint32(2,3),
-				      vertexIndex = cms.int32(0),
-				    ),
-			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
-				      coneSize = cms.double(0.3),
-				      isolateAgainst = cms.string('gamma'),
-				      miniAODVertexCodes = cms.vuint32(2,3),
-				      vertexIndex = cms.int32(0),
-				    )
-    )
-  )	
+process.egmPhotonIsolationMiniAOD = egmPhotonIsolationMiniAOD.clone()
 
 
 process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
