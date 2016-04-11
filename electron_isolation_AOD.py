@@ -17,12 +17,39 @@ from RecoEgamma.EgammaIsolationAlgos.egmGedGsfElectronPFIsolation_cfi import *
 
 process.load("CommonTools.ParticleFlow.pfNoPileUpIso_cff")
 process.load("CommonTools.ParticleFlow.pfParticleSelection_cff")
+process.load("CommonTools.PileupAlgos.Puppi_cff")
 
 process.pfNoPileUpCandidates = process.pfAllChargedHadrons.clone()
 process.pfNoPileUpCandidates.pdgId.extend(process.pfAllNeutralHadronsAndPhotons.pdgId)
 
-from RecoEgamma.EgammaIsolationAlgos.egmGedGsfElectronPFIsolation_cfi import egmGedGsfElectronPFNoPileUpIsolation
-process.ElectronIsolation = egmGedGsfElectronPFNoPileUpIsolation.clone()
+IsoConeDefinitions = cms.VPSet(
+        cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
+                  coneSize = cms.double(0.3),
+                  VetoConeSizeBarrel = cms.double(0.0),
+                  VetoConeSizeEndcaps = cms.double(0.015),
+                  isolateAgainst = cms.string('h+'),
+                  miniAODVertexCodes = cms.vuint32(2,3) ),
+        cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
+                  coneSize = cms.double(0.3),
+                  VetoConeSizeBarrel = cms.double(0.0),
+                  VetoConeSizeEndcaps = cms.double(0.0),
+                  isolateAgainst = cms.string('h0'),
+                  miniAODVertexCodes = cms.vuint32(2,3) ),
+        cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
+                  coneSize = cms.double(0.3),
+                  VetoConeSizeBarrel = cms.double(0.0),
+                  VetoConeSizeEndcaps = cms.double(0.08),
+                  isolateAgainst = cms.string('gamma'),
+                  miniAODVertexCodes = cms.vuint32(2,3) )
+        )
+
+process.egmElectronIsolaionPUPPIAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
+			  srcToIsolate = cms.InputTag("gedGsfElectrons"),
+			  srcForIsolationCone = cms.InputTag('puppi'),
+			  puppiValueMap = cms.InputTag(''),
+			  isolationConeDefinitions = IsoConeDefinitions
+  )
+
 
 process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 pruned = cms.InputTag("genParticles"),
@@ -31,15 +58,15 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 electrons = cms.InputTag("gedGsfElectrons"),
 				 rho = cms.InputTag("fixedGridRhoFastjetAll"),
 				 #CITK
-				 ValueMaps_ChargedHadrons_src = cms.InputTag("ElectronIsolation", "h+-DR030-BarVeto000-EndVeto001"),
-				 ValueMaps_NeutralHadrons_src = cms.InputTag("ElectronIsolation", "h0-DR030-BarVeto000-EndVeto000"),
-				 ValueMaps_Photons_src = cms.InputTag("ElectronIsolation", "gamma-DR030-BarVeto000-EndVeto008"),
+				 ValueMaps_ChargedHadrons_src = cms.InputTag("egmElectronIsolaionPUPPIAOD", "h+-DR030-BarVeto000-EndVeto001"),
+				 ValueMaps_NeutralHadrons_src = cms.InputTag("egmElectronIsolaionPUPPIAOD", "h0-DR030-BarVeto000-EndVeto000"),
+				 ValueMaps_Photons_src = cms.InputTag("egmElectronIsolaionPUPPIAOD", "gamma-DR030-BarVeto000-EndVeto008"),
 								
 				)
 
 
 
-process.electrons = cms.Path(process.particleFlowTmpPtrs + process.pfParticleSelectionSequence + process.pfNoPileUpCandidates + process.ElectronIsolation + process.ntupler)
+process.electrons = cms.Path(process.particleFlowTmpPtrs + process.pfParticleSelectionSequence + process.pfNoPileUpCandidates + process.puppi + process.egmElectronIsolaionPUPPIAOD + process.ntupler)
 
 process.source = cms.Source("PoolSource",
     secondaryFileNames = cms.untracked.vstring(),
