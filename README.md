@@ -7,7 +7,7 @@ cmsrel CMSSW_7_6_4 <br />
 cd CMSSW_7_6_4/src <br />
 cmsenv  <br />
 git clone -b  CITK_demos_electrons_PUPPI git@github.com:ishvetso/EgammaWork.git  <br />
-scram b -  <br />
+scram b  <br />
 cmsRun EgammaWork/electron_isolation_miniAOD.py (for miniAOD)  <br />
 cmsRun EgammaWork/electron_isolation_AOD.py (for AOD)  <br />
 
