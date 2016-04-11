@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    ElectronWork/ElectronNtupler_CITK
-// Class:      ElectronNtupler_CITK
+// Package:    ElectronWork/ElectronNtupler
+// Class:      ElectronNtupler
 // 
-/**\class ElectronNtupler_CITK ElectronNtupler_CITK.cc ElectronWork/ElectronNtupler_CITK/plugins/ElectronNtupler_CITK.cc
+/**\class ElectronNtupler ElectronNtupler.cc ElectronWork/ElectronNtupler/plugins/ElectronNtupler.cc
 
  Description: [one line class summary]
 
@@ -59,10 +59,10 @@ namespace reco {
 // class declaration
 //
 
-class ElectronNtupler_CITK : public edm::EDAnalyzer {
+class ElectronNtupler : public edm::EDAnalyzer {
 public:
-  explicit ElectronNtupler_CITK(const edm::ParameterSet&);
-  ~ElectronNtupler_CITK();
+  explicit ElectronNtupler(const edm::ParameterSet&);
+  ~ElectronNtupler();
   
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   
@@ -191,7 +191,7 @@ namespace EffectiveAreas {
 //
 // constructors and destructor
 //
-ElectronNtupler_CITK::ElectronNtupler_CITK(const edm::ParameterSet& iConfig):
+ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   pileupToken_(consumes<edm::View<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("pileup"))),
   electronToken_(consumes<edm::View<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("electrons"))),
@@ -261,7 +261,7 @@ ElectronNtupler_CITK::ElectronNtupler_CITK(const edm::ParameterSet& iConfig):
 }
 
 
-ElectronNtupler_CITK::~ElectronNtupler_CITK()
+ElectronNtupler::~ElectronNtupler()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -276,7 +276,7 @@ ElectronNtupler_CITK::~ElectronNtupler_CITK()
 
 // ------------ method called for each event  ------------
 void
-ElectronNtupler_CITK::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace std;
   using namespace edm;
@@ -397,14 +397,7 @@ ElectronNtupler_CITK::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     relisoChargedHadrons_ = pfIso.sumChargedHadronPt/pt_;
     relisoNeutralHadrons_ = pfIso.sumNeutralHadronEt/pt_;
     relisoPhotons_        = pfIso.sumPhotonEt/pt_;
-    // Compute isolation with effective area correction for PU
-    // Find eta bin first. If eta>2.5, the last eta bin is used.
-    int etaBin = 0; 
-    while ( etaBin < EffectiveAreas::nEtaBins-1 
-	    && abs(etaSC_) > EffectiveAreas::etaBinLimits[etaBin+1] )
-      { ++etaBin; };
-    double area = EffectiveAreas::effectiveAreaValues[etaBin];
-    relIsoWithEA_ = ( pfIso.sumChargedHadronPt + max(0.0, pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - rho_ * area ) )/pt_;
+    
     
     // Compute isolation with delta beta correction for PU
     float absiso = pfIso.sumChargedHadronPt + max(0.0 , pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - 0.5 * pfIso.sumPUPt );
@@ -441,6 +434,15 @@ ElectronNtupler_CITK::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     sumChargedHadronPt_CITK =  (*ValueMaps_ChargedHadrons)[elePtr];
     sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[elePtr];
     sumPhotonPt_CITK        =  (*ValueMaps_Photons)[elePtr];
+
+    // Compute isolation with effective area correction for PU
+    // Find eta bin first. If eta>2.5, the last eta bin is used.
+    int etaBin = 0; 
+    while ( etaBin < EffectiveAreas::nEtaBins-1 
+      && abs(etaSC_) > EffectiveAreas::etaBinLimits[etaBin+1] )
+      { ++etaBin; };
+    double area = EffectiveAreas::effectiveAreaValues[etaBin];
+    relIsoWithEA_ = ( sumChargedHadronPt_CITK + max(0.0, sumNeutralHadronPt_CITK + sumPhotonPt_CITK - rho_ * area ) )/pt_;
   
     relisoChargedHadronPt_CITK = sumChargedHadronPt_CITK/pt_;
     relisoNeutralHadronPt_CITK = sumNeutralHadronPt_CITK/pt_;
@@ -459,20 +461,20 @@ ElectronNtupler_CITK::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-ElectronNtupler_CITK::beginJob()
+ElectronNtupler::beginJob()
 {
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-ElectronNtupler_CITK::endJob() 
+ElectronNtupler::endJob() 
 {
 }
 
 // ------------ method called when starting to processes a run  ------------
 /*
 void 
-ElectronNtupler_CITK::beginRun(edm::Run const&, edm::EventSetup const&)
+ElectronNtupler::beginRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -480,7 +482,7 @@ ElectronNtupler_CITK::beginRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when ending the processing of a run  ------------
 /*
 void 
-ElectronNtupler_CITK::endRun(edm::Run const&, edm::EventSetup const&)
+ElectronNtupler::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -488,7 +490,7 @@ ElectronNtupler_CITK::endRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
 void 
-ElectronNtupler_CITK::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+ElectronNtupler::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
@@ -496,14 +498,14 @@ ElectronNtupler_CITK::beginLuminosityBlock(edm::LuminosityBlock const&, edm::Eve
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
 void 
-ElectronNtupler_CITK::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+ElectronNtupler::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-ElectronNtupler_CITK::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+ElectronNtupler::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -511,11 +513,11 @@ ElectronNtupler_CITK::fillDescriptions(edm::ConfigurationDescriptions& descripti
   descriptions.addDefault(desc);
 }
 
-bool ElectronNtupler_CITK::checkAncestor(const reco::Candidate *gen, int ancestorPid){
+bool ElectronNtupler::checkAncestor(const reco::Candidate *gen, int ancestorPid){
 
   // General sanity check
   if( gen == 0 ){
-    printf("ElectronNtupler_CITK::checkAncestor: ERROR null particle is passed in, ignore it.\n");
+    printf("ElectronNtupler::checkAncestor: ERROR null particle is passed in, ignore it.\n");
     return false;
   }
 
@@ -534,7 +536,7 @@ bool ElectronNtupler_CITK::checkAncestor(const reco::Candidate *gen, int ancesto
 
 // The function that uses algorith from Josh Bendavid with 
 // an explicit loop over gen particles. 
-int ElectronNtupler_CITK::matchToTruth(const pat::Electron &el, 
+int ElectronNtupler::matchToTruth(const pat::Electron &el, 
 				  const edm::Handle<edm::View<reco::GenParticle>> &prunedGenParticles){
 
   // 
@@ -570,7 +572,7 @@ int ElectronNtupler_CITK::matchToTruth(const pat::Electron &el,
   if( ancestorPID == -999 && ancestorStatus == -999 ){
     // No non-electron parent??? This should never happen.
     // Complain.
-    printf("ElectronNtupler_CITK: ERROR! Electron does not apper to have a non-electron parent\n");
+    printf("ElectronNtupler: ERROR! Electron does not apper to have a non-electron parent\n");
     return UNMATCHED;
   }
   
@@ -584,11 +586,11 @@ int ElectronNtupler_CITK::matchToTruth(const pat::Electron &el,
   return TRUE_PROMPT_ELECTRON;
 }
 
-void ElectronNtupler_CITK::findFirstNonElectronMother(const reco::Candidate *particle,
+void ElectronNtupler::findFirstNonElectronMother(const reco::Candidate *particle,
 						 int &ancestorPID, int &ancestorStatus){
 
   if( particle == 0 ){
-    printf("ElectronNtupler_CITK: ERROR! null candidate pointer, this should never happen\n");
+    printf("ElectronNtupler: ERROR! null candidate pointer, this should never happen\n");
     return;
   }
 
@@ -605,7 +607,7 @@ void ElectronNtupler_CITK::findFirstNonElectronMother(const reco::Candidate *par
 }
 
 // The function that uses the standard genParticle() matching for electrons.
-int ElectronNtupler_CITK::matchToTruthAlternative(const pat::Electron &el){
+int ElectronNtupler::matchToTruthAlternative(const pat::Electron &el){
 
      //
      // genParticle method
@@ -651,14 +653,14 @@ int ElectronNtupler_CITK::matchToTruthAlternative(const pat::Electron &el){
      return result;
 }
 
-void ElectronNtupler_CITK::printAllZeroMothers(const reco::Candidate *particle){
+void ElectronNtupler::printAllZeroMothers(const reco::Candidate *particle){
   
   if( particle == 0 ){
-    printf("ElectronNtupler_CITK::printAllZeroMothers: reached the top of the decay tree\n");
+    printf("ElectronNtupler::printAllZeroMothers: reached the top of the decay tree\n");
     return;
   }
   
-  printf("ElectronNtupler_CITK::printAllZeroMothers: ancestor ID= %d, status= %d\n",
+  printf("ElectronNtupler::printAllZeroMothers: ancestor ID= %d, status= %d\n",
 	 particle->pdgId(), particle->status() );
 
   printAllZeroMothers( particle->mother(0) );
@@ -667,4 +669,4 @@ void ElectronNtupler_CITK::printAllZeroMothers(const reco::Candidate *particle){
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(ElectronNtupler_CITK);
+DEFINE_FWK_MODULE(ElectronNtupler);
