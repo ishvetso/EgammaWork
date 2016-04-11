@@ -8,7 +8,7 @@ cd CMSSW_7_6_4/src <br />
 cmsenv  <br />
 git clone -b CITK_demos_electrons git@github.com:ishvetso/EgammaWork.git  <br />
 scram b -  <br />
-cmsRun EgammaWork/electron_isolation_CITK_miniAOD.py (for miniAOD)  <br />
-cmsRun EgammaWork/electron_isolation_CITK_AOD.py (for AOD)  <br />
+cmsRun EgammaWork/electron_isolation_miniAOD.py (for miniAOD)  <br />
+cmsRun EgammaWork/electron_isolation_AOD.py (for AOD)  <br />
 
 [CITK twiki]:https://twiki.cern.ch/twiki/bin/viewauth/CMS/CommonIDAndIsolationFW
