@@ -5,36 +5,23 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
-process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
-process.options.allowUnscheduled = cms.untracked.bool(False) 
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_RunIIFall15DR76_v1'
+process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 
-process.ElectronIsolation = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("slimmedElectrons"),
-					    srcForIsolationCone = cms.InputTag('packedPFCandidates'),
-					    isolationConeDefinitions = cms.VPSet(
-									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
-									coneSize = cms.double(0.3),
-									VetoConeSizeEndcaps = cms.double(0.015),
-									VetoConeSizeBarrel = cms.double(0.0),
-									isolateAgainst = cms.string('h+'),
-									miniAODVertexCodes = cms.vuint32(2,3) ),
-									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
-									coneSize = cms.double(0.3),
-									VetoConeSizeEndcaps = cms.double(0.0),
-									VetoConeSizeBarrel = cms.double(0.0),
-									isolateAgainst = cms.string('h0'),
-									miniAODVertexCodes = cms.vuint32(2,3) ),
-									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
-									coneSize = cms.double(0.3),
-									VetoConeSizeEndcaps = cms.double(0.08),
-									VetoConeSizeBarrel = cms.double(0.0),
-									isolateAgainst = cms.string('gamma'),
-									miniAODVertexCodes = cms.vuint32(2,3) )
-								      )
-					)
-process.ntupler = cms.EDAnalyzer('ElectronNtupler_CITK',
+process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
+process.options.allowUnscheduled = cms.untracked.bool(False)
+
+from RecoEgamma.EgammaIsolationAlgos.egmGedGsfElectronPFIsolation_cfi import egmGedGsfElectronPFNoPileUpIsolation
+process.ElectronIsolation = egmGedGsfElectronPFNoPileUpIsolation.clone()
+process.ElectronIsolation.srcToIsolate = cms.InputTag("slimmedElectrons")
+process.ElectronIsolation.srcForIsolationCone = cms.InputTag("packedPFCandidates")
+
+
+
+process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 pruned = cms.InputTag("prunedGenParticles"),
-				 pileup = cms.InputTag("addPileupInfo"),
+				 pileup = cms.InputTag("slimmedAddPileupInfo"),
 				 vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
 				 electrons = cms.InputTag("slimmedElectrons"),
 				 rho = cms.InputTag("fixedGridRhoFastjetAll"),
@@ -47,23 +34,16 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler_CITK',
 
 process.electrons = cms.Path(process.ElectronIsolation  + process.ntupler)
 
-#process.maxEvents.input = 1000
 process.source = cms.Source("PoolSource",
     secondaryFileNames = cms.untracked.vstring(),
-    fileNames = cms.untracked.vstring('file:////afs/cern.ch/work/i/ishvetso/RunII_preparation/Synchronization_March2015/miniAOD/RSGravitonToWW_kMpl01_M_1000_Tune4C_13TeV_pythia8_synch_exercise.root')
+    fileNames = cms.untracked.vstring('/store/mc/RunIIFall15MiniAODv2/DYJetsToLL_M-50_HT-200to400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/02EA1AC3-40B8-E511-8AE8-3417EBE7009F.root')
     
 )
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 10000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
-'''process.out = cms.OutputModule("PoolOutputModule",
- fileName = cms.untracked.string('patTuple.root'),
-  outputCommands = cms.untracked.vstring('keep *')
-)
 
-process.outpath = cms.EndPath(process.out)
-'''
 process.TFileService = cms.Service("TFileService",
-                                 fileName = cms.string("tree.root")
+                                 fileName = cms.string("tree_miniAOD.root")
                                   )
