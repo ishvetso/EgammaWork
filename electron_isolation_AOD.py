@@ -8,19 +8,10 @@ process.maxEvents = cms.untracked.PSet(
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
 
-process.particleFlowTmpPtrs = cms.EDProducer("PFCandidateFwdPtrProducer",
-src = cms.InputTag('particleFlow')
-)
-
-
 from RecoEgamma.EgammaIsolationAlgos.egmGedGsfElectronPFIsolation_cfi import *
 
-process.load("CommonTools.ParticleFlow.pfNoPileUpIso_cff")
-process.load("CommonTools.ParticleFlow.pfParticleSelection_cff")
 process.load("CommonTools.PileupAlgos.Puppi_cff")
 
-process.pfNoPileUpCandidates = process.pfAllChargedHadrons.clone()
-process.pfNoPileUpCandidates.pdgId.extend(process.pfAllNeutralHadronsAndPhotons.pdgId)
 
 IsoConeDefinitions = cms.VPSet(
         cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
@@ -66,7 +57,7 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 
 
 
-process.electrons = cms.Path(process.particleFlowTmpPtrs + process.pfParticleSelectionSequence + process.pfNoPileUpCandidates + process.puppi + process.egmElectronIsolaionPUPPIAOD + process.ntupler)
+process.electrons = cms.Path( process.puppi + process.egmElectronIsolaionPUPPIAOD + process.ntupler)
 
 process.source = cms.Source("PoolSource",
     secondaryFileNames = cms.untracked.vstring(),
