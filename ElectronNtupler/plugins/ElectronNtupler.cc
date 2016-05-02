@@ -54,6 +54,7 @@
 #include "TTree.h"
 #include "Math/VectorUtil.h"
 #include "DataFormats/Common/interface/RefToPtr.h"
+#include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 
 
 
@@ -110,25 +111,41 @@ private:
   edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
   edm::EDGetTokenT<double> rhoToken_;
   
-  //CITK
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_ChargedHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_NeutralHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_Photons_;
+  //CITK standard isolations
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_ChargedHadrons_ConeVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_NeutralHadrons_ConeVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_Photons_ConeVeto_;
+
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_ChargedHadrons_MapBasedVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_NeutralHadrons_MapBasedVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_Photons_MapBasedVeto_;
   
-  //PUPPI
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_ChargedHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NeutralHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_Photons_;
+  //PUPPI cone based veto
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_ChargedHadrons_ConeVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NeutralHadrons_ConeVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_Photons_ConeVeto_;
+
+  //PUPPI map based veto
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_ChargedHadrons_MapBasedVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NeutralHadrons_MapBasedVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_Photons_MapBasedVeto_;
   
-  //PUPPI no leptons
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_ChargedHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_NeutralHadrons_;
-  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_Photons_;
+  //PUPPI no leptons cone veto
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ConeVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ConeVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_Photons_ConeVeto_;
+
+  //PUPPI no leptons map based veto
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_ChargedHadrons_MapBasedVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_NeutralHadrons_MapBasedVeto_;
+  edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_PUPPI_NoLeptons_Photons_MapBasedVeto_;
 
   edm::EDGetTokenT<edm::ValueMap<bool> > ValueMap_ids_wp80_Token;
   edm::EDGetTokenT<edm::ValueMap<bool> > ValueMap_ids_wp90_Token; 
 
   edm::EDGetTokenT<GenEventInfoProduct> genInfoToken;
+
+  EffectiveAreas effArea_;
 
   TTree *electronTree_;
   
@@ -161,45 +178,46 @@ private:
   // I comment this because it is not accessible in AOD
   //Int_t   passConversionVeto_;     
   Int_t   isTrueElectron_;
-  
+
   Float_t isoChargedHadrons_;
   Float_t isoNeutralHadrons_;
   Float_t isoPhotons_;
   Float_t isoChargedFromPU_;
   
-  Float_t relisoChargedHadrons_;
-  Float_t relisoNeutralHadrons_;
-  Float_t relisoPhotons_;
-  
   //CITK
-  Float_t sumChargedHadronPt_CITK;
-  Float_t sumNeutralHadronPt_CITK;
-  Float_t sumPhotonPt_CITK;
+  Float_t sumChargedHadronPt_CITK_ConeVeto;
+  Float_t sumNeutralHadronPt_CITK_ConeVeto;
+  Float_t sumPhotonPt_CITK_ConeVeto;
+
+  //CITK
+  Float_t sumChargedHadronPt_CITK_MapBasedVeto;
+  Float_t sumNeutralHadronPt_CITK_MapBasedVeto;
+  Float_t sumPhotonPt_CITK_MapBasedVeto;
   
   //PUPPI
-  Float_t sumChargedHadronPt_PUPPI;
-  Float_t sumNeutralHadronPt_PUPPI;
-  Float_t sumPhotonPt_PUPPI;
+  Float_t sumChargedHadronPt_PUPPI_ConeVeto;
+  Float_t sumNeutralHadronPt_PUPPI_ConeVeto;
+  Float_t sumPhotonPt_PUPPI_ConeVeto;
+
+  Float_t sumChargedHadronPt_PUPPI_MapBasedVeto;
+  Float_t sumNeutralHadronPt_PUPPI_MapBasedVeto;
+  Float_t sumPhotonPt_PUPPI_MapBasedVeto;
   
   //PUPPINoLeptons
-  Float_t sumChargedHadronPt_PUPPI_NoLeptons;
-  Float_t sumNeutralHadronPt_PUPPI_NoLeptons;
-  Float_t sumPhotonPt_PUPPI_NoLeptons;
+  Float_t sumChargedHadronPt_PUPPI_NoLeptons_ConeVeto;
+  Float_t sumNeutralHadronPt_PUPPI_NoLeptons_ConeVeto;
+  Float_t sumPhotonPt_PUPPI_NoLeptons_ConeVeto;
+
+  Float_t sumChargedHadronPt_PUPPI_NoLeptons_MapBasedVeto;
+  Float_t sumNeutralHadronPt_PUPPI_NoLeptons_MapBasedVeto;
+  Float_t sumPhotonPt_PUPPI_NoLeptons_MapBasedVeto;
   
-  Float_t reliso_PUPPI, reliso_PUPPI_NoLeptons;
-  Float_t reliso_PUPPI_average;
-  
-  Float_t relisoChargedHadronPt_CITK;
-  Float_t relisoNeutralHadronPt_CITK;
-  Float_t relisoPhotonPt_CITK;
-  
-  Float_t relisoChargedHadronPt_PUPPI;
-  Float_t relisoNeutralHadronPt_PUPPI;
-  Float_t relisoPhotonPt_PUPPI;
-  
-  Float_t relisoChargedHadronPt_PUPPINoLeptons;
-  Float_t relisoNeutralHadronPt_PUPPINoLeptons;
-  Float_t relisoPhotonPt_PUPPINoLeptons;
+  Float_t reliso_PUPPI_ConeVeto, reliso_PUPPI_NoLeptons_ConeVeto, reliso_PUPPI_MapBasedVeto, reliso_PUPPI_NoLeptons_MapBasedVeto;
+  Float_t reliso_PUPPI_ConeVeto_average, reliso_PUPPI_MapBasedVeto_average;
+
+  Float_t reliso_ConeVeto_raw, reliso_MapBasedVeto_raw;
+
+  Float_t reliso_ConeVeto_EA, reliso_MapBasedVeto_EA;
 
   bool mvaIDBit_w80;
   bool mvaIDBit_w90;
@@ -207,20 +225,6 @@ private:
   Int_t genWeight;
   bool isEB;
 };
-
-//
-// constants, enums and typedefs
-//
-
-// Effective areas for electrons from Giovanni P. and Cristina
-// distributed as private slides in Jan 2015, derived for PHYS14
-namespace EffectiveAreas {
-  const int nEtaBins = 5;
-  const float etaBinLimits[nEtaBins+1] = {
-    0.0, 0.8, 1.3, 2.0, 2.2, 2.5};
-  const float effectiveAreaValues[nEtaBins] = {
-    0.1013, 0.0988, 0.0572, 0.0842, 0.1530};
-}
 
 //
 // static data member definitions
@@ -238,21 +242,34 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   rhoToken_(consumes<double> (iConfig.getParameter<edm::InputTag>("rho"))),
   
   //CITK
-  ValueMaps_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_src" ) ) ),
-  ValueMaps_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_src" ) ) ),
-  ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) ),
+  ValueMaps_ChargedHadrons_ConeVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_ConeVeto_src" ) ) ),
+  ValueMaps_NeutralHadrons_ConeVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_ConeVeto_src" ) ) ),
+  ValueMaps_Photons_ConeVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_ConeVeto_src" ) ) ),
+
+  ValueMaps_ChargedHadrons_MapBasedVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_MapBasedVeto_src" ) ) ),
+  ValueMaps_NeutralHadrons_MapBasedVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_MapBasedVeto_src" ) ) ),
+  ValueMaps_Photons_MapBasedVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_MapBasedVeto_src" ) ) ),
   //PUPPI
-  ValueMaps_PUPPI_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_ChargedHadrons_src" ) ) ),
-  ValueMaps_PUPPI_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NeutralHadrons_src" ) ) ),
-  ValueMaps_PUPPI_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_Photons_src" ) ) ),
+  ValueMaps_PUPPI_ChargedHadrons_ConeVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_ChargedHadrons_ConeVeto_src" ) ) ),
+  ValueMaps_PUPPI_NeutralHadrons_ConeVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NeutralHadrons_ConeVeto_src" ) ) ),
+  ValueMaps_PUPPI_Photons_ConeVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_Photons_ConeVeto_src" ) ) ),
+
+  ValueMaps_PUPPI_ChargedHadrons_MapBasedVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_ChargedHadrons_MapBasedVeto_src" ) ) ),
+  ValueMaps_PUPPI_NeutralHadrons_MapBasedVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NeutralHadrons_MapBasedVeto_src" ) ) ),
+  ValueMaps_PUPPI_Photons_MapBasedVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_Photons_MapBasedVeto_src" ) ) ),
   //PUPPINoLeptons
-  ValueMaps_PUPPI_NoLeptons_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_ChargedHadrons_src" ) ) ),
-  ValueMaps_PUPPI_NoLeptons_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_NeutralHadrons_src" ) ) ),
-  ValueMaps_PUPPI_NoLeptons_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_Photons_src" ) ) ),
+  ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ConeVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ConeVeto_src" ) ) ),
+  ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ConeVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ConeVeto_src" ) ) ),
+  ValueMaps_PUPPI_NoLeptons_Photons_ConeVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_Photons_ConeVeto_src" ) ) ),
+
+  ValueMaps_PUPPI_NoLeptons_ChargedHadrons_MapBasedVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_ChargedHadrons_MapBasedVeto_src" ) ) ),
+  ValueMaps_PUPPI_NoLeptons_NeutralHadrons_MapBasedVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_NeutralHadrons_MapBasedVeto_src" ) ) ),
+  ValueMaps_PUPPI_NoLeptons_Photons_MapBasedVeto_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_PUPPI_NoLeptons_Photons_MapBasedVeto_src" ) ) ),
 
  ValueMap_ids_wp80_Token(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>( "mva_idw80_src" ) ) ),
  ValueMap_ids_wp90_Token(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>( "mva_idw90_src" ) ) ),
- genInfoToken(consumes<GenEventInfoProduct> (iConfig.getParameter<edm::InputTag>( "genInfo" ) ) )
+ genInfoToken(consumes<GenEventInfoProduct> (iConfig.getParameter<edm::InputTag>( "genInfo" ) ) ),
+ effArea_( (iConfig.getParameter<edm::FileInPath>("effAreaFile")).fullPath() )
 {
   edm::Service<TFileService> fs;
   electronTree_ = fs->make<TTree> ("ElectronTree", "Electron data");
@@ -276,6 +293,10 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   // electronTree_->Branch("sigmaIetaIeta",         &sigmaIetaIeta_, "sigmaIetaIeta/F");
   electronTree_->Branch("full5x5_sigmaIetaIeta", &full5x5_sigmaIetaIeta_, "full5x5_sigmaIetaIeta/F");
  
+  electronTree_->Branch("isoChargedHadrons"      , &isoChargedHadrons_ , "isoChargedHadrons/F");
+  electronTree_->Branch("isoNeutralHadrons"      , &isoNeutralHadrons_, "isoNeutralHadrons/F");
+  electronTree_->Branch("isoPhotons"             , &isoPhotons_, "isoPhotons/F");
+
   electronTree_->Branch("isoChargedFromPU"       , &isoChargedFromPU_);
   electronTree_->Branch("relIsoWithEA"           , &relIsoWithEA_, "relIsoWithEA/F");
   electronTree_->Branch("relIsoWithDBeta"      , &relIsoWithDBeta_, "relIsoWithDBeta/F");
@@ -287,50 +308,48 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_->Branch("classification"    , &classification,     "classification/I");
   
   //electronTree_->Branch("passConversionVeto", &passConversionVeto_, "passConversionVeto/I");
-  electronTree_->Branch("isTrueElectron"    , &isTrueElectron_,     "isTrueElectron/I");
- 
-  electronTree_->Branch("isoChargedHadrons"      , &isoChargedHadrons_ , "isoChargedHadrons/F");
-  electronTree_->Branch("isoNeutralHadrons"      , &isoNeutralHadrons_, "isoNeutralHadrons/F");
-  electronTree_->Branch("isoPhotons"             , &isoPhotons_, "isoPhotons/F");
-  
-  electronTree_->Branch("relisoChargedHadrons"      , &relisoChargedHadrons_ , "relisoChargedHadrons/F");
-  electronTree_->Branch("relisoNeutralHadrons"      , &relisoNeutralHadrons_, "relisoNeutralHadrons/F");
-  electronTree_->Branch("relisoPhotons"             , &relisoPhotons_, "relisoPhotons/F");
-  
+  electronTree_->Branch("isTrueElectron"    , &isTrueElectron_,     "isTrueElectron/I");  
   //CITK
-  electronTree_ -> Branch("sumChargedHadronPt_CITK", &sumChargedHadronPt_CITK, "sumChargedHadronPt_CITK/F");
-  electronTree_ -> Branch("sumNeutralHadronPt_CITK", &sumNeutralHadronPt_CITK, "sumNeutralHadronPt_CITK/F");
-  electronTree_ -> Branch("sumPhotonPt_CITK", &sumPhotonPt_CITK, "sumPhotonPt_CITK/F");
+  electronTree_ -> Branch("sumChargedHadronPt_CITK_ConeVeto", &sumChargedHadronPt_CITK_ConeVeto, "sumChargedHadronPt_CITK_ConeVeto/F");
+  electronTree_ -> Branch("sumNeutralHadronPt_CITK_ConeVeto", &sumNeutralHadronPt_CITK_ConeVeto, "sumNeutralHadronPt_CITK_ConeVeto/F");
+  electronTree_ -> Branch("sumPhotonPt_CITK_ConeVeto", &sumPhotonPt_CITK_ConeVeto, "sumPhotonPt_CITK_ConeVeto/F");
+
+  electronTree_ -> Branch("sumChargedHadronPt_CITK_MapBasedVeto", &sumChargedHadronPt_CITK_MapBasedVeto, "sumChargedHadronPt_CITK_MapBasedVeto/F");
+  electronTree_ -> Branch("sumNeutralHadronPt_CITK_MapBasedVeto", &sumNeutralHadronPt_CITK_MapBasedVeto, "sumNeutralHadronPt_CITK_MapBasedVeto/F");
+  electronTree_ -> Branch("sumPhotonPt_CITK_MapBasedVeto", &sumPhotonPt_CITK_MapBasedVeto, "sumPhotonPt_CITK_MapBasedVeto/F");
 
   //PUPPI
-  electronTree_ -> Branch("sumChargedHadronPt_PUPPI", &sumChargedHadronPt_PUPPI, "sumChargedHadronPt_PUPPI/F");
-  electronTree_ -> Branch("sumNeutralHadronPt_PUPPI", &sumNeutralHadronPt_PUPPI, "sumNeutralHadronPt_PUPPI/F");
-  electronTree_ -> Branch("sumPhotonPt_PUPPI", &sumPhotonPt_PUPPI, "sumPhotonPt_PUPPI/F");
-  
-  electronTree_ -> Branch("reliso_PUPPI", &reliso_PUPPI, "reliso_PUPPI/F");
-  
-    //PUPPI
-  electronTree_ -> Branch("sumChargedHadronPt_PUPPI_NoLeptons", &sumChargedHadronPt_PUPPI_NoLeptons, "sumChargedHadronPt_PUPPI_NoLeptons/F");
-  electronTree_ -> Branch("sumNeutralHadronPt_PUPPI_NoLeptons", &sumNeutralHadronPt_PUPPI_NoLeptons, "sumNeutralHadronPt_PUPPI_NoLeptons/F");
-  electronTree_ -> Branch("sumPhotonPt_PUPPI_NoLeptons", &sumPhotonPt_PUPPI_NoLeptons, "sumPhotonPt_PUPPI_NoLeptons/F");
-  
-  electronTree_ -> Branch("reliso_PUPPI_NoLeptons", &reliso_PUPPI_NoLeptons, "reliso_PUPPI_NoLeptons/F");
+  electronTree_ -> Branch("sumChargedHadronPt_PUPPI_ConeVeto", &sumChargedHadronPt_PUPPI_ConeVeto, "sumChargedHadronPt_PUPPI_ConeVeto/F");
+  electronTree_ -> Branch("sumNeutralHadronPt_PUPPI_ConeVeto", &sumNeutralHadronPt_PUPPI_ConeVeto, "sumNeutralHadronPt_PUPPI_ConeVeto/F");
+  electronTree_ -> Branch("sumPhotonPt_PUPPI_ConeVeto", &sumPhotonPt_PUPPI_ConeVeto, "sumPhotonPt_PUPPI_ConeVeto/F");
 
-  electronTree_ -> Branch("reliso_PUPPI_average", &reliso_PUPPI_average, "reliso_PUPPI_average/F");
+  electronTree_ -> Branch("sumChargedHadronPt_PUPPI_MapBasedVeto", &sumChargedHadronPt_PUPPI_MapBasedVeto, "sumChargedHadronPt_PUPPI_MapBasedVeto/F");
+  electronTree_ -> Branch("sumNeutralHadronPt_PUPPI_MapBasedVeto", &sumNeutralHadronPt_PUPPI_MapBasedVeto, "sumNeutralHadronPt_PUPPI_MapBasedVeto/F");
+  electronTree_ -> Branch("sumPhotonPt_PUPPI_MapBasedVeto", &sumPhotonPt_PUPPI_MapBasedVeto, "sumPhotonPt_PUPPI_MapBasedVeto/F");
   
-    
-  electronTree_ -> Branch("relisoChargedHadronPt_CITK", &relisoChargedHadronPt_CITK, "relisoChargedHadronPt_CITK/F");
-  electronTree_ -> Branch("relisoNeutralHadronPt_CITK", &relisoNeutralHadronPt_CITK, "relisoNeutralHadronPt_CITK/F");
-  electronTree_ -> Branch("relisoPhotonPt_CITK", &relisoPhotonPt_CITK, "relisoPhotonPt_CITK/F");
-  
-  electronTree_ -> Branch("relisoChargedHadronPt_PUPPI", &relisoChargedHadronPt_PUPPI, "relisoChargedHadronPt_PUPPI/F");
-  electronTree_ -> Branch("relisoNeutralHadronPt_PUPPI", &relisoNeutralHadronPt_PUPPI, "relisoNeutralHadronPt_PUPPI/F");
-  electronTree_ -> Branch("relisoPhotonPt_PUPPI", &relisoPhotonPt_PUPPI, "relisoPhotonPt_PUPPI/F");
-  
-  electronTree_ -> Branch("relisoChargedHadronPt_PUPPINoLeptons", &relisoChargedHadronPt_PUPPINoLeptons, "relisoChargedHadronPt_PUPPINoLeptons/F");
-  electronTree_ -> Branch("relisoNeutralHadronPt_PUPPINoLeptons", &relisoNeutralHadronPt_PUPPINoLeptons, "relisoNeutralHadronPt_PUPPINoLeptons/F");
-  electronTree_ -> Branch("relisoPhotonPt_PUPPINoLeptons", &relisoPhotonPt_PUPPINoLeptons, "relisoPhotonPt_PUPPINoLeptons/F");
+  //PUPPI No Leptons
+  electronTree_ -> Branch("sumChargedHadronPt_PUPPI_NoLeptons_ConeVeto", &sumChargedHadronPt_PUPPI_NoLeptons_ConeVeto, "sumChargedHadronPt_PUPPI_NoLeptons_ConeVeto/F");
+  electronTree_ -> Branch("sumNeutralHadronPt_PUPPI_NoLeptons_ConeVeto", &sumNeutralHadronPt_PUPPI_NoLeptons_ConeVeto, "sumNeutralHadronPt_PUPPI_NoLeptons_ConeVeto/F");
+  electronTree_ -> Branch("sumPhotonPt_PUPPI_NoLeptons_ConeVeto", &sumPhotonPt_PUPPI_NoLeptons_ConeVeto, "sumPhotonPt_PUPPI_NoLeptons_ConeVeto/F");
 
+  electronTree_ -> Branch("sumChargedHadronPt_PUPPI_NoLeptons_MapBasedVeto", &sumChargedHadronPt_PUPPI_NoLeptons_MapBasedVeto, "sumChargedHadronPt_PUPPI_NoLeptons_MapBasedVeto/F");
+  electronTree_ -> Branch("sumNeutralHadronPt_PUPPI_NoLeptons_MapBasedVeto", &sumNeutralHadronPt_PUPPI_NoLeptons_MapBasedVeto, "sumNeutralHadronPt_PUPPI_NoLeptons_MapBasedVeto/F");
+  electronTree_ -> Branch("sumPhotonPt_PUPPI_NoLeptons_MapBasedVeto", &sumPhotonPt_PUPPI_NoLeptons_MapBasedVeto, "sumPhotonPt_PUPPI_NoLeptons_MapBasedVeto/F");
+
+  electronTree_ -> Branch("reliso_ConeVeto_raw", &reliso_ConeVeto_raw, "reliso_ConeVeto_raw/F");
+  electronTree_ -> Branch("reliso_MapBasedVeto_raw", &reliso_MapBasedVeto_raw, "reliso_MapBasedVeto_raw/F");
+
+  electronTree_ -> Branch("reliso_ConeVeto_EA", &reliso_ConeVeto_EA, "reliso_ConeVeto_EA/F");
+  electronTree_ -> Branch("reliso_MapBasedVeto_EA", &reliso_MapBasedVeto_EA, "reliso_MapBasedVeto_EA/F");
+
+  electronTree_ -> Branch("reliso_PUPPI_ConeVeto", &reliso_PUPPI_ConeVeto, "reliso_PUPPI_ConeVeto/F");
+  electronTree_ -> Branch("reliso_PUPPI_NoLeptons_ConeVeto", &reliso_PUPPI_NoLeptons_ConeVeto, "reliso_PUPPI_NoLeptons_ConeVeto/F");
+  electronTree_ -> Branch("reliso_PUPPI_ConeVeto_average", &reliso_PUPPI_ConeVeto_average, "reliso_PUPPI_ConeVeto_average/F");
+
+  electronTree_ -> Branch("reliso_PUPPI_MapBasedVeto", &reliso_PUPPI_MapBasedVeto, "reliso_PUPPI_MapBasedVeto/F");
+  electronTree_ -> Branch("reliso_PUPPI_NoLeptons_MapBasedVeto", &reliso_PUPPI_NoLeptons_MapBasedVeto, "reliso_PUPPI_NoLeptons_MapBasedVeto/F");
+  electronTree_ -> Branch("reliso_PUPPI_MapBasedVeto_average", &reliso_PUPPI_MapBasedVeto_average, "reliso_PUPPI_MapBasedVeto_average/F");
+  
   electronTree_ -> Branch("mvaIDBit_w80", &mvaIDBit_w80, "mvaIDBit_w80/B");
   electronTree_ -> Branch("mvaIDBit_w90", &mvaIDBit_w90, "mvaIDBit_w90/B");
 
@@ -424,24 +443,44 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByToken(cands_, cands);
   
   //CITK
-  Handle <edm::ValueMap <float> > ValueMaps_ChargedHadrons, ValueMaps_NeutralHadrons, ValueMaps_Photons;
-  Handle <edm::ValueMap <float> > ValueMaps_PUPPI_ChargedHadrons, ValueMaps_PUPPI_NeutralHadrons, ValueMaps_PUPPI_Photons;
-  Handle <edm::ValueMap <float> > ValueMaps_PUPPI_NoLeptons_ChargedHadrons, ValueMaps_PUPPI_NoLeptons_NeutralHadrons, ValueMaps_PUPPI_NoLeptons_Photons;
+  Handle <edm::ValueMap <float> > ValueMaps_ChargedHadrons_ConeVeto, ValueMaps_NeutralHadrons_ConeVeto, ValueMaps_Photons_ConeVeto;
+  Handle <edm::ValueMap <float> > ValueMaps_ChargedHadrons_MapBasedVeto, ValueMaps_NeutralHadrons_MapBasedVeto, ValueMaps_Photons_MapBasedVeto;
+  
+  Handle <edm::ValueMap <float> > ValueMaps_PUPPI_ChargedHadrons_ConeVeto, ValueMaps_PUPPI_NeutralHadrons_ConeVeto, ValueMaps_PUPPI_Photons_ConeVeto;
+  Handle <edm::ValueMap <float> > ValueMaps_PUPPI_ChargedHadrons_MapBasedVeto, ValueMaps_PUPPI_NeutralHadrons_MapBasedVeto, ValueMaps_PUPPI_Photons_MapBasedVeto;
+
+  Handle <edm::ValueMap <float> > ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ConeVeto, ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ConeVeto, ValueMaps_PUPPI_NoLeptons_Photons_ConeVeto;
+  Handle <edm::ValueMap <float> > ValueMaps_PUPPI_NoLeptons_ChargedHadrons_MapBasedVeto, ValueMaps_PUPPI_NoLeptons_NeutralHadrons_MapBasedVeto, ValueMaps_PUPPI_NoLeptons_Photons_MapBasedVeto;
   
   //CITK
-  iEvent.getByToken( ValueMaps_ChargedHadrons_ , ValueMaps_ChargedHadrons);
-  iEvent.getByToken( ValueMaps_NeutralHadrons_ , ValueMaps_NeutralHadrons);
-  iEvent.getByToken( ValueMaps_Photons_ , ValueMaps_Photons);
+  iEvent.getByToken( ValueMaps_ChargedHadrons_ConeVeto_ , ValueMaps_ChargedHadrons_ConeVeto);
+  iEvent.getByToken( ValueMaps_ChargedHadrons_MapBasedVeto_, ValueMaps_ChargedHadrons_MapBasedVeto);
+
+  iEvent.getByToken( ValueMaps_NeutralHadrons_ConeVeto_ , ValueMaps_NeutralHadrons_ConeVeto);
+  iEvent.getByToken( ValueMaps_NeutralHadrons_MapBasedVeto_ , ValueMaps_NeutralHadrons_MapBasedVeto);
+
+  iEvent.getByToken( ValueMaps_Photons_ConeVeto_ , ValueMaps_Photons_ConeVeto);
+  iEvent.getByToken( ValueMaps_Photons_MapBasedVeto_ , ValueMaps_Photons_MapBasedVeto);
   
   //PUPPI 
-  iEvent.getByToken( ValueMaps_PUPPI_ChargedHadrons_ , ValueMaps_PUPPI_ChargedHadrons);
-  iEvent.getByToken( ValueMaps_PUPPI_NeutralHadrons_ , ValueMaps_PUPPI_NeutralHadrons);
-  iEvent.getByToken( ValueMaps_PUPPI_Photons_ , ValueMaps_PUPPI_Photons);
+  iEvent.getByToken( ValueMaps_PUPPI_ChargedHadrons_ConeVeto_ , ValueMaps_PUPPI_ChargedHadrons_ConeVeto);
+  iEvent.getByToken( ValueMaps_PUPPI_ChargedHadrons_MapBasedVeto_ , ValueMaps_PUPPI_ChargedHadrons_MapBasedVeto);
+  
+  iEvent.getByToken( ValueMaps_PUPPI_NeutralHadrons_ConeVeto_ , ValueMaps_PUPPI_NeutralHadrons_ConeVeto);
+  iEvent.getByToken( ValueMaps_PUPPI_NeutralHadrons_MapBasedVeto_ , ValueMaps_PUPPI_NeutralHadrons_MapBasedVeto);
+  
+  iEvent.getByToken( ValueMaps_PUPPI_Photons_ConeVeto_ , ValueMaps_PUPPI_Photons_ConeVeto);
+  iEvent.getByToken( ValueMaps_PUPPI_Photons_MapBasedVeto_ , ValueMaps_PUPPI_Photons_MapBasedVeto);
   
   //PUPPI_NoLeptons 
-  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ , ValueMaps_PUPPI_NoLeptons_ChargedHadrons);
-  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ , ValueMaps_PUPPI_NoLeptons_NeutralHadrons);
-  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_Photons_ , ValueMaps_PUPPI_NoLeptons_Photons);
+  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ConeVeto_ , ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ConeVeto);
+  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_ChargedHadrons_MapBasedVeto_ , ValueMaps_PUPPI_NoLeptons_ChargedHadrons_MapBasedVeto);
+  
+  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ConeVeto_ , ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ConeVeto);
+  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_NeutralHadrons_MapBasedVeto_ , ValueMaps_PUPPI_NoLeptons_NeutralHadrons_MapBasedVeto);
+  
+  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_Photons_ConeVeto_ , ValueMaps_PUPPI_NoLeptons_Photons_ConeVeto);
+  iEvent.getByToken( ValueMaps_PUPPI_NoLeptons_Photons_MapBasedVeto_ , ValueMaps_PUPPI_NoLeptons_Photons_MapBasedVeto);
 
   Handle <edm::ValueMap <bool> >  ValueMap_ids_wp80, ValueMap_ids_wp90;
 
@@ -488,6 +527,8 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     }else{
       ooEmooP_ = std::abs(1.0/eleGsfPtr -> ecalEnergy() - eleGsfPtr -> eSuperClusterOverP()/eleGsfPtr -> ecalEnergy() );
     }
+
+    float Area = effArea_.getEffectiveArea(std::abs(etaSC_));
     
     // Isolation
     GsfElectron::PflowIsolationVariables pfIso = eleGsfPtr -> pfIsolationVariables();
@@ -496,17 +537,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     isoPhotons_        = pfIso.sumPhotonEt ;
     isoChargedFromPU_  = pfIso.sumPUPt ;
     
-    relisoChargedHadrons_ = pfIso.sumChargedHadronPt/pt_;
-    relisoNeutralHadrons_ = pfIso.sumNeutralHadronEt/pt_;
-    relisoPhotons_        = pfIso.sumPhotonEt/pt_;
-    // Compute isolation with effective area correction for PU
-    // Find eta bin first. If eta>2.5, the last eta bin is used.
-    int etaBin = 0; 
-    while ( etaBin < EffectiveAreas::nEtaBins-1 
-	    && abs(etaSC_) > EffectiveAreas::etaBinLimits[etaBin+1] )
-      { ++etaBin; };
-    double area = EffectiveAreas::effectiveAreaValues[etaBin];
-    relIsoWithEA_ = ( pfIso.sumChargedHadronPt + max(0.0, pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - rho_ * area ) )/pt_;
+    relIsoWithEA_ = ( pfIso.sumChargedHadronPt + std::max(0.0, (double)pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - rho_ * Area ) )/pt_;
     
     // Compute isolation with delta beta correction for PU
     float absiso = pfIso.sumChargedHadronPt + max(0.0 , pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - 0.5 * pfIso.sumPUPt );
@@ -540,43 +571,52 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     //   printAllZeroMothers( el.genParticle() );
 
     //CITK
-    sumChargedHadronPt_CITK =  (*ValueMaps_ChargedHadrons)[eleGsfPtr];
-    sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[eleGsfPtr];
-    sumPhotonPt_CITK        =  (*ValueMaps_Photons)[eleGsfPtr];
+    sumChargedHadronPt_CITK_ConeVeto =  (*ValueMaps_ChargedHadrons_ConeVeto)[eleGsfPtr];
+    sumNeutralHadronPt_CITK_ConeVeto =  (*ValueMaps_NeutralHadrons_ConeVeto)[eleGsfPtr];
+    sumPhotonPt_CITK_ConeVeto        =  (*ValueMaps_Photons_ConeVeto)[eleGsfPtr];
 
+    sumChargedHadronPt_CITK_MapBasedVeto =  (*ValueMaps_ChargedHadrons_MapBasedVeto)[eleGsfPtr];
+    sumNeutralHadronPt_CITK_MapBasedVeto =  (*ValueMaps_NeutralHadrons_MapBasedVeto)[eleGsfPtr];
+    sumPhotonPt_CITK_MapBasedVeto        =  (*ValueMaps_Photons_MapBasedVeto)[eleGsfPtr];
      
     //PUPPI
-    sumChargedHadronPt_PUPPI =  (*ValueMaps_PUPPI_ChargedHadrons)[elePtr];
-    sumNeutralHadronPt_PUPPI =  (*ValueMaps_PUPPI_NeutralHadrons)[elePtr];
-    sumPhotonPt_PUPPI        =  (*ValueMaps_PUPPI_Photons)[elePtr];
+    sumChargedHadronPt_PUPPI_ConeVeto =  (*ValueMaps_PUPPI_ChargedHadrons_ConeVeto)[elePtr];
+    sumNeutralHadronPt_PUPPI_ConeVeto =  (*ValueMaps_PUPPI_NeutralHadrons_ConeVeto)[elePtr];
+    sumPhotonPt_PUPPI_ConeVeto        =  (*ValueMaps_PUPPI_Photons_ConeVeto)[elePtr];
+
+    sumChargedHadronPt_PUPPI_MapBasedVeto =  (*ValueMaps_PUPPI_ChargedHadrons_MapBasedVeto)[elePtr];
+    sumNeutralHadronPt_PUPPI_MapBasedVeto =  (*ValueMaps_PUPPI_NeutralHadrons_MapBasedVeto)[elePtr];
+    sumPhotonPt_PUPPI_MapBasedVeto        =  (*ValueMaps_PUPPI_Photons_MapBasedVeto)[elePtr];
     
     //PUPPINoLeptons
-    sumChargedHadronPt_PUPPI_NoLeptons =  (*ValueMaps_PUPPI_NoLeptons_ChargedHadrons)[elePtr];
-    sumNeutralHadronPt_PUPPI_NoLeptons =  (*ValueMaps_PUPPI_NoLeptons_NeutralHadrons)[elePtr];
-    sumPhotonPt_PUPPI_NoLeptons        =  (*ValueMaps_PUPPI_NoLeptons_Photons)[elePtr];
+    sumChargedHadronPt_PUPPI_NoLeptons_ConeVeto =  (*ValueMaps_PUPPI_NoLeptons_ChargedHadrons_ConeVeto)[elePtr];
+    sumNeutralHadronPt_PUPPI_NoLeptons_ConeVeto =  (*ValueMaps_PUPPI_NoLeptons_NeutralHadrons_ConeVeto)[elePtr];
+    sumPhotonPt_PUPPI_NoLeptons_ConeVeto        =  (*ValueMaps_PUPPI_NoLeptons_Photons_ConeVeto)[elePtr];
+
+    sumChargedHadronPt_PUPPI_NoLeptons_MapBasedVeto =  (*ValueMaps_PUPPI_NoLeptons_ChargedHadrons_MapBasedVeto)[elePtr];
+    sumNeutralHadronPt_PUPPI_NoLeptons_MapBasedVeto =  (*ValueMaps_PUPPI_NoLeptons_NeutralHadrons_MapBasedVeto)[elePtr];
+    sumPhotonPt_PUPPI_NoLeptons_MapBasedVeto        =  (*ValueMaps_PUPPI_NoLeptons_Photons_MapBasedVeto)[elePtr];
     
-    //CITK
-    relisoChargedHadronPt_CITK = sumChargedHadronPt_CITK/pt_;
-    relisoNeutralHadronPt_CITK = sumNeutralHadronPt_CITK/pt_;
-    relisoPhotonPt_CITK = sumPhotonPt_CITK/pt_;
-    
-    //PUPPI
-    relisoChargedHadronPt_PUPPI = sumChargedHadronPt_PUPPI/pt_;
-    relisoNeutralHadronPt_PUPPI = sumNeutralHadronPt_PUPPI/pt_;
-    relisoPhotonPt_PUPPI = sumPhotonPt_PUPPI/pt_;
-    
-    //PUPPI_NoLeptons
-    relisoChargedHadronPt_PUPPINoLeptons = sumChargedHadronPt_PUPPI_NoLeptons/pt_;
-    relisoNeutralHadronPt_PUPPINoLeptons = sumNeutralHadronPt_PUPPI_NoLeptons/pt_;
-    relisoPhotonPt_PUPPINoLeptons = sumPhotonPt_PUPPI_NoLeptons/pt_;
+    reliso_ConeVeto_raw = (sumChargedHadronPt_CITK_ConeVeto + sumNeutralHadronPt_CITK_ConeVeto + sumPhotonPt_CITK_ConeVeto)/pt_;
+    reliso_MapBasedVeto_raw = (sumChargedHadronPt_CITK_MapBasedVeto + sumNeutralHadronPt_CITK_MapBasedVeto + sumPhotonPt_CITK_MapBasedVeto)/pt_;
+
+    reliso_ConeVeto_EA = (sumChargedHadronPt_CITK_ConeVeto + std::max(0.,(double)sumNeutralHadronPt_CITK_ConeVeto + sumPhotonPt_CITK_ConeVeto - rho_*Area))/pt_;
+    reliso_MapBasedVeto_EA = (sumChargedHadronPt_CITK_MapBasedVeto + std::max(0.,(double)sumNeutralHadronPt_CITK_MapBasedVeto + sumPhotonPt_CITK_MapBasedVeto - rho_*Area))/pt_;
     
     //PUPPI total isolation   
-    reliso_PUPPI = (sumChargedHadronPt_PUPPI + sumNeutralHadronPt_PUPPI + sumPhotonPt_PUPPI)/pt_;
+    reliso_PUPPI_ConeVeto = (sumChargedHadronPt_PUPPI_ConeVeto + sumNeutralHadronPt_PUPPI_ConeVeto + sumPhotonPt_PUPPI_ConeVeto)/pt_;
     //PUPPINoLeptons total isolation
-    reliso_PUPPI_NoLeptons = (sumChargedHadronPt_PUPPI_NoLeptons + sumNeutralHadronPt_PUPPI_NoLeptons + sumPhotonPt_PUPPI_NoLeptons)/pt_;
+    reliso_PUPPI_NoLeptons_ConeVeto = (sumChargedHadronPt_PUPPI_NoLeptons_ConeVeto + sumNeutralHadronPt_PUPPI_NoLeptons_ConeVeto + sumPhotonPt_PUPPI_NoLeptons_ConeVeto)/pt_;
 
     //reliso puppi average
-    reliso_PUPPI_average = 0.5*(reliso_PUPPI_NoLeptons + reliso_PUPPI);
+    reliso_PUPPI_ConeVeto_average = 0.5*(reliso_PUPPI_NoLeptons_ConeVeto + reliso_PUPPI_ConeVeto);
+
+    reliso_PUPPI_MapBasedVeto = (sumChargedHadronPt_PUPPI_MapBasedVeto + sumNeutralHadronPt_PUPPI_MapBasedVeto + sumPhotonPt_PUPPI_MapBasedVeto)/pt_;
+    //PUPPINoLeptons total isolation
+    reliso_PUPPI_NoLeptons_MapBasedVeto = (sumChargedHadronPt_PUPPI_NoLeptons_MapBasedVeto + sumNeutralHadronPt_PUPPI_NoLeptons_MapBasedVeto + sumPhotonPt_PUPPI_NoLeptons_MapBasedVeto)/pt_;
+
+    //reliso puppi average
+    reliso_PUPPI_MapBasedVeto_average = 0.5*(reliso_PUPPI_NoLeptons_MapBasedVeto + reliso_PUPPI_MapBasedVeto);
     
     const reco::CaloClusterPtr& seed = eleGsfPtr -> superCluster()->seed();
     isEB = ( seed->seed().subdetId() == EcalBarrel );
