@@ -149,6 +149,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
 
   //relative isolation from CITK with map based veto
   std::vector<Float_t> relisoWithEA_CITK_;
+  std::vector<Float_t> reliso_raw_;
     //relative isolation for PUPPI
   std::vector<Float_t> relisoWithEA_PUPPI_;
   //relative isolation for pf
@@ -269,6 +270,7 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("isoPhotons_PUPPI"             , &isoPhotons_PUPPI_);
 
   photonTree_->Branch("relisoWithEA_CITK"                 , &relisoWithEA_CITK_);
+  photonTree_->Branch("reliso_raw"                 , &reliso_raw_);
   photonTree_->Branch("relisoWithEA_PUPPI"                 , &relisoWithEA_PUPPI_);
   photonTree_->Branch("relisoWithEA_pf"                 , &relisoWithEA_pf_);
 
@@ -390,6 +392,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   isoPhotons_PUPPI_.clear();
   //
   relisoWithEA_CITK_.clear();
+  reliso_raw_.clear();
   relisoWithEA_PUPPI_.clear();
   relisoWithEA_pf_.clear();
   //
@@ -475,6 +478,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     //relative isolations
     float Area = effAreaChHadrons_.getEffectiveArea(abseta) + effAreaNeuHadrons_.getEffectiveArea(abseta) + effAreaPhotons_.getEffectiveArea(abseta);
     relisoWithEA_CITK_.push_back((std::max( (float)0.0, chIso_CITK + nhIso_CITK + phIso_CITK - rho_*Area))/(pho -> pt()) );
+    reliso_raw_.push_back((std::max( (float)0.0, chIso_CITK + nhIso_CITK + phIso_CITK))/(pho -> pt()) );
     relisoWithEA_PUPPI_.push_back((chIsoPUPPI + nhIsoPUPPI + phIsoPUPPI)/(pho -> pt()));
     relisoWithEA_pf_.push_back((std::max( (float)0.0, chIso_pf + nhIso_pf + phIso_pf - rho_*Area )) /(pho -> pt()) ); 
     // Save MC truth match
