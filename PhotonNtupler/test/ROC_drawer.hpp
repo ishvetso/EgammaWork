@@ -25,6 +25,7 @@ public:
     string name, addSelection, FileName, SigSelection, BkgSelection;
     ROC_Drawer();
     TGraph * graph_ROC(string var, int Nbins, float xmin, float xmax);
+    TGraph * addPoint(std::string nominator, std::string denominator, std::string SigSelection, std::string BkgSelection);
     void draw_ROC();
 };  
 
