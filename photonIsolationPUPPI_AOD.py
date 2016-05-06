@@ -13,19 +13,18 @@ process.load("CommonTools.ParticleFlow.pfParticleSelection_cff")
 process.pfNoPileUpCandidates = process.pfAllChargedHadrons.clone()
 process.pfNoPileUpCandidates.pdgId.extend(process.pfAllNeutralHadronsAndPhotons.pdgId)
 
-process.load("Configuration.StandardSequences.Geometry_cff")
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = 'MCRUN2_74_V9::All'
+
 
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/i/ishvetso/EgammaWork/test_samples/GJets-AOD.root')
+    fileNames = cms.untracked.vstring('/store/mc/RunIIFall15DR76/GJet_Pt-15ToInf_TuneCUETP8M1_13TeV-pythia8/AODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/10000/08D8F01F-538E-E511-8492-0CC47A78A3F4.root')
 )
 
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.load("Configuration.StandardSequences.Geometry_cff")
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
+process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_RunIIFall15DR76_v1'
 
 useAOD = True
 
@@ -36,7 +35,7 @@ else :
 
 switchOnVIDPhotonIdProducer(process, dataFormat)
 
-my_id_modules = ['RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring15_50ns_nonTrig_V0_cff']
+my_id_modules = ['RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring15_25ns_nonTrig_V2_cff']
 
 for idmod in my_id_modules:
     setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
@@ -47,7 +46,7 @@ process.load("CommonTools.PileupAlgos.Puppi_cff")
 
 process.puppi.candName = cms.InputTag('particleFlow')
 process.puppi.vertexName = cms.InputTag('offlinePrimaryVertices')
-process.puppi.puppiForLeptons = True
+process.puppi.puppiForLeptons = False
 
 
 process.particleFlowTmpPtrs = cms.EDProducer("PFCandidateFwdPtrProducer",
@@ -146,24 +145,22 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  effAreaPhoFile   = cms.FileInPath
                                  ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt"),
                                   genInfo = cms.InputTag("generator"),
-                                  mva_idw90_src = cms.InputTag("egmPhotonIDs:mvaPhoID-Spring15-50ns-nonTrig-V0-wp90")
+                                  mva_idw90_src = cms.InputTag("egmPhotonIDs:mvaPhoID-Spring15-25ns-nonTrig-V2-wp90")
                                 )			  
 
-#process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates +  process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI   + process.egmPhotonIDs +  process.ntupler)
-process.analysis = cms.Path( process.egmPhotonIDs)
-
+process.analysis = cms.Path(process.egmPhotonIDSequence + process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates +  process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI   + process.ntupler)
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 
-process.out = cms.OutputModule("PoolOutputModule",
+'''process.out = cms.OutputModule("PoolOutputModule",
                                fileName = cms.untracked.string('patTuple_miniAOD.root'),
                                outputCommands = cms.untracked.vstring('keep *')
                                )                            
 
                            
-process.outpath = cms.EndPath(process.out)
+process.outpath = cms.EndPath(process.out)'''
 
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree.root")
