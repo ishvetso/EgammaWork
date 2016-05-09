@@ -47,6 +47,7 @@
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
+#include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 
 #include "TTree.h"
 #include "Math/VectorUtil.h"
@@ -104,6 +105,7 @@ private:
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_ChargedHadrons_;
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_NeutralHadrons_;
   edm::EDGetTokenT<edm::ValueMap<float> > ValueMaps_Photons_;
+  EffectiveAreas effArea_;
   
   TTree *electronTree_;
   
@@ -174,15 +176,6 @@ private:
 // constants, enums and typedefs
 //
 
-// Effective areas for electrons from Giovanni P. and Cristina
-// distributed as private slides in Jan 2015, derived for PHYS14
-namespace EffectiveAreas {
-  const int nEtaBins = 5;
-  const float etaBinLimits[nEtaBins+1] = {
-    0.0, 0.8, 1.3, 2.0, 2.2, 2.5};
-  const float effectiveAreaValues[nEtaBins] = {
-    0.1013, 0.0988, 0.0572, 0.0842, 0.1530};
-}
 
 //
 // static data member definitions
@@ -201,8 +194,8 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   //CITK
   ValueMaps_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_src" ) ) ),
   ValueMaps_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_src" ) ) ),
-  ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) )
-
+  ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) ),
+  effArea_( (iConfig.getParameter<edm::FileInPath>("effAreaFile")).fullPath() )
 {
 
   edm::Service<TFileService> fs;
@@ -435,13 +428,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[elePtr];
     sumPhotonPt_CITK        =  (*ValueMaps_Photons)[elePtr];
 
-    // Compute isolation with effective area correction for PU
-    // Find eta bin first. If eta>2.5, the last eta bin is used.
-    int etaBin = 0; 
-    while ( etaBin < EffectiveAreas::nEtaBins-1 
-      && abs(etaSC_) > EffectiveAreas::etaBinLimits[etaBin+1] )
-      { ++etaBin; };
-    double area = EffectiveAreas::effectiveAreaValues[etaBin];
+    double area =  effArea_.getEffectiveArea(std::abs(etaSC_));
     relIsoWithEA_ = ( sumChargedHadronPt_CITK + max(0.0, sumNeutralHadronPt_CITK + sumPhotonPt_CITK - rho_ * area ) )/pt_;
   
     relisoChargedHadronPt_CITK = sumChargedHadronPt_CITK/pt_;
