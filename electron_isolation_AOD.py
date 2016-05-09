@@ -5,6 +5,10 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1000)
 )
 
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
 
@@ -61,7 +65,7 @@ process.electrons = cms.Path( process.puppi + process.egmElectronIsolaionPUPPIAO
 
 process.source = cms.Source("PoolSource",
     secondaryFileNames = cms.untracked.vstring(),
-    fileNames = cms.untracked.vstring('/store/mc/RunIIFall15DR76/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/AODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/08DC4220-16A7-E511-AF59-1CC1DE19286E.root')
+    fileNames = cms.untracked.vstring('/store/mc/RunIISpring16DR80/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/AODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_v3_ext1-v1/20000/021B31F4-33FC-E511-A597-02163E014626.root')
     
 )
 

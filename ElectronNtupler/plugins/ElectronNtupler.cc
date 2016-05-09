@@ -46,7 +46,7 @@
 
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
-#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
+#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"    
 
 #include "TTree.h"
 #include "Math/VectorUtil.h"
@@ -124,8 +124,7 @@ private:
   Float_t hOverE_;
   // Float_t sigmaIetaIeta_;
   Float_t full5x5_sigmaIetaIeta_;
-  Float_t relIsoWithEA_;
-  Float_t relIsoWithDBeta_;
+  Float_t relIso_;
   Float_t ooEmooP_;
   Float_t d0_;
   Float_t dz_;
@@ -150,18 +149,7 @@ private:
   Float_t sumChargedHadronPt_CITK;
   Float_t sumNeutralHadronPt_CITK;
   Float_t sumPhotonPt_CITK;
-  
-  //PUPPI
-  Float_t sumChargedHadronPt_PUPPI;
-  Float_t sumNeutralHadronPt_PUPPI;
-  Float_t sumPhotonPt_PUPPI;
-  
-  //PUPPINoLeptons
-  Float_t sumChargedHadronPt_PUPPI_NoLeptons;
-  Float_t sumNeutralHadronPt_PUPPI_NoLeptons;
-  Float_t sumPhotonPt_PUPPI_NoLeptons;
-  
-  Float_t reliso_PUPPI, reliso_PUPPI_NoLeptons;
+
   
   Float_t relisoChargedHadronPt_CITK;
   Float_t relisoNeutralHadronPt_CITK;
@@ -173,16 +161,6 @@ private:
 //
 // constants, enums and typedefs
 //
-
-// Effective areas for electrons from Giovanni P. and Cristina
-// distributed as private slides in Jan 2015, derived for PHYS14
-namespace EffectiveAreas {
-  const int nEtaBins = 5;
-  const float etaBinLimits[nEtaBins+1] = {
-    0.0, 0.8, 1.3, 2.0, 2.2, 2.5};
-  const float effectiveAreaValues[nEtaBins] = {
-    0.1013, 0.0988, 0.0572, 0.0842, 0.1530};
-}
 
 //
 // static data member definitions
@@ -202,7 +180,6 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   ValueMaps_ChargedHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_ChargedHadrons_src" ) ) ),
   ValueMaps_NeutralHadrons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_NeutralHadrons_src" ) ) ),
   ValueMaps_Photons_(consumes<edm::ValueMap<float> > (iConfig.getParameter<edm::InputTag>( "ValueMaps_Photons_src" ) ) )
-
 {
 
   edm::Service<TFileService> fs;
@@ -227,8 +204,7 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_->Branch("full5x5_sigmaIetaIeta", &full5x5_sigmaIetaIeta_, "full5x5_sigmaIetaIeta/F");
  
   electronTree_->Branch("isoChargedFromPU"       , &isoChargedFromPU_);
-  electronTree_->Branch("relIsoWithEA"           , &relIsoWithEA_, "relIsoWithEA/F");
-  electronTree_->Branch("relIsoWithDBeta"      , &relIsoWithDBeta_, "relIsoWithDBeta/F");
+  electronTree_->Branch("relIso"           , &relIso_, "relIso/F");
   electronTree_->Branch("ooEmooP", &ooEmooP_, "ooEmooP/F");
   electronTree_->Branch("d0"     , &d0_,      "d0/F");
   electronTree_->Branch("dz"     , &dz_,      "dz/F");
@@ -399,10 +375,6 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     relisoPhotons_        = pfIso.sumPhotonEt/pt_;
     
     
-    // Compute isolation with delta beta correction for PU
-    float absiso = pfIso.sumChargedHadronPt + max(0.0 , pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - 0.5 * pfIso.sumPUPt );
-    relIsoWithDBeta_ = absiso/pt_;
-    
     // Impact parameter
     d0_ = (-1) * eleGsfPtr -> gsfTrack()->dxy(firstGoodVertex->position() );
     dz_ = eleGsfPtr -> gsfTrack()->dz( firstGoodVertex->position() );
@@ -435,14 +407,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[elePtr];
     sumPhotonPt_CITK        =  (*ValueMaps_Photons)[elePtr];
 
-    // Compute isolation with effective area correction for PU
-    // Find eta bin first. If eta>2.5, the last eta bin is used.
-    int etaBin = 0; 
-    while ( etaBin < EffectiveAreas::nEtaBins-1 
-      && abs(etaSC_) > EffectiveAreas::etaBinLimits[etaBin+1] )
-      { ++etaBin; };
-    double area = EffectiveAreas::effectiveAreaValues[etaBin];
-    relIsoWithEA_ = ( sumChargedHadronPt_CITK + max(0.0, sumNeutralHadronPt_CITK + sumPhotonPt_CITK - rho_ * area ) )/pt_;
+    relIso_ = ( sumChargedHadronPt_CITK + sumNeutralHadronPt_CITK + sumPhotonPt_CITK  )/pt_;
   
     relisoChargedHadronPt_CITK = sumChargedHadronPt_CITK/pt_;
     relisoNeutralHadronPt_CITK = sumNeutralHadronPt_CITK/pt_;
