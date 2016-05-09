@@ -46,7 +46,7 @@
 
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
-#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"    
+#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
 
 #include "TTree.h"
 #include "Math/VectorUtil.h"
@@ -124,7 +124,7 @@ private:
   Float_t hOverE_;
   // Float_t sigmaIetaIeta_;
   Float_t full5x5_sigmaIetaIeta_;
-  Float_t relIso_;
+  Float_t reliso_CITK;
   Float_t ooEmooP_;
   Float_t d0_;
   Float_t dz_;
@@ -149,7 +149,6 @@ private:
   Float_t sumChargedHadronPt_CITK;
   Float_t sumNeutralHadronPt_CITK;
   Float_t sumPhotonPt_CITK;
-
   
   Float_t relisoChargedHadronPt_CITK;
   Float_t relisoNeutralHadronPt_CITK;
@@ -204,7 +203,6 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_->Branch("full5x5_sigmaIetaIeta", &full5x5_sigmaIetaIeta_, "full5x5_sigmaIetaIeta/F");
  
   electronTree_->Branch("isoChargedFromPU"       , &isoChargedFromPU_);
-  electronTree_->Branch("relIso"           , &relIso_, "relIso/F");
   electronTree_->Branch("ooEmooP", &ooEmooP_, "ooEmooP/F");
   electronTree_->Branch("d0"     , &d0_,      "d0/F");
   electronTree_->Branch("dz"     , &dz_,      "dz/F");
@@ -231,6 +229,7 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig):
   electronTree_ -> Branch("relisoChargedHadronPt_CITK", &relisoChargedHadronPt_CITK, "relisoChargedHadronPt_CITK/F");
   electronTree_ -> Branch("relisoNeutralHadronPt_CITK", &relisoNeutralHadronPt_CITK, "relisoNeutralHadronPt_CITK/F");
   electronTree_ -> Branch("relisoPhotonPt_CITK", &relisoPhotonPt_CITK, "relisoPhotonPt_CITK/F");
+  electronTree_->Branch("reliso_CITK"           , &reliso_CITK, "reliso_CITK/F");
   
   electronTree_ -> Branch("isEB", &isEB, "isEB/B");
 
@@ -374,6 +373,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     relisoNeutralHadrons_ = pfIso.sumNeutralHadronEt/pt_;
     relisoPhotons_        = pfIso.sumPhotonEt/pt_;
     
+
     
     // Impact parameter
     d0_ = (-1) * eleGsfPtr -> gsfTrack()->dxy(firstGoodVertex->position() );
@@ -407,7 +407,7 @@ ElectronNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     sumNeutralHadronPt_CITK =  (*ValueMaps_NeutralHadrons)[elePtr];
     sumPhotonPt_CITK        =  (*ValueMaps_Photons)[elePtr];
 
-    relIso_ = ( sumChargedHadronPt_CITK + sumNeutralHadronPt_CITK + sumPhotonPt_CITK  )/pt_;
+    reliso_CITK = ( sumChargedHadronPt_CITK + sumNeutralHadronPt_CITK + sumPhotonPt_CITK  )/pt_;
   
     relisoChargedHadronPt_CITK = sumChargedHadronPt_CITK/pt_;
     relisoNeutralHadronPt_CITK = sumNeutralHadronPt_CITK/pt_;
