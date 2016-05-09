@@ -44,16 +44,6 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  phoChargedIsolation_CITK = cms.InputTag("egmPhotonIsolationAODPUPPI:h+-DR030-"),
                                  phoNeutralHadronIsolation_CITK = cms.InputTag("egmPhotonIsolationAODPUPPI:h0-DR030-"),
                                  phoPhotonIsolation_CITK = cms.InputTag("egmPhotonIsolationAODPUPPI:gamma-DR030-"),
-                                 # 
-                                 # Locations of files with the effective area constants.
-                                 # The constants in these files below are derived for PHYS14 MC.
-                                 #
-                                 effAreaChHadFile = cms.FileInPath
-                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfChargedHadrons_V2.txt"),
-                                 effAreaNeuHadFile= cms.FileInPath
-                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfNeutralHadrons_V2.txt"),
-                                 effAreaPhoFile   = cms.FileInPath
-                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt"),
                                  genInfo = cms.InputTag("generator")
                                 )			   
 

@@ -43,7 +43,6 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-#include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 #include "TTree.h"
@@ -126,19 +125,13 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
 
   //relative isolation from CITK with map based veto
   std::vector<Float_t> reliso_PUPPI;
-  //relative isolation for pf
-  std::vector<Float_t> relisoWithEA_pf_;
+
 
   std::vector<Float_t> r9;
 
   std::vector<Int_t> isTrue_;
 
   std::vector<int> genWeight;
-
-  // Effective area constants for all isolation types
-  EffectiveAreas effAreaChHadrons_;
-  EffectiveAreas effAreaNeuHadrons_;
-  EffectiveAreas effAreaPhotons_;
 
    edm::EDGetTokenT<GenEventInfoProduct> genInfoToken;
 
@@ -164,11 +157,6 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
 				  (iConfig.getParameter<edm::InputTag>("phoNeutralHadronIsolation_CITK"))),
   phoPhotonIsolationToken_CITK(consumes <edm::ValueMap<float> >
 			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation_CITK"))),
-
-  // Objects containing effective area constants
-  effAreaChHadrons_( (iConfig.getParameter<edm::FileInPath>("effAreaChHadFile")).fullPath() ),
-  effAreaNeuHadrons_( (iConfig.getParameter<edm::FileInPath>("effAreaNeuHadFile")).fullPath() ),
-  effAreaPhotons_( (iConfig.getParameter<edm::FileInPath>("effAreaPhoFile")).fullPath() ),
   genInfoToken(consumes<GenEventInfoProduct> (iConfig.getParameter<edm::InputTag>( "genInfo" ) ) )
 {
 
@@ -222,7 +210,6 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
 
   //relative isolation
   photonTree_->Branch("reliso_PUPPI"                 , &reliso_PUPPI);
-  photonTree_->Branch("relisoWithEA_pf"                 , &relisoWithEA_pf_);
 
   photonTree_->Branch("r9"                 , &r9);
 
@@ -305,7 +292,6 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   //
   isoChargedHadrons_pf_.clear();
   isoNeutralHadrons_pf_.clear();
-  isoPhotons_pf_.clear();
   //
   reliso_PUPPI.clear();
   r9.clear();
@@ -343,9 +329,6 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     isoChargedHadrons_CITK_.push_back( chIso_CITK );
     isoNeutralHadrons_CITK_.push_back( nhIso_CITK );
     isoPhotons_CITK_       .push_back( phIso_CITK );
-
-    //isolations with effective area correction
-    float abseta = fabs( pho->superCluster()->eta());
     
     //pfIsolation variables
     float chIso_pf = pho -> chargedHadronIso() ;
@@ -356,10 +339,8 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     isoNeutralHadrons_pf_.push_back( nhIso_pf );
     isoPhotons_pf_       .push_back( phIso_pf );
 
-    //relative isolations
-    float Area = effAreaChHadrons_.getEffectiveArea(abseta) + effAreaNeuHadrons_.getEffectiveArea(abseta) + effAreaPhotons_.getEffectiveArea(abseta);
-    reliso_PUPPI.push_back((std::max( (float)0.0, chIso_CITK + nhIso_CITK + phIso_CITK))/(pho -> pt()) );
-    relisoWithEA_pf_.push_back((std::max( (float)0.0, chIso_pf + nhIso_pf + phIso_pf - rho_*Area )) /(pho -> pt()) ); 
+    
+    reliso_PUPPI.push_back((chIso_CITK + nhIso_CITK + phIso_CITK)/(pho -> pt()) );
     // Save MC truth match
     isTrue_.push_back( matchToTruth(*pho, genParticles) );
     //generator weight
