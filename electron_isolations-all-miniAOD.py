@@ -242,7 +242,7 @@ src = cms.InputTag('particleFlow')
 )
 
 
-process.electrons = cms.Path(process.particleFlowTmpPtrs + process.pfParticleSelectionSequence + process.pfNoPileUpCandidates + process.egmGsfElectronIDSequence + process.pfNoLeptons + process.puppi + process.puppiNoLeptons + process.ElectronIsolationConeVeto + process.ElectronIsolationMapBasedVeto + process.ElectronIsolationOnPUPPIConeVeto + process.ElectronIsolationOnPUPPINoLeptonsConeVeto + process.ElectronIsolationOnPUPPIMapBasedVeto + process.ElectronIsolationOnPUPPINoLeptonsMapBasedVeto + process.ntupler)
+process.electrons = cms.Path(process.egmGsfElectronIDSequence + process.pfNoLeptons + process.puppi + process.puppiNoLeptons + process.ElectronIsolationConeVeto + process.ElectronIsolationMapBasedVeto + process.ElectronIsolationOnPUPPIConeVeto + process.ElectronIsolationOnPUPPINoLeptonsConeVeto + process.ElectronIsolationOnPUPPIMapBasedVeto + process.ElectronIsolationOnPUPPINoLeptonsMapBasedVeto + process.ntupler)
 
 
 process.source = cms.Source("PoolSource",
