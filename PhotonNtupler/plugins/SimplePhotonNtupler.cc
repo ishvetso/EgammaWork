@@ -111,7 +111,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::View<reco::PFCandidate>> candidatesToken; 
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
   edm::EDGetTokenT<GenEventInfoProduct> genInfoToken;
-  edm::EDGetTokenT<edm::ValueMap<bool> > ValueMap_ids_wp90_Token; 
+  
 
 
   
@@ -151,15 +151,13 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   std::vector<Float_t> relisoWithEA_CITK_;
   std::vector<Float_t> reliso_raw_;
     //relative isolation for PUPPI
-  std::vector<Float_t> relisoWithEA_PUPPI_;
+  std::vector<Float_t> reliso_PUPPI_;
   //relative isolation for pf
   std::vector<Float_t> relisoWithEA_pf_;
   std::vector<Float_t> genWeights;
 
 
   std::vector<Int_t> isTrue_;
-  std::vector<bool> PF_IDs;
-  std::vector<bool> mvaIDBits;
   std::vector<bool> isEB;
   std::vector<Int_t> nPVs;  
 
@@ -201,7 +199,6 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   candidatesToken(consumes <edm::View<reco::PFCandidate> >(iConfig.getParameter<edm::InputTag>("candidates"))),
    vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
    genInfoToken(consumes<GenEventInfoProduct> (iConfig.getParameter<edm::InputTag>( "genInfo" ) ) ),
-   ValueMap_ids_wp90_Token(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>( "mva_idw90_src" ) ) ),
 
 			   
   // Objects containing effective area constants
@@ -271,13 +268,11 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
 
   photonTree_->Branch("relisoWithEA_CITK"                 , &relisoWithEA_CITK_);
   photonTree_->Branch("reliso_raw"                 , &reliso_raw_);
-  photonTree_->Branch("relisoWithEA_PUPPI"                 , &relisoWithEA_PUPPI_);
+  photonTree_->Branch("reliso_PUPPI"                 , &reliso_PUPPI_);
   photonTree_->Branch("relisoWithEA_pf"                 , &relisoWithEA_pf_);
 
   photonTree_->Branch("isTrue"             , &isTrue_);
-  photonTree_->Branch("PF_ID"             , &PF_IDs);
   photonTree_->Branch("genWeight"             , &genWeights);
-  photonTree_->Branch("mvaIDBits"             , &mvaIDBits);
   photonTree_->Branch("isEB"             , &isEB);
   photonTree_->Branch("nPV"             , &nPVs);
 
@@ -360,9 +355,6 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
   edm::Handle <GenEventInfoProduct> genInfo; 
   iEvent.getByToken( genInfoToken , genInfo);
-
-  edm::Handle <edm::ValueMap<bool>> ValueMap_ids_wp90; 
-  iEvent.getByToken( ValueMap_ids_wp90_Token , ValueMap_ids_wp90);
     
   // Clear vectors
   nPhotons_ = 0;
@@ -393,12 +385,10 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   //
   relisoWithEA_CITK_.clear();
   reliso_raw_.clear();
-  relisoWithEA_PUPPI_.clear();
+  reliso_PUPPI_.clear();
   relisoWithEA_pf_.clear();
   //
   isTrue_.clear();
-  PF_IDs.clear();
-  mvaIDBits.clear();
   isEB.clear();
   genWeights.clear();
   nPVs.clear();
@@ -479,17 +469,11 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     float Area = effAreaChHadrons_.getEffectiveArea(abseta) + effAreaNeuHadrons_.getEffectiveArea(abseta) + effAreaPhotons_.getEffectiveArea(abseta);
     relisoWithEA_CITK_.push_back((std::max( (float)0.0, chIso_CITK + nhIso_CITK + phIso_CITK - rho_*Area))/(pho -> pt()) );
     reliso_raw_.push_back((std::max( (float)0.0, chIso_CITK + nhIso_CITK + phIso_CITK))/(pho -> pt()) );
-    relisoWithEA_PUPPI_.push_back((chIsoPUPPI + nhIsoPUPPI + phIsoPUPPI)/(pho -> pt()));
+    reliso_PUPPI_.push_back((chIsoPUPPI + nhIsoPUPPI + phIsoPUPPI)/(pho -> pt()));
     relisoWithEA_pf_.push_back((std::max( (float)0.0, chIso_pf + nhIso_pf + phIso_pf - rho_*Area )) /(pho -> pt()) ); 
     // Save MC truth match
     isTrue_.push_back( matchToTruth(*pho, genParticles) );
 
-    bool PF_ID = false;
-    for (unsigned int iCand = 0; iCand < candidates -> size(); iCand++){
-      if((candidates -> at(iCand)).superClusterRef() == pho -> superCluster() && std::abs((candidates -> at(iCand)).pdgId()) == 22 )  PF_ID = true;
-    }
-    PF_IDs.push_back(PF_ID);
-    mvaIDBits.push_back((*ValueMap_ids_wp90)[pho]);
     double genWeight = (genInfo -> weight()) > 0 ? 1 : -1;
     genWeights.push_back(genWeight);
 
