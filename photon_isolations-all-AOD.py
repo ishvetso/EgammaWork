@@ -154,14 +154,6 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 
-'''process.out = cms.OutputModule("PoolOutputModule",
-                               fileName = cms.untracked.string('patTuple_miniAOD.root'),
-                               outputCommands = cms.untracked.vstring('keep *')
-                               )                            
-
-                           
-process.outpath = cms.EndPath(process.out)'''
-
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree.root")
                                   )
