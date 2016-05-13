@@ -237,11 +237,6 @@ process.ntupler = cms.EDAnalyzer('ElectronNtupler',
 				 effAreaFile = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Spring15/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_25ns.txt"),
 				)
 
-process.particleFlowTmpPtrs = cms.EDProducer("PFCandidateFwdPtrProducer",
-src = cms.InputTag('particleFlow')
-)
-
-
 process.electrons = cms.Path(process.egmGsfElectronIDSequence + process.pfNoLeptons + process.puppi + process.puppiNoLeptons + process.ElectronIsolationConeVeto + process.ElectronIsolationMapBasedVeto + process.ElectronIsolationOnPUPPIConeVeto + process.ElectronIsolationOnPUPPINoLeptonsConeVeto + process.ElectronIsolationOnPUPPIMapBasedVeto + process.ElectronIsolationOnPUPPINoLeptonsMapBasedVeto + process.ntupler)
 
 
