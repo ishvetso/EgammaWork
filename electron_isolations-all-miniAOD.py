@@ -32,7 +32,7 @@ process.puppiNoLeptons.puppiForLeptons = False
 process.puppiNoLeptons.candName = cms.InputTag('pfNoLeptons')
 
 
-useAOD = True
+useAOD = False
 #
 # Set up electron ID (VID framework)
 #
