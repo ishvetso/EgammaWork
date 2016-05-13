@@ -157,9 +157,10 @@ process.ElectronIsolationOnPUPPINoLeptonsConeVeto = cms.EDProducer("CITKPFIsolat
 									
 
 #puppi isolation with map based veto									
-process.ElectronIsolationOnPUPPIMapBasedVeto = cms.EDProducer("CITKPFIsolationSumProducer",
+process.ElectronIsolationOnPUPPIMapBasedVeto = cms.EDProducer("CITKPFIsolationSumProducerForPUPPI",
 					    srcToIsolate = cms.InputTag("slimmedElectrons"),
-					    srcForIsolationCone = cms.InputTag('puppi'),
+					    srcForIsolationCone = cms.InputTag('packedPFCandidates'),
+					    puppiValueMap = cms.InputTag('puppi'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithMapBasedVeto'), 
 									coneSize = cms.double(0.3),
@@ -177,9 +178,10 @@ process.ElectronIsolationOnPUPPIMapBasedVeto = cms.EDProducer("CITKPFIsolationSu
 					)
 
 #puppi no leptons with map based veto
-process.ElectronIsolationOnPUPPINoLeptonsMapBasedVeto = cms.EDProducer("CITKPFIsolationSumProducer",
+process.ElectronIsolationOnPUPPINoLeptonsMapBasedVeto = cms.EDProducer("CITKPFIsolationSumProducerForPUPPI",
 					    srcToIsolate = cms.InputTag("slimmedElectrons"),
-					    srcForIsolationCone = cms.InputTag('puppiNoLeptons'),
+					    srcForIsolationCone = cms.InputTag('pfNoLeptons'),
+					    puppiValueMap = cms.InputTag('puppiNoLeptons'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithMapBasedVeto'), 
 									coneSize = cms.double(0.3),
