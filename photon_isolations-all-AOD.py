@@ -22,9 +22,10 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring('/store/mc/RunIIFall15DR76/GJet_Pt-15ToInf_TuneCUETP8M1_13TeV-pythia8/AODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/10000/08D8F01F-538E-E511-8492-0CC47A78A3F4.root')
 )
 
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
-process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_RunIIFall15DR76_v1'
 
 useAOD = True
 
