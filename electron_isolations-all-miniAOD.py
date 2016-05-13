@@ -246,7 +246,7 @@ process.electrons = cms.Path(process.egmGsfElectronIDSequence + process.pfNoLept
 
 
 process.source = cms.Source("PoolSource",
-       fileNames = cms.untracked.vstring('/store/mc/RunIIFall15DR76/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/AODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/5AAC31E2-1FC0-E511-994B-02163E00C3AD.root'),
+       fileNames = cms.untracked.vstring('/store/mc/RunIIFall15DR76/DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/AODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/040E1BD0-CA96-E511-830B-00259073E364.root'),
 )
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
