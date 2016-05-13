@@ -16,18 +16,13 @@ process.options.allowUnscheduled = cms.untracked.bool(False)
 
 
 process.load("EgammaWork.ElectronNtupler.pfNoLeptons_cfi")
-process.pfNoLeptons.src = cms.InputTag('particleFlow')
-process.load("CommonTools.ParticleFlow.pfNoPileUpIso_cff")
-process.load("CommonTools.ParticleFlow.pfParticleSelection_cff")
-
-process.pfNoPileUpCandidates = process.pfAllChargedHadrons.clone()
-process.pfNoPileUpCandidates.pdgId.extend(process.pfAllNeutralHadronsAndPhotons.pdgId)
+process.pfNoLeptons.src = cms.InputTag('packedPFCandidates')
 
 
 
 process.load("CommonTools.PileupAlgos.Puppi_cff")
-process.puppi.candName = cms.InputTag('particleFlow')
-process.puppi.vertexName = cms.InputTag('offlinePrimaryVertices')
+process.puppi.candName = cms.InputTag('packedPFCandidates')
+process.puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
 process.puppi.puppiForLeptons = False
 
 
@@ -62,8 +57,8 @@ for idmod in my_id_modules:
 
 #standard isolation with cone veto
 process.ElectronIsolationConeVeto = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("gedGsfElectrons"),
-					    srcForIsolationCone = cms.InputTag('pfNoPileUpCandidates'),
+					    srcToIsolate = cms.InputTag("slimmedElectrons"),
+					    srcForIsolationCone = cms.InputTag('packedPFCandidates'),
 					   	isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
 									coneSize = cms.double(0.3),
@@ -88,8 +83,8 @@ process.ElectronIsolationConeVeto = cms.EDProducer("CITKPFIsolationSumProducer",
 
 #standard isolation with map based veto
 process.ElectronIsolationMapBasedVeto = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("gedGsfElectrons"),
-					    srcForIsolationCone = cms.InputTag('pfNoPileUpCandidates'),
+					    srcToIsolate = cms.InputTag("slimmedElectrons"),
+					    srcForIsolationCone = cms.InputTag('packedPFCandidates'),
 					   	isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithMapBasedVeto'), 
 									coneSize = cms.double(0.3),
@@ -110,7 +105,7 @@ process.ElectronIsolationMapBasedVeto = cms.EDProducer("CITKPFIsolationSumProduc
 
 #puppi isolation with cone veto									
 process.ElectronIsolationOnPUPPIConeVeto = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("gedGsfElectrons"),
+					    srcToIsolate = cms.InputTag("slimmedElectrons"),
 					    srcForIsolationCone = cms.InputTag('puppi'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
@@ -136,7 +131,7 @@ process.ElectronIsolationOnPUPPIConeVeto = cms.EDProducer("CITKPFIsolationSumPro
 
 #puppi no leptons with cone veto
 process.ElectronIsolationOnPUPPINoLeptonsConeVeto = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("gedGsfElectrons"),
+					    srcToIsolate = cms.InputTag("slimmedElectrons"),
 					    srcForIsolationCone = cms.InputTag('puppiNoLeptons'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithConeVeto'), 
@@ -163,7 +158,7 @@ process.ElectronIsolationOnPUPPINoLeptonsConeVeto = cms.EDProducer("CITKPFIsolat
 
 #puppi isolation with map based veto									
 process.ElectronIsolationOnPUPPIMapBasedVeto = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("gedGsfElectrons"),
+					    srcToIsolate = cms.InputTag("slimmedElectrons"),
 					    srcForIsolationCone = cms.InputTag('puppi'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithMapBasedVeto'), 
@@ -183,7 +178,7 @@ process.ElectronIsolationOnPUPPIMapBasedVeto = cms.EDProducer("CITKPFIsolationSu
 
 #puppi no leptons with map based veto
 process.ElectronIsolationOnPUPPINoLeptonsMapBasedVeto = cms.EDProducer("CITKPFIsolationSumProducer",
-					    srcToIsolate = cms.InputTag("gedGsfElectrons"),
+					    srcToIsolate = cms.InputTag("slimmedElectrons"),
 					    srcForIsolationCone = cms.InputTag('puppiNoLeptons'),
 					    isolationConeDefinitions = cms.VPSet(
 									cms.PSet( isolationAlgo = cms.string('ElectronPFIsolationWithMapBasedVeto'), 
@@ -203,11 +198,11 @@ process.ElectronIsolationOnPUPPINoLeptonsMapBasedVeto = cms.EDProducer("CITKPFIs
 									
 									
 process.ntupler = cms.EDAnalyzer('ElectronNtupler',
-				 pruned = cms.InputTag("genParticles"),
+				 pruned = cms.InputTag("prunedGenParticles"),
 				 pileup = cms.InputTag("addPileupInfo"),
-				 vertices = cms.InputTag("offlinePrimaryVertices"),
-				 electrons = cms.InputTag("gedGsfElectrons"),
-				 cand_src = cms.InputTag("particleFlow"),
+				 vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
+				 electrons = cms.InputTag("slimmedElectrons"),
+				 cand_src = cms.InputTag("packedPFCandidates"),
 				 rho = cms.InputTag("fixedGridRhoFastjetAll"),
 				 #CITK
 				 ValueMaps_ChargedHadrons_ConeVeto_src = cms.InputTag("ElectronIsolationConeVeto", "h+-DR030-BarVeto000-EndVeto001"),
