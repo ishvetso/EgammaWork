@@ -28,7 +28,7 @@ process.puppi.puppiForLeptons = False
 
 
 
-process.egmPhotonIsolationAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
+process.egmPhotonIsolationMiniAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
 			  srcToIsolate = cms.InputTag("slimmedPhotons"),
 			  srcForIsolationCone = cms.InputTag('packedPFCandidates'),
 			  isolationConeDefinitions = cms.VPSet(
@@ -53,7 +53,7 @@ process.egmPhotonIsolationAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
     )
   )	
 
-process.egmPhotonIsolationAODPUPPI = cms.EDProducer( "CITKPFIsolationSumProducerForPUPPI",
+process.egmPhotonIsolationMiniAODPUPPI = cms.EDProducer( "CITKPFIsolationSumProducerForPUPPI",
 			  srcToIsolate = cms.InputTag("slimmedPhotons"),
 			  srcForIsolationCone = cms.InputTag('packedPFCandidates'),
               puppiValueMap = cms.InputTag('puppi'),
@@ -101,13 +101,13 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  photonsMiniAOD = cms.InputTag("slimmedPhotons"),
                                  genParticlesMiniAOD = cms.InputTag("prunedGenParticles"),                                 
                                  #CITK
-                                 phoChargedIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:h+-DR030-"),
-                                 phoNeutralHadronIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:h0-DR030-"),
-                                 phoPhotonIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:gamma-DR030-"),
+                                 phoChargedIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:h+-DR030-"),
+                                 phoNeutralHadronIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:h0-DR030-"),
+                                 phoPhotonIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:gamma-DR030-"),
                                  #PUPPI
-                                 phoChargedIsolation_PUPPI = cms.InputTag("egmPhotonIsolationAODPUPPI:h+-DR030-"),
-                                 phoNeutralHadronIsolation_PUPPI = cms.InputTag("egmPhotonIsolationAODPUPPI:h0-DR030-"),
-                                 phoPhotonIsolation_PUPPI = cms.InputTag("egmPhotonIsolationAODPUPPI:gamma-DR030-"),
+                                 phoChargedIsolation_PUPPI = cms.InputTag("egmPhotonIsolationMiniAODPUPPI:h+-DR030-"),
+                                 phoNeutralHadronIsolation_PUPPI = cms.InputTag("egmPhotonIsolationMiniAODPUPPI:h0-DR030-"),
+                                 phoPhotonIsolation_PUPPI = cms.InputTag("egmPhotonIsolationMiniAODPUPPI:gamma-DR030-"),
                                  # 
                                  # Locations of files with the effective area constants.
                                  # The constants in these files below are derived for PHYS14 MC.
@@ -121,7 +121,7 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                   genInfo = cms.InputTag("generator"),
                                 )			  
 
-process.analysis = cms.Path(  process.puppi + process.egmPhotonIsolationAOD + process.egmPhotonIsolationAODPUPPI   + process.ntupler)
+process.analysis = cms.Path(  process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI   + process.ntupler)
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
