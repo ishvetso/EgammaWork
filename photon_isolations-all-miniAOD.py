@@ -7,19 +7,11 @@ process.maxEvents = cms.untracked.PSet(
 )
 from RecoEgamma.EgammaIsolationAlgos.egmGedGsfElectronPFIsolation_cfi import *
 
-process.load("CommonTools.ParticleFlow.pfNoPileUpIso_cff")
-process.load("CommonTools.ParticleFlow.pfParticleSelection_cff")
-
-process.pfNoPileUpCandidates = process.pfAllChargedHadrons.clone()
-process.pfNoPileUpCandidates.pdgId.extend(process.pfAllNeutralHadronsAndPhotons.pdgId)
-
-
-
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/mc/RunIIFall15DR76/GJet_Pt-15ToInf_TuneCUETP8M1_13TeV-pythia8/AODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/10000/08D8F01F-538E-E511-8492-0CC47A78A3F4.root')
+    fileNames = cms.untracked.vstring('/store/mc/RunIIFall15MiniAODv1/GJet_Pt-15ToInf_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/10000/06D47BD2-298F-E511-8BF5-0026189437F5.root')
 )
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
@@ -35,13 +27,9 @@ process.puppi.vertexName = cms.InputTag('offlinePrimaryVertices')
 process.puppi.puppiForLeptons = False
 
 
-process.particleFlowTmpPtrs = cms.EDProducer("PFCandidateFwdPtrProducer",
-src = cms.InputTag('particleFlow')
-)
-
 
 process.egmPhotonIsolationAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
-			  srcToIsolate = cms.InputTag("gedPhotons"),
+			  srcToIsolate = cms.InputTag("slimmedPhotons"),
 			  srcForIsolationCone = cms.InputTag('pfNoPileUpCandidates'),
 			  isolationConeDefinitions = cms.VPSet(
 			   cms.PSet( isolationAlgo = cms.string('PhotonPFIsolationWithMapBasedVeto'), 
@@ -66,7 +54,7 @@ process.egmPhotonIsolationAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
   )	
 
 process.egmPhotonIsolationAODPUPPI = cms.EDProducer( "CITKPFIsolationSumProducerForPUPPI",
-			  srcToIsolate = cms.InputTag("gedPhotons"),
+			  srcToIsolate = cms.InputTag("slimmedPhotons"),
 			  srcForIsolationCone = cms.InputTag('particleFlow'),
               puppiValueMap = cms.InputTag('puppi'),
 			  isolationConeDefinitions = cms.VPSet(
