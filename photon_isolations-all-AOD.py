@@ -27,21 +27,6 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 
-useAOD = True
-
-if useAOD == True :
-    dataFormat = DataFormat.AOD
-else :
-    dataFormat = DataFormat.MiniAOD
-
-switchOnVIDPhotonIdProducer(process, dataFormat)
-
-my_id_modules = ['RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring15_25ns_nonTrig_V2_cff']
-
-for idmod in my_id_modules:
-    setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
-
-
 #Loading PUPPI sequences
 process.load("CommonTools.PileupAlgos.Puppi_cff")
 
@@ -55,7 +40,7 @@ src = cms.InputTag('particleFlow')
 )
 
 
-process.egmPhotonIsolationMiniAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
+process.egmPhotonIsolationAOD = cms.EDProducer( "CITKPFIsolationSumProducer",
 			  srcToIsolate = cms.InputTag("gedPhotons"),
 			  srcForIsolationCone = cms.InputTag('pfNoPileUpCandidates'),
 			  isolationConeDefinitions = cms.VPSet(
@@ -80,7 +65,7 @@ process.egmPhotonIsolationMiniAOD = cms.EDProducer( "CITKPFIsolationSumProducer"
     )
   )	
 
-process.egmPhotonIsolationMiniAODPUPPI = cms.EDProducer( "CITKPFIsolationSumProducerForPUPPI",
+process.egmPhotonIsolationAODPUPPI = cms.EDProducer( "CITKPFIsolationSumProducerForPUPPI",
 			  srcToIsolate = cms.InputTag("gedPhotons"),
 			  srcForIsolationCone = cms.InputTag('particleFlow'),
               puppiValueMap = cms.InputTag('puppi'),
@@ -128,13 +113,13 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  photonsMiniAOD = cms.InputTag("slimmedPhotons"),
                                  genParticlesMiniAOD = cms.InputTag("prunedGenParticles"),                                 
                                  #CITK
-                                 phoChargedIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:h+-DR030-"),
-                                 phoNeutralHadronIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:h0-DR030-"),
-                                 phoPhotonIsolation_CITK = cms.InputTag("egmPhotonIsolationMiniAOD:gamma-DR030-"),
+                                 phoChargedIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:h+-DR030-"),
+                                 phoNeutralHadronIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:h0-DR030-"),
+                                 phoPhotonIsolation_CITK = cms.InputTag("egmPhotonIsolationAOD:gamma-DR030-"),
                                  #PUPPI
-                                 phoChargedIsolation_PUPPI = cms.InputTag("egmPhotonIsolationMiniAODPUPPI:h+-DR030-"),
-                                 phoNeutralHadronIsolation_PUPPI = cms.InputTag("egmPhotonIsolationMiniAODPUPPI:h0-DR030-"),
-                                 phoPhotonIsolation_PUPPI = cms.InputTag("egmPhotonIsolationMiniAODPUPPI:gamma-DR030-"),
+                                 phoChargedIsolation_PUPPI = cms.InputTag("egmPhotonIsolationAODPUPPI:h+-DR030-"),
+                                 phoNeutralHadronIsolation_PUPPI = cms.InputTag("egmPhotonIsolationAODPUPPI:h0-DR030-"),
+                                 phoPhotonIsolation_PUPPI = cms.InputTag("egmPhotonIsolationAODPUPPI:gamma-DR030-"),
                                  # 
                                  # Locations of files with the effective area constants.
                                  # The constants in these files below are derived for PHYS14 MC.
@@ -149,7 +134,7 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                   mva_idw90_src = cms.InputTag("egmPhotonIDs:mvaPhoID-Spring15-25ns-nonTrig-V2-wp90")
                                 )			  
 
-process.analysis = cms.Path(process.egmPhotonIDSequence + process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates +  process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI   + process.ntupler)
+process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates +  process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI   + process.ntupler)
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
