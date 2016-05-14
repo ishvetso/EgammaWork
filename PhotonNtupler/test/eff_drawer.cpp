@@ -1,6 +1,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TTreeFormula.h>
+#include <TGraphAsymmErrors.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <THStack.h>
@@ -20,54 +21,80 @@
 
 
 
-TH1D * get_hist(std::string var)
+TGraphAsymmErrors * get_graph_bkg(std::string var)
 {	
 	std::cout << var << std::endl;
-	TFile file("/afs/cern.ch/work/i/ishvetso/EgammaWork/PhotonIsolation_matching/CMSSW_7_4_7/src/EgammaWork/PhotonNtupler/test/crab_projects/crab_PhotonIsolation_PUPPI_AOD_v2/results/GJets.root");
-	TTree * tree = (TTree *) file.Get("ntupler/PhotonTree");
-	TH2D * hist_sig = new TH2D(( var + "_signal").c_str(), (var + "_signal").c_str(), 26, 4.5, 30.5, 100000., 0., 10.);
-	TH2D * hist_bkg = new TH2D(( var + "_bkg").c_str(), (var + "_bkg").c_str(), 26, 4.5, 30.5, 100000., 0., 10.);
+	TFile file_("/afs/cern.ch/work/i/ishvetso/EgammaWork/photon_isolations/CMSSW_7_6_4/src/EgammaWork/PhotonNtupler/test/crab_projects/crab_PhotonIsolations/results/GJets.root");
+	TTree * tree = (TTree *) file_.Get("ntupler/PhotonTree");
+
+	TH1D * hist_sig = new TH1D(( var + "_sig").c_str(), (var + "_sig").c_str(), 10000., 0., 10.);
+
+	hist_sig -> Sumw2();
+	double cutValue;
 	
-	tree -> Project(( var + "_signal" ).c_str(), (var + ":nPV").c_str(),"isTrue == 1 && PF_ID == 1 && pt > 20");
-	tree -> Project(( var + "_bkg" ).c_str(), (var + ":nPV").c_str(),"isTrue != 1 && PF_ID == 1 && pt > 20");
+	tree -> Project(( var + "_sig" ).c_str(), var.c_str(),"( pt > 20 && ( isTrue == 1  ) ) && ( (isEB == 1 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.01) || (isEB == 0 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.0268)  )");
 
-	TH1D * eff_hist = new TH1D("eff", "eff", 26, 4.5, 30.5);
-	eff_hist -> SetDirectory(0);
-	double eff = 0.;
-	double unc = 0;
-	bool EffCalculated = false;
 
-	for (unsigned iPUBin = 1; iPUBin <= 26 ; iPUBin ++) {
-		TH1D * _hist_sig = (TH1D *) hist_sig -> ProjectionY("sig", iPUBin  , iPUBin );
-		TH1D * _hist_bkg = (TH1D *) hist_bkg -> ProjectionY("bkg", iPUBin  , iPUBin );
-
-		for (unsigned int iBin = 1; iBin < _hist_sig -> GetNbinsX(); iBin ++){
-			double _effSig = _hist_sig -> Integral(1, iBin)/(_hist_sig -> Integral());
-			double _effBkg = _hist_bkg -> Integral(1, iBin)/(_hist_bkg -> Integral());
-			
-			
-			
-			if (_effSig > 0.7) {
-				eff = _effBkg;
-				double _effBkg_unc_up =  std::abs((_hist_bkg -> Integral(1, iBin) + sqrt(_hist_bkg -> Integral(1, iBin)))/(_hist_bkg -> Integral() + sqrt(_hist_bkg -> Integral())) - _effBkg);
-				double _effBkg_unc_down = std::abs((_hist_bkg -> Integral(1, iBin) - sqrt(_hist_bkg -> Integral(1, iBin)))/(_hist_bkg -> Integral() - sqrt(_hist_bkg -> Integral())) - _effBkg );
-				unc = std::max(_effBkg_unc_down, _effBkg_unc_up);
-				std::cout << "iBin " << iPUBin <<  " sig: " << _effSig << " bkg : " << _effBkg  << " unc " << unc << std::endl;
-				EffCalculated = true;
+	for (unsigned int iBin = 1; iBin <= hist_sig -> GetNbinsX(); iBin ++){
+	
+			double _effSig = hist_sig -> Integral(1, iBin)/(hist_sig -> Integral());
+			if (_effSig > 0.75) {
+				cutValue = (double) hist_sig -> GetBinCenter(iBin);
+				std::cout << "eff : " << _effSig << std::endl;
 				break;
 			}
-			 
-		}
-		if (!EffCalculated) {
-			std::cerr << "effeciency wasn't calculated for bin " << iPUBin << std::endl;
-			exit(0); 
-		}
-		eff_hist -> SetBinContent(iPUBin, eff);
-		eff_hist -> SetBinError(iPUBin, unc);
 	}
+	//std::string std::to_string(cutValue);
+	std::cout << cutValue << std::endl;
+	std::cout << "string :" << std::to_string(cutValue) << std::endl;
+
+	TH1D * hist_bkg_nPV_total = new TH1D(( var + "_bkg_nPV_total").c_str(), (var + "_bkg_nPV_total").c_str(), 13, 4.5, 30.5);
+	TH1D * hist_bkg_nPV_passed = new TH1D(( var + "_bkg_nPV_passed").c_str(), (var + "_bkg_nPV_passed").c_str(), 13, 4.5, 30.5);
+
+	tree -> Project(( var + "_bkg_nPV_total").c_str(), "nPV","( pt > 20 && isTrue != 1 ) && ( (isEB == 1 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.01) || (isEB == 0 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.0268)  )");
+	tree -> Project(( var + "_bkg_nPV_passed").c_str(), "nPV",(" ( ( pt > 20 && isTrue != 1 ) && ( (isEB == 1 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.01) || (isEB == 0 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.0268)  ) && " + var + " < " + std::to_string(cutValue) + " )").c_str());
+
+	TGraphAsymmErrors * graph = new TGraphAsymmErrors (hist_bkg_nPV_passed, hist_bkg_nPV_total);
+
+	return graph;
+
+
+}
+
+
+TGraphAsymmErrors * get_graph_sig(std::string var)
+{	
+	std::cout << var << std::endl;
+	TFile file_("/afs/cern.ch/work/i/ishvetso/EgammaWork/photon_isolations/CMSSW_7_6_4/src/EgammaWork/PhotonNtupler/test/crab_projects/crab_PhotonIsolations/results/GJets.root");
+	TTree * tree = (TTree *) file_.Get("ntupler/PhotonTree");
+	TH1D * hist_bkg = new TH1D(( var + "_bkg").c_str(), (var + "_bkg").c_str(), 10000., 0., 10.);
+
+	hist_bkg -> Sumw2();
+	double cutValue;
 	
+	tree -> Project(( var + "_bkg" ).c_str(), var.c_str(),"( pt > 20 && ( isTrue != 1  ) ) && ( (isEB == 1 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.01) || (isEB == 0 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.0268)  )");
+
+	for (unsigned int iBin = 1; iBin <= hist_bkg -> GetNbinsX(); iBin ++){
 	
-	return eff_hist;
+			double _effBkg = hist_bkg -> Integral(1, iBin)/(hist_bkg -> Integral());
+			if (_effBkg > 0.5) {
+				cutValue = (double) hist_bkg -> GetBinCenter(iBin);
+				std::cout << "eff : " << _effBkg << std::endl;
+				break;
+			}
+	}
+
+	std::cout << cutValue << std::endl;
+	std::cout << "string :" << std::to_string(cutValue) << std::endl;
+
+	TH1D * hist_sig_nPV_total = new TH1D(( var + "_sig_nPV_total").c_str(), (var + "_sig_nPV_total").c_str(), 13, 4.5, 30.5);
+	TH1D * hist_sig_nPV_passed = new TH1D(( var + "_sig_nPV_passed").c_str(), (var + "_sig_nPV_passed").c_str(), 13, 4.5, 30.5);
+
+	tree -> Project(( var + "_sig_nPV_total").c_str(), "nPV","( pt > 20 && isTrue == 1 ) && ( (isEB == 1 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.01) || (isEB == 0 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.0268)  )");
+	tree -> Project(( var + "_sig_nPV_passed").c_str(), "nPV",(" ( ( pt > 20 && isTrue == 1 ) && ( (isEB == 1 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.01) || (isEB == 0 && hOverE < 0.05 && full5x5_sigmaIetaIeta < 0.0268)  ) && " + var + " < " + std::to_string(cutValue) + " )").c_str());
+	TGraphAsymmErrors * graph = new TGraphAsymmErrors (hist_sig_nPV_passed, hist_sig_nPV_total);
+
+	return graph;
 
 
 }
@@ -81,47 +108,48 @@ void eff_drawer()
   	gStyle->SetOptTitle(0);
   	setTDRStyle();  
 	TCanvas *c1= new TCanvas("c1","canvas",1200,800);	
-	TH1D * hist1 = (TH1D*) get_hist("relisoWithEA_PUPPI");
-	TH1D * hist2 =  get_hist("relisoWithEA_pf");
-	TH1D * hist3 =  get_hist("relisoWithEA_CITK_");
-
 	
-	hist1 -> GetYaxis() -> SetRangeUser(0.15, 0.85);
+	TGraphAsymmErrors *graph1 = get_graph_bkg("relisoWithEA_CITK");
+	TGraphAsymmErrors *graph2 = get_graph_bkg("relisoWithEA_pf");
+	TGraphAsymmErrors *graph3 = get_graph_bkg("relisoWithEA_PUPPI");
+	TGraphAsymmErrors *graph4 = get_graph_bkg("reliso_raw");
+	
 
-	hist1 -> GetYaxis() -> SetTitle("eff_{bkg}(eff_{sig} = 0.7 )");
-  	hist1 -> GetXaxis() -> SetTitle("n_{PV}");
+	graph1 -> GetYaxis() -> SetTitle("bkg efficiency");
+	graph1 -> GetYaxis() -> SetRangeUser(0., 0.8);
+  	graph1 -> GetXaxis() -> SetTitle("n_{PV}");
 
-	hist1 -> SetLineWidth(2.);
-  	hist2 -> SetLineWidth(2.);
-  	hist3 -> SetLineWidth(2.);
+	graph1 -> SetLineColor(kBlue);
+	graph2 -> SetLineColor(kGreen);
+	graph3 -> SetLineColor(kRed);
+	graph4 -> SetLineColor(kBlack);
+	
 
-  	hist1 -> SetMarkerStyle(22);
-  	hist2 -> SetMarkerStyle(22);
-  	hist3 -> SetMarkerStyle(22);
+	graph1 -> SetLineWidth(2.);
+	graph2 -> SetLineWidth(2.);
+	graph3 -> SetLineWidth(2.);
+	graph4 -> SetLineWidth(2.);
 
-  	hist1 -> SetMarkerColor(kRed);
-  	hist2 -> SetMarkerColor(kBlue);
-  	hist3 -> SetMarkerColor(kGreen);
-
-	hist1 -> SetLineColor(kRed);
-	hist2 -> SetLineColor(kBlue);
-	hist3 -> SetLineColor(kGreen);
-
-	hist1 -> Draw("LPE");
-	hist2 -> Draw("LPESAME");
-	hist3 -> Draw("LPESAME");
-
-	TLegend *leg = new TLegend(0.2,0.7,0.4,0.9);
+	TLegend *leg = new TLegend(0.2,0.2,0.5,0.4);
   	leg -> SetFillColor(kWhite);  
   
- 	leg->AddEntry(hist1, "PUPPI","l");
-  	leg->AddEntry(hist2, "PF","l");
-  	leg->AddEntry(hist3, "CITK","l");
+  	leg->AddEntry(graph1, "effective area, map based veto","l");
+  	leg->AddEntry(graph2, "effective area, cone veto","l");
+  	leg->AddEntry(graph3, "PUPPI map based veto","l");
+  	leg->AddEntry(graph4, "raw, map based veto","l");
+  	
 
-  	leg -> Draw("SAME");
+	graph1 -> Draw();
+	graph2 -> Draw("SAME");
+	graph3 -> Draw("SAME");
+	graph4 -> Draw("SAME");
 
+
+	leg -> Draw("SAME");
 
 	CMS_lumi( c1, 4, 0 );
-	c1 -> SaveAs("iso_vs_nPV.png");
+	c1 -> SaveAs("eff_vs_nPV.png");
+
+	
 }
 
