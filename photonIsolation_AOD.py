@@ -56,11 +56,11 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  # The constants in these files below are derived for PHYS14 MC.
                                  #
                                  effAreaChHadFile = cms.FileInPath
-                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfChargedHadrons_V2.txt"),
+                                 ("RecoEgamma/PhotonIdentification/data/Spring15/effAreaPhotons_cone03_pfChargedHadrons_25ns_NULLcorrection.txt"),
                                  effAreaNeuHadFile= cms.FileInPath
-                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfNeutralHadrons_V2.txt"),
+                                 ("RecoEgamma/PhotonIdentification/data/Spring15/effAreaPhotons_cone03_pfNeutralHadrons_25ns_90percentBased.txt"),
                                  effAreaPhoFile   = cms.FileInPath
-                                 ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt"),
+                                 ("RecoEgamma/PhotonIdentification/data/Spring15/effAreaPhotons_cone03_pfPhotons_25ns_90percentBased.txt"),
                                  genInfo = cms.InputTag("generator")
                                 )			   
 
