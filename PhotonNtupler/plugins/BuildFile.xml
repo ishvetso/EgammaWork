@@ -7,7 +7,9 @@
 <use name="DataFormats/Candidate"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/HepMCCandidate"/>
+<use name="DataFormats/VertexReco"/>
 <use name="DataFormats/Math"/>
 <use name="RecoEgamma/EgammaTools"/>
+
 <use name="root"/>
 <flags EDM_PLUGIN="1"/>

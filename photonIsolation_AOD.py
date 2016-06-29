@@ -13,7 +13,7 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/mc/RunIISpring16DR80/GJet_Pt-15To6000_TuneCUETP8M1-Flat_13TeV_pythia8/AODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1/00000/02934727-2210-E611-AAC4-2C600CAFEF7C.root')
+    fileNames = cms.untracked.vstring('file:///afs/cern.ch/user/i/ishvetso/eos/cms/store/mc/RunIISpring16DR80/GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/AODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_v3-v2/20000/6AC91184-18FA-E511-9906-A4BADB1E6F7A.root')
 )
 
 process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
@@ -61,7 +61,8 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  ("RecoEgamma/PhotonIdentification/data/Spring15/effAreaPhotons_cone03_pfNeutralHadrons_25ns_90percentBased.txt"),
                                  effAreaPhoFile   = cms.FileInPath
                                  ("RecoEgamma/PhotonIdentification/data/Spring15/effAreaPhotons_cone03_pfPhotons_25ns_90percentBased.txt"),
-                                 genInfo = cms.InputTag("generator")
+                                 genInfo = cms.InputTag("generator"),
+                                 vertices = cms.InputTag("offlinePrimaryVertices")
                                 )			   
 
 process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates + process.egmPhotonIsolationAOD +  process.ntupler)

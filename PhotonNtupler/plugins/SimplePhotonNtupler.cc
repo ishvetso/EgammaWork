@@ -64,6 +64,10 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
 			MATCHED_FROM_GUDSCB,
 			MATCHED_FROM_PI0,
 			MATCHED_FROM_OTHER_SOURCES};
+  enum VertexMatchType{ UNMATCHED_VERTEX = 0,
+    MATCHED_NOTFROM_GUDCSB,
+    TRUE_VERTEX,
+  };
   
  private:
   virtual void beginJob() override;
@@ -77,6 +81,8 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   
   int matchToTruth(const reco::Photon &pho, 
 		   const edm::Handle<edm::View<reco::GenParticle>>  &genParticles);
+  int TrueVertex(const reco::Photon &pho, 
+       const edm::Handle<edm::View<reco::GenParticle>>  &genParticles, const edm::Handle<edm::View<reco::Vertex>> &vertices);
   
   void findFirstNonPhotonMother(const reco::Candidate *particle,
 				int &ancestorPID, int &ancestorStatus);
@@ -98,6 +104,8 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::ValueMap<float> > phoChargedIsolationToken_CITK; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoNeutralHadronIsolationToken_CITK; 
   edm::EDGetTokenT<edm::ValueMap<float> > phoPhotonIsolationToken_CITK; 
+
+  edm::EDGetTokenT<edm::View<reco::Vertex> > vertexToken; 
  
 
   TTree *photonTree_;
@@ -131,6 +139,7 @@ class SimplePhotonNtupler : public edm::EDAnalyzer {
   std::vector<Float_t> r9;
 
   std::vector<Int_t> isTrue_;
+  std::vector<Int_t> isTrueVertex_;
 
   std::vector<int> genWeight;
 
@@ -163,6 +172,8 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
 				  (iConfig.getParameter<edm::InputTag>("phoNeutralHadronIsolation_CITK"))),
   phoPhotonIsolationToken_CITK(consumes <edm::ValueMap<float> >
 			   (iConfig.getParameter<edm::InputTag>("phoPhotonIsolation_CITK"))),
+  vertexToken(consumes <edm::View<reco::Vertex> >
+         (iConfig.getParameter<edm::InputTag>("vertices"))),
 
   // Objects containing effective area constants
   effAreaChHadrons_( (iConfig.getParameter<edm::FileInPath>("effAreaChHadFile")).fullPath() ),
@@ -225,6 +236,7 @@ SimplePhotonNtupler::SimplePhotonNtupler(const edm::ParameterSet& iConfig):
   photonTree_->Branch("r9"                 , &r9);
 
   photonTree_->Branch("isTrue"             , &isTrue_);
+  photonTree_->Branch("isTrueVertex"             , &isTrueVertex_);
   photonTree_ -> Branch("genWeight", &genWeight);
 }
 
@@ -283,6 +295,9 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   edm::Handle<edm::ValueMap<float> > phoPhotonIsolationMap_CITK;
   iEvent.getByToken(phoPhotonIsolationToken_CITK, phoPhotonIsolationMap_CITK);
 
+  edm::Handle<edm::View<reco::Vertex> > vertices;
+  iEvent.getByToken(vertexToken, vertices);
+
   //generator info
   Handle <GenEventInfoProduct> genInfo; 
    iEvent.getByToken( genInfoToken , genInfo);
@@ -309,6 +324,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   r9.clear();
   //
   isTrue_.clear();
+  isTrueVertex_.clear();
   genWeight.clear();
 
   // Loop over photons
@@ -359,6 +375,7 @@ SimplePhotonNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     relisoWithEA_pf_.push_back((std::max( (float)0.0, chIso_pf + nhIso_pf + phIso_pf - rho_*Area )) /(pho -> pt()) ); 
     // Save MC truth match
     isTrue_.push_back( matchToTruth(*pho, genParticles) );
+    isTrueVertex_.push_back( TrueVertex(*pho, genParticles, vertices) );
     //generator weight
     genWeight.push_back (  (genInfo -> weight()) > 0 ? 1 : -1 ) ;
    }
@@ -492,6 +509,52 @@ void SimplePhotonNtupler::findFirstNonPhotonMother(const reco::Candidate *partic
   return;
 }
 
+
+int SimplePhotonNtupler::TrueVertex(const reco::Photon &pho, 
+           const edm::Handle<edm::View<reco::GenParticle>>  
+           &genParticles, const edm::Handle<edm::View<reco::Vertex>>& vertices)
+{
+  // 
+  // Explicit loop and geometric matching method 
+  //
+
+  // Find the closest status 1 gen photon to the reco photon
+  double dR = 999;
+  const reco::Candidate *closestPhoton = 0;
+  for(size_t i=0; i<genParticles->size();i++){
+    const reco::Candidate *particle = &(*genParticles)[i];
+    // Drop everything that is not photon or not status 1
+    if( abs(particle->pdgId()) != 22 || particle->status() != 1 )
+      continue;
+    //
+    double dRtmp = ROOT::Math::VectorUtil::DeltaR( pho.p4(), particle->p4() );
+    if( dRtmp < dR ){
+      dR = dRtmp;
+      closestPhoton = particle;
+    }
+  }
+  // See if the closest photon (if it exists) is close enough.
+  // If not, no match found.
+  if( !(closestPhoton != 0 && dR < 0.1) ) {
+    return UNMATCHED_VERTEX;
+  }
+
+  // Find ID of the parent of the found generator level photon match
+  int ancestorPID = -999; 
+  int ancestorStatus = -999;
+  findFirstNonPhotonMother(closestPhoton, ancestorPID, ancestorStatus);
+
+  // Allowed parens: quarks pdgId 1-5, or a gluon 21
+  std::vector<int> allowedParents { -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -21, 21 };
+  if( !(std::find(allowedParents.begin(), 
+     allowedParents.end(), ancestorPID)
+  != allowedParents.end()) ) return MATCHED_NOTFROM_GUDCSB;
+  math::XYZPoint genVertex = closestPhoton -> vertex();
+  double dZ = std::abs( vertices->at(0).z() - genVertex.z());
+  if (dZ < 0.1) return TRUE_VERTEX;
+  else return UNMATCHED;
+   
+}
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(SimplePhotonNtupler);
