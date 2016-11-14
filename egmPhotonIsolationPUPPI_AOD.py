@@ -22,7 +22,7 @@ process.load("CommonTools.PileupAlgos.Puppi_cff")
 
 from RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationPUPPI_cff import egmPhotonIsolationAODPUPPI
 
-process.egmPhotonIsolationAODPUPPI = egmPhotonIsolationAODPUPPI.clone()
+process.egmPhotonIsolationAODPUPPI = egmPhotonIsolationAODPUPPI
 
 process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  # The module automatically detects AOD vs miniAOD, so we configure both

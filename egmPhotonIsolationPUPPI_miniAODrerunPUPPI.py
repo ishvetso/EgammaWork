@@ -24,7 +24,7 @@ process.puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
 
 from RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationPUPPI_cff import egmPhotonIsolationMiniAODPUPPI
 
-process.egmPhotonIsolationMiniAODPUPPI = egmPhotonIsolationMiniAODPUPPI.clone()
+process.egmPhotonIsolationMiniAODPUPPI = egmPhotonIsolationMiniAODPUPPI
 process.egmPhotonIsolationMiniAODPUPPI.puppiValueMap = cms.InputTag('puppi')
 
 

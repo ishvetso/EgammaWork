@@ -21,7 +21,7 @@ process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 
 from RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationPUPPI_cff import egmPhotonIsolationMiniAODPUPPI
 
-process.egmPhotonIsolationMiniAODPUPPI = egmPhotonIsolationMiniAODPUPPI.clone()
+process.egmPhotonIsolationMiniAODPUPPI = egmPhotonIsolationMiniAODPUPPI
 
 
 process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
