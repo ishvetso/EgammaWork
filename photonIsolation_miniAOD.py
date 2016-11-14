@@ -17,10 +17,7 @@ process.source = cms.Source("PoolSource",
 )
 
 process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
-
-from RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationMiniAOD_cff import egmPhotonIsolationMiniAOD
-
-process.egmPhotonIsolationMiniAOD = egmPhotonIsolationMiniAOD.clone()
+process.load("RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationMiniAOD_cff")
 
 
 process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',

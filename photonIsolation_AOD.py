@@ -17,19 +17,7 @@ process.source = cms.Source("PoolSource",
 )
 
 process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
-
-process.load("CommonTools.ParticleFlow.pfNoPileUpIso_cff")
-process.load("CommonTools.ParticleFlow.pfParticleSelection_cff")
-
-process.pfNoPileUpCandidates = process.pfAllChargedHadrons.clone()
-process.pfNoPileUpCandidates.pdgId.extend(process.pfAllNeutralHadronsAndPhotons.pdgId)
-
-process.particleFlowTmpPtrs = cms.EDProducer("PFCandidateFwdPtrProducer",
-src = cms.InputTag('particleFlow')
-)
-from RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationAOD_cff import egmPhotonIsolationAOD
-
-process.egmPhotonIsolationAOD = egmPhotonIsolationAOD.clone()
+process.load("RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationAOD_cff")
 
 process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  # The module automatically detects AOD vs miniAOD, so we configure both
@@ -64,7 +52,7 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  genInfo = cms.InputTag("generator")
                                 )			   
 
-process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates + process.egmPhotonIsolationAOD +  process.ntupler)
+process.analysis = cms.Path(process.egmPhotonIsolationAODSequence +  process.ntupler)
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
