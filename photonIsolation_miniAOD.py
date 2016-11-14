@@ -8,6 +8,8 @@ process.maxEvents = cms.untracked.PSet(
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
+process.load("RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationMiniAOD_cff")
 
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.options.allowUnscheduled = cms.untracked.bool(False) 
@@ -16,8 +18,7 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring('/store/mc/RunIIFall15MiniAODv1/GJets_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/20000/167B87FB-84AC-E511-A144-0CC47A745298.root')
 )
 
-process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
-process.load("RecoEgamma.EgammaIsolationAlgos.egmPhotonIsolationMiniAOD_cff")
+
 
 
 process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
