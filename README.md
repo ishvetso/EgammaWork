@@ -17,7 +17,7 @@ In order to run only <b>electron isolation</b> with CITK <b>including PUPPI-base
   cd CMSSW_7_4_7/src <br />
   cmsenv <br />
   git clone -b ElectronBranch git@github.com:ishvetso/EgammaWork.git <br />
-2. Since CMSSW_8_0_20, "v10", no action should be taken. However, this might change in the future (check [PUPPI twiki] <br/>
+2. Since CMSSW_8_0_20, "v10" of PUPPI is in CMSSW, no action should be taken. However, this might change in the future (check [PUPPI twiki] <br/>
 3. Then: 
   scram b -j10  <br />
   # this is to run electron isolation for puppi with electrons with cone footprint removal <br / >
