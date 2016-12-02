@@ -1,8 +1,6 @@
 This repository contains a setup for running electron isolation with CITK (Common Isolation Toolkit) [CITK twiki]. 
 It also includes PUPPI-based electron isolation.
 
-<b>IMPORTANT: PHYS14 samples cannot be run in 74X, 73X should be used. To run 74X, use Spring15 samples.</b>
-
 In order to run <b>only electron isolation</b> with CITK (pfIsolationVariables are also there), you should do following (CMSSW verstion is the one I used):
 
 cmsrel CMSSW_7_4_6_patch2 <br />
