@@ -26,21 +26,6 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
-useAOD = True
-
-if useAOD == True :
-    dataFormat = DataFormat.AOD
-else :
-    dataFormat = DataFormat.MiniAOD
-
-switchOnVIDPhotonIdProducer(process, dataFormat)
-
-my_id_modules = ['RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring15_25ns_nonTrig_V2_cff']
-
-for idmod in my_id_modules:
-    setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
-
-
 #Loading PUPPI sequences
 process.load("CommonTools.PileupAlgos.Puppi_cff")
 
@@ -145,22 +130,13 @@ process.ntupler = cms.EDAnalyzer('SimplePhotonNtupler',
                                  effAreaPhoFile   = cms.FileInPath
                                  ("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt"),
                                   genInfo = cms.InputTag("generator"),
-                                  mva_idw90_src = cms.InputTag("egmPhotonIDs:mvaPhoID-Spring15-25ns-nonTrig-V2-wp90")
                                 )			  
 
-process.analysis = cms.Path(process.egmPhotonIDSequence + process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates +  process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI   + process.ntupler)
+process.analysis = cms.Path(process.particleFlowTmpPtrs +  process.pfParticleSelectionSequence + process.pfNoPileUpCandidates +  process.puppi + process.egmPhotonIsolationMiniAOD + process.egmPhotonIsolationMiniAODPUPPI   + process.ntupler)
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-
-'''process.out = cms.OutputModule("PoolOutputModule",
-                               fileName = cms.untracked.string('patTuple_miniAOD.root'),
-                               outputCommands = cms.untracked.vstring('keep *')
-                               )                            
-
-                           
-process.outpath = cms.EndPath(process.out)'''
 
 process.TFileService = cms.Service("TFileService",
                                  fileName = cms.string("tree.root")
