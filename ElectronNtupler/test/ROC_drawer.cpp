@@ -19,8 +19,8 @@
    TH1F *hist_sig = new TH1F("sig", "sig", Nbins, xmin, xmax);
    TH1F *hist_bkg = new TH1F("bkg", "bkg", Nbins, xmin, xmax);
 
-   TH1F *hist_sig_abs = new TH1F("sig_abs", "sig_abs", Nbins, 0., 15.);
-   TH1F *hist_bkg_abs = new TH1F("bkg_abs", "bkg_abs", Nbins, 0., 15.);
+   TH1F *hist_sig_abs = new TH1F("sig_abs", "sig_abs", Nbins, 0., 1000.);
+   TH1F *hist_bkg_abs = new TH1F("bkg_abs", "bkg_abs", Nbins, 0., 1000.);
 
    hist_sig -> Sumw2();
    hist_bkg -> Sumw2();
@@ -45,14 +45,6 @@
       sigEff.push_back(effSig);
       bkgEff.push_back(1.0 - effBkg);
     }
-
-  /*  if (effSig < 0.52 && effSig > 0.48)
-      { 
-        std::cout << " var "  << var << std::endl;
-        std::cout << "signal effeciency " << effSig << std::endl;
-        std::cout << "cut " << hist_sig -> GetBinLowEdge(iBin + 1) << std::endl;
-      }*/
-
   }
   
   TGraph *gr = new TGraph( sigEff.size(), sigEff.data(), bkgEff.data());
@@ -63,32 +55,38 @@
 void ROC_Drawer::draw_ROC()
 {
   gStyle->SetCanvasColor(kWhite);
-//gStyle->SetTitleFillColor(kWhite);
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
-//gPad->SetGrid();
   
-  TGraph * gr1 =  graph_ROC("relIsoWithEA", 10000, 0., 15.);
-  TGraph * gr2 =  graph_ROC("relIsoWithDBeta", 10000, 0., 15.);
-  TGraph * gr3 =  graph_ROC("reliso_PUPPI", 10000, 0., 15.);
-  TGraph * gr4 =  graph_ROC("reliso_PUPPI_NoLeptons", 10000, 0., 15.);
-  TGraph * gr5 =  graph_ROC("reliso_PUPPI_average", 10000, 0., 15.);
-  
-  
+  TGraph * gr1 =  graph_ROC("reliso_ConeVeto_EA", 10000, 0., 15.);
+  TGraph * gr2 =  graph_ROC("reliso_MapBasedVeto_EA", 10000, 0., 15.);
+  TGraph * gr3 =  graph_ROC("relIsoWithDBeta", 10000, 0., 15.);
+  TGraph * gr4 =  graph_ROC("reliso_PUPPI_ConeVeto_average", 10000, 0., 15.);
+  TGraph * gr5 =  graph_ROC("reliso_PUPPI_MapBasedVeto_average", 10000, 0., 15.);
+  TGraph * gr6 =  graph_ROC("reliso_ConeVeto_raw", 10000, 0., 15.);
+  TGraph * gr7 =  graph_ROC("reliso_MapBasedVeto_raw", 10000, 0., 15.);
+
   gr1 -> GetYaxis() -> SetTitle("bkg rejection");
   gr1 -> GetXaxis() -> SetTitle("sig eff");
   
+  gr1 -> SetLineColor(kGreen);
+  gr2 -> SetLineColor(kGreen);
+  gr2 -> SetLineStyle(2);
+  gr3 -> SetLineColor(kOrange);
+  gr4 -> SetLineColor(kRed);
+  gr5 -> SetLineColor(kRed);
+  gr5 -> SetLineStyle(2);
+  gr6 -> SetLineColor(kCyan);
+  gr7 -> SetLineColor(kCyan);
+  gr7 -> SetLineStyle(2);
+
   gr1 -> SetLineWidth(2.);
   gr2 -> SetLineWidth(2.);
   gr3 -> SetLineWidth(2.);
   gr4 -> SetLineWidth(2.);
   gr5 -> SetLineWidth(2.);
-  
-  gr1 -> SetLineColor(kCyan);
-  gr2 -> SetLineColor(kBlack);
-  gr3 -> SetLineColor(kBlue);
-  gr4 -> SetLineColor(kRed);
-  gr5 -> SetLineColor(kGreen);
+  gr6 -> SetLineWidth(2.);
+  gr7 -> SetLineWidth(2.);
  
   
   setTDRStyle();   
@@ -97,23 +95,26 @@ void ROC_Drawer::draw_ROC()
   TLegend *leg = new TLegend(0.2,0.3,0.5,0.7);
   leg -> SetFillColor(kWhite);  
   
-  leg->AddEntry(gr1, "effective area","l");
-  leg->AddEntry(gr2, "#delta#beta-corrected","l");
-  leg->AddEntry(gr3, "PUPPI","l");
-  leg->AddEntry(gr4, "PUPPINoLeptons","l");
-  leg->AddEntry(gr5, "PUPPI combined","l");
- 
- 
+  leg->AddEntry(gr1, "effective area, cone veto","l");
+  leg->AddEntry(gr2, "effective area, map based veto","l");
+  leg->AddEntry(gr3, "#delta#beta-corrected","l");
+  leg->AddEntry(gr4, "PUPPI cone veto combined","l");
+  leg->AddEntry(gr5, "PUPPI map based veto combined","l");
+  leg->AddEntry(gr6, "raw cone veto","l");
+  leg->AddEntry(gr7, "raw map based veto","l");
+
   c1 -> cd();
   gr1 -> Draw();
   gr2 -> Draw("SAME");
   gr3 -> Draw("SAME");
   gr4 -> Draw("SAME");
   gr5 -> Draw("SAME");
+  gr6 -> Draw("SAME");
+  gr7 -> Draw("SAME");
   leg -> Draw("SAME");
 
   CMS_lumi( c1, 4, 0 );
 
-  c1 -> SaveAs( (name +  ".png").c_str());
+  c1 -> SaveAs( (name +  ".pdf").c_str());
   delete c1;
 }
