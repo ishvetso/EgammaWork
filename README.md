@@ -1,8 +1,6 @@
 This repository contains a setup for running electron isolation with CITK (Common Isolation Toolkit) [CITK twiki]. 
 It also includes PUPPI-based electron isolation.
 
-<b>IMPORTANT: PHYS14 samples cannot be run in 74X, 73X should be used. To run 74X, use Spring15 samples.</b>
-
 In order to run <b>only electron isolation</b> with CITK (pfIsolationVariables are also there), you should do following (CMSSW verstion is the one I used):
 
 cmsrel CMSSW_7_4_6_patch2 <br />
@@ -19,7 +17,7 @@ In order to run only <b>electron isolation</b> with CITK <b>including PUPPI-base
   cd CMSSW_7_4_7/src <br />
   cmsenv <br />
   git clone -b ElectronBranch git@github.com:ishvetso/EgammaWork.git <br />
-2. do what is stated on the [PUPPI twiki] <br/>
+2. Since CMSSW_8_0_20, "v10" of PUPPI is in CMSSW, no action should be taken. However, this might change in the future (check [PUPPI twiki] <br/>
 3. Then: 
   scram b -j10  <br />
   # this is to run electron isolation for puppi with electrons with cone footprint removal <br / >
